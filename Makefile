@@ -1,5 +1,5 @@
 SIMULATOR_ID = 2921F8F6-B772-4C33-876E-E0FDBFD9E06B
-BUNDLE_ID = com.example.HabitHound
+BUNDLE_ID = com.CometnCloud.HabitHound
 XCODEBUILD = /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild
 SIMCTL = /Applications/Xcode.app/Contents/Developer/usr/bin/simctl
 
