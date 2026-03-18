@@ -6,6 +6,26 @@
             "request": "attach",
             "name": "Run on Simulator (SweetPad)",
             "preLaunchTask": "sweetpad: launch"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:habit_hound}",
+            "name": "Debug HabitHound",
+            "target": "HabitHound",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug HabitHound"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:habit_hound}",
+            "name": "Release HabitHound",
+            "target": "HabitHound",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release HabitHound"
         }
     ]
 }

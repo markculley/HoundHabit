@@ -1,19 +1,14 @@
-//
-//  ContentView.swift
-//  Chat
-//
-//  Created by MARK CULLEY on 3/13/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
+            Image(systemName: "checkmark.circle.fill")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("Habit Hound")
+                .font(.largeTitle)
+                .bold()
         }
         .padding()
     }
