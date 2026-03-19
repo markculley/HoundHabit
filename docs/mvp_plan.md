@@ -30,9 +30,9 @@ HabitHound/
 ├── Core/
 │   ├── Auth/          (AuthViewModel, LoginView, SignUpView, RoleSelectionView)
 │   ├── Models/        (Profile, Pet, TrainingRecord, TrainingPlan, TrainingPlanItem,
-│   │                   Material, Comment, TrainerGuardianLink, Badge)
+│   │                   Resource, Comment, TrainerGuardianLink, Badge)
 │   ├── Services/      (SupabaseClient, AuthService, PetService, TrainingRecordService,
-│   │                   TrainingPlanService, MaterialService, CommentService,
+│   │                   TrainingPlanService, ResourceService, CommentService,
 │   │                   InviteService, StorageService)
 │   └── Extensions/    (Color+Status, Date+Formatting)
 ├── Guardian/
@@ -40,7 +40,7 @@ HabitHound/
 │   ├── Dashboard/     (DashboardView, DashboardViewModel)
 │   ├── Pets/          (PetListView, PetDetailView, PetFormView, PetViewModel)
 │   ├── TrainingRecords/
-│   ├── Materials/
+│   ├── Resources/
 │   ├── Plans/
 │   ├── Achievements/
 │   └── Settings/
@@ -58,7 +58,7 @@ HabitHound/
 
 ### Navigation
 
-**Guardian Tabs**: Home · Pets · Log (center) · Materials · Settings
+**Guardian Tabs**: Home · Pets · Log (center) · Resources · Settings
 
 **Trainer Tabs**: Guardians · Plans · Invite · Settings
 
@@ -108,7 +108,7 @@ id uuid PK, plan_id uuid FK→training_plans, guardian_id uuid FK→profiles,
 pet_id uuid FK→pets (nullable), assigned_at timestamptz
 ```
 
-**`materials`**
+**`resources`**
 ```
 id uuid PK, owner_id uuid FK→profiles, added_by_id uuid FK→profiles,
 guardian_id uuid FK→profiles, kind text ('photo'|'url'|'note'),
@@ -144,7 +144,7 @@ Badge types: `first_session`, `first_green`, `7_day_streak`, `30_day_streak`
 
 ### Storage Buckets
 - `pet-photos` — `{guardian_id}/{pet_id}.jpg`
-- `materials` — `{guardian_id}/{material_id}.jpg`
+- `resources` — `{guardian_id}/{material_id}.jpg`
 - `avatars` — `{user_id}.jpg`
 
 ### RLS (Row Level Security) Strategy
@@ -152,7 +152,7 @@ RLS is a PostgreSQL feature where the database enforces access rules at the row 
 
 1. **Own data**: `guardian_id = auth.uid()` or `owner_id = auth.uid()`
 2. **Linked trainer read**: SELECT allowed when row exists in `trainer_guardian_links` with `trainer_id = auth.uid()` AND `status = 'active'`
-3. **Trainer writes**: INSERT allowed into `materials`, `comments`, `plan_assignments` for linked guardians
+3. **Trainer writes**: INSERT allowed into `resources`, `comments`, `plan_assignments` for linked guardians
 4. **Profiles**: Any authenticated user can read any profile; only own row can be updated
 5. **Invites**: Trainers manage their own; any authenticated user can lookup by `code`
 6. **Badges**: INSERT only via Postgres trigger (tamper-proof); SELECT own only
@@ -216,14 +216,14 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 
 **Files**: `Guardian/Dashboard/`, `Guardian/Achievements/`, `Core/Models/Badge.swift`, Supabase SQL function
 
-### Phase 6 — Materials (Guardian)
-- `Core/Models/Material.swift` with `MaterialKind` enum
-- `MaterialService`: fetchMaterials, createMaterial, deleteMaterial
-- `MaterialListView` (segmented by kind), `MaterialFormView` (kind picker)
+### Phase 6 — Resources (Guardian)
+- `Core/Models/Resource.swift` with `ResourceKind` enum
+- `ResourceService`: fetchResources, createResource, deleteResource
+- `ResourceListView` (segmented by kind), `ResourceFormView` (kind picker)
 - `Shared/Components/PhotoPickerView.swift` (reusable wrapper)
 - Wire Guardian Tab 4
 
-**Files**: `Core/Models/Material.swift`, `Core/Services/MaterialService.swift`, `Guardian/Materials/`, `Shared/Components/PhotoPickerView.swift`
+**Files**: `Core/Models/Resource.swift`, `Core/Services/ResourceService.swift`, `Guardian/Resources/`, `Shared/Components/PhotoPickerView.swift`
 
 ### Phase 7 — Trainer Invite & Guardian Linking
 - `Core/Models/TrainerGuardianLink.swift`
@@ -263,16 +263,16 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 
 **Files**: `Shared/Utilities/NotificationManager.swift`, `Shared/Utilities/HapticManager.swift`, `Shared/Components/TimerView.swift`, `Guardian/Settings/NotificationSettingsView.swift`
 
-### Phase 11 — Trainer: Add Materials to Guardian
-- "Add Material" action in `GuardianDetailView`
-- `TrainerAddMaterialView` — same form as `MaterialFormView`, sets `added_by_id = trainer`, `guardian_id = target guardian`
-- Guardian's `MaterialListView` already surfaces trainer-added materials via `guardian_id` query
+### Phase 11 — Trainer: Add Resources to Guardian
+- "Add Resource" action in `GuardianDetailView`
+- `TrainerAddResourceView` — same form as `ResourceFormView`, sets `added_by_id = trainer`, `guardian_id = target guardian`
+- Guardian's `ResourceListView` already surfaces trainer-added resources via `guardian_id` query
 
-**Files**: `Trainer/Guardians/TrainerAddMaterialView.swift`, extend `Trainer/Guardians/GuardianDetailView.swift`
+**Files**: `Trainer/Guardians/TrainerAddResourceView.swift`, extend `Trainer/Guardians/GuardianDetailView.swift`
 
 ### Phase 12 — Polish, RLS Hardening & App Store Prep
 - Audit all RLS policies; run cross-user access SQL test script
-- Add DB indexes: `training_records(guardian_id)`, `(pet_id)`, `(recorded_at DESC)`, `materials(guardian_id)`, `badges(user_id)`
+- Add DB indexes: `training_records(guardian_id)`, `(pet_id)`, `(recorded_at DESC)`, `resources(guardian_id)`, `badges(user_id)`
 - Replace all force-unwraps with proper error propagation
 - Global error alert in `AppRouter` via shared `ErrorStore`
 - Loading skeletons / `ProgressView` on all list screens

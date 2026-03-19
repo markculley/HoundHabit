@@ -22,6 +22,15 @@
 		AA000000000000000000004D /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000004C /* SignUpView.swift */; };
 		AA000000000000000000004F /* RoleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000004E /* RoleSelectionView.swift */; };
 		AA0000000000000000000051 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000050 /* AppRouter.swift */; };
+		AA0000000000000000000054 /* Pet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000053 /* Pet.swift */; };
+		AA0000000000000000000056 /* PetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000055 /* PetService.swift */; };
+		AA0000000000000000000058 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000057 /* StorageService.swift */; };
+		AA000000000000000000005A /* PetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000059 /* PetViewModel.swift */; };
+		AA000000000000000000005C /* PetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005B /* PetListView.swift */; };
+		AA000000000000000000005E /* PetFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005D /* PetFormView.swift */; };
+		AA0000000000000000000060 /* PetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005F /* PetDetailView.swift */; };
+		AA0000000000000000000062 /* PetAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000061 /* PetAvatarView.swift */; };
+		AA0000000000000000000064 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000063 /* DashboardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +52,15 @@
 		AA000000000000000000004E /* RoleSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleSelectionView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000050 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		AA0000000000000000000052 /* HabitHound.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HabitHound.entitlements; sourceTree = "<group>"; };
+		AA0000000000000000000053 /* Pet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pet.swift; sourceTree = "<group>"; };
+		AA0000000000000000000055 /* PetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000057 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000059 /* PetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000005B /* PetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetListView.swift; sourceTree = "<group>"; };
+		AA000000000000000000005D /* PetFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetFormView.swift; sourceTree = "<group>"; };
+		AA000000000000000000005F /* PetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000061 /* PetAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetAvatarView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000063 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +135,8 @@
 			children = (
 				AA0000000000000000000029 /* SupabaseClient.swift */,
 				AA0000000000000000000046 /* AuthService.swift */,
+				AA0000000000000000000055 /* PetService.swift */,
+				AA0000000000000000000057 /* StorageService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -136,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000044 /* Profile.swift */,
+				AA0000000000000000000053 /* Pet.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -165,6 +186,7 @@
 		AA0000000000000000000037 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000063 /* DashboardView.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -172,6 +194,11 @@
 		AA0000000000000000000038 /* Pets */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000059 /* PetViewModel.swift */,
+				AA000000000000000000005B /* PetListView.swift */,
+				AA000000000000000000005D /* PetFormView.swift */,
+				AA000000000000000000005F /* PetDetailView.swift */,
+				AA0000000000000000000061 /* PetAvatarView.swift */,
 			);
 			path = Pets;
 			sourceTree = "<group>";
@@ -370,6 +397,15 @@
 				AA000000000000000000004D /* SignUpView.swift in Sources */,
 				AA000000000000000000004F /* RoleSelectionView.swift in Sources */,
 				AA0000000000000000000051 /* AppRouter.swift in Sources */,
+				AA0000000000000000000054 /* Pet.swift in Sources */,
+				AA0000000000000000000056 /* PetService.swift in Sources */,
+				AA0000000000000000000058 /* StorageService.swift in Sources */,
+				AA000000000000000000005A /* PetViewModel.swift in Sources */,
+				AA000000000000000000005C /* PetListView.swift in Sources */,
+				AA000000000000000000005E /* PetFormView.swift in Sources */,
+				AA0000000000000000000060 /* PetDetailView.swift in Sources */,
+				AA0000000000000000000062 /* PetAvatarView.swift in Sources */,
+				AA0000000000000000000064 /* DashboardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
