@@ -1,19 +1,16 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "checkmark.circle.fill")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Habit Hound")
-                .font(.largeTitle)
-                .bold()
-        }
-        .padding()
-    }
-}
+    @Environment(AppRouter.self) var router
 
-#Preview {
-    ContentView()
+    var body: some View {
+        switch router.route {
+        case .unauthenticated:
+            LoginView()
+        case .guardian:
+            GuardianTabView()
+        case .trainer:
+            TrainerTabView()
+        }
+    }
 }
