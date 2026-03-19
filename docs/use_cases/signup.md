@@ -48,8 +48,8 @@ sequenceDiagram
     G->>App: View assigned plan (read-only)
 
     %% Resources
-    T->>App: Add material to guardian (URL / photo / note)
-    App->>DB: Insert material (added_by_id = trainer)
+    T->>App: Add Resource to guardian (URL / photo / note)
+    App->>DB: Insert Resource (added_by_id = trainer)
     G->>App: View resources tab
     App->>DB: Fetch resources where guardian_id = me
 ```

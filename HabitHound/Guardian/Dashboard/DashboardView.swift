@@ -1,48 +1,91 @@
 import SwiftUI
-import Supabase
 
 struct DashboardView: View {
-    @State private var profile: Profile?
-    @State private var isLoading = true
-
-    private let authService = AuthService()
-
-    private var user: Supabase.User? {
-        supabase.auth.currentUser
-    }
+    var viewModel: DashboardViewModel
 
     var body: some View {
         NavigationStack {
             Group {
-                if isLoading {
+                if viewModel.isLoading && viewModel.records.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if viewModel.records.isEmpty {
+                    ContentUnavailableView(
+                        "No Sessions Yet",
+                        systemImage: "list.bullet.clipboard",
+                        description: Text("Tap Log to record your first training session.")
+                    )
                 } else {
                     List {
-                        Section("Account") {
-                            LabeledContent("Role", value: profile?.role.rawValue.capitalized ?? "—")
-                            LabeledContent("Name", value: profile?.fullName ?? "—")
-                            LabeledContent("Email", value: user?.email ?? "—")
-                        }
-
-                        Section("Dates") {
-                            if let createdAt = user?.createdAt {
-                                LabeledContent("Created", value: createdAt.formatted(date: .abbreviated, time: .shortened))
-                            }
-                            if let lastSignIn = user?.lastSignInAt {
-                                LabeledContent("Last Login", value: lastSignIn.formatted(date: .abbreviated, time: .shortened))
-                            } else {
-                                LabeledContent("Last Login", value: "—")
+                        ForEach(viewModel.records) { record in
+                            NavigationLink(value: record) {
+                                DashboardSessionRow(
+                                    record: record,
+                                    petName: viewModel.petName(for: record.petId)
+                                )
                             }
                         }
+                        .onDelete { offsets in
+                            Task {
+                                for i in offsets {
+                                    await viewModel.recordViewModel.deleteRecord(viewModel.records[i])
+                                }
+                            }
+                        }
+                    }
+                    .navigationDestination(for: TrainingRecord.self) { record in
+                        TrainingRecordDetailView(record: record, petName: viewModel.petName(for: record.petId), viewModel: viewModel.recordViewModel)
                     }
                 }
             }
             .navigationTitle("Home")
-            .task {
-                profile = try? await authService.currentProfile()
-                isLoading = false
+            .task { await viewModel.load() }
+            .alert("Error", isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(viewModel.errorMessage ?? "")
             }
         }
+    }
+}
+
+#Preview {
+    DashboardView(viewModel: DashboardViewModel())
+}
+
+// MARK: - Row
+
+private struct DashboardSessionRow: View {
+    let record: TrainingRecord
+    let petName: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            StatusBadgeView(status: record.status, size: 16)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(petName)
+                        .font(.headline)
+                    Text("·")
+                        .foregroundStyle(.secondary)
+                    Text(record.recordedAt.formatted(date: .abbreviated, time: .omitted))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                HStack(spacing: 8) {
+                    Text(record.distance.label)
+                    Text("·")
+                    Text(record.distraction.label)
+                    Text("·")
+                    Text(record.duration.label)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
     }
 }

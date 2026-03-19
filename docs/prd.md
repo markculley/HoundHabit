@@ -125,7 +125,7 @@ For any back office services required assume that AWS will be used.
 
 - Ideally in Confluence-style but …
 
-### Add Material to Guardian Materials
+### Add Resource to Guardian Resources
 
 - URL
 - Photo
@@ -155,7 +155,7 @@ For any back office services required assume that AWS will be used.
 - Only Guardians can do this
 - For a Pet
 
-## CRUD a Material Record
+## CRUD a Resource Record
 
 - Only Guardians can do this
 
@@ -180,7 +180,7 @@ For any back office services required assume that AWS will be used.
 
 # Database
 
-## Material Record
+## Resource Record
 
 **Table Properties**
 

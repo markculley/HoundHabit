@@ -138,3 +138,7 @@ struct PetFormView: View {
         }
     }
 }
+
+#Preview {
+    PetFormView(mode: .add, viewModel: PetViewModel())
+}

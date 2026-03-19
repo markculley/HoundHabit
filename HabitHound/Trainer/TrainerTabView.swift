@@ -14,3 +14,7 @@ struct TrainerTabView: View {
         }
     }
 }
+
+#Preview {
+    TrainerTabView()
+}

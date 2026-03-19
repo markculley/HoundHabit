@@ -76,3 +76,9 @@ struct SignUpView: View {
         }
     }
 }
+
+#Preview {
+    NavigationStack {
+        SignUpView()
+    }
+}

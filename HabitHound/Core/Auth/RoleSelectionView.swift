@@ -68,6 +68,12 @@ struct RoleSelectionView: View {
     }
 }
 
+#Preview {
+    NavigationStack {
+        RoleSelectionView(viewModel: AuthViewModel())
+    }
+}
+
 private struct RoleCard: View {
     let icon: String
     let title: String

@@ -144,7 +144,7 @@ Badge types: `first_session`, `first_green`, `7_day_streak`, `30_day_streak`
 
 ### Storage Buckets
 - `pet-photos` — `{guardian_id}/{pet_id}.jpg`
-- `resources` — `{guardian_id}/{material_id}.jpg`
+- `resources` — `{guardian_id}/{Resource_id}.jpg`
 - `avatars` — `{user_id}.jpg`
 
 ### RLS (Row Level Security) Strategy
@@ -292,7 +292,7 @@ Phase 1 (Scaffold + Schema)
         │           ├── Phase 5 (Dashboard + Badges)
         │           ├── Phase 8 (Trainer View + Comments) ← needs Phase 7
         │           └── Phase 9 (Training Plans) ← needs Phase 7
-        ├── Phase 6 (Materials) ← parallel with Phase 3/4
+        ├── Phase 6 (Resources) ← parallel with Phase 3/4
         └── Phase 7 (Trainer Invite + Linking)
               ├── Phase 8, 9, 11
 Phase 10 (Notifications) ← after Phase 4, mostly independent

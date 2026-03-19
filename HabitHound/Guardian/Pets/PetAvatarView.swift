@@ -35,3 +35,12 @@ struct PetAvatarView: View {
             .foregroundStyle(.tertiary)
     }
 }
+
+#Preview {
+    HStack(spacing: 20) {
+        PetAvatarView(url: nil, size: 60)
+        PetAvatarView(url: nil, size: 44)
+        PetAvatarView(url: nil, size: 32)
+    }
+    .padding()
+}

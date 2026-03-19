@@ -31,6 +31,16 @@
 		AA0000000000000000000060 /* PetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005F /* PetDetailView.swift */; };
 		AA0000000000000000000062 /* PetAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000061 /* PetAvatarView.swift */; };
 		AA0000000000000000000064 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000063 /* DashboardView.swift */; };
+		AA0000000000000000000066 /* TrainingRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000065 /* TrainingRecord.swift */; };
+		AA0000000000000000000068 /* TrainingRecordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000067 /* TrainingRecordService.swift */; };
+		AA000000000000000000006A /* StatusBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000069 /* StatusBadgeView.swift */; };
+		AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006B /* TrainingRecordViewModel.swift */; };
+		AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006D /* TrainingRecordFormView.swift */; };
+		AA0000000000000000000070 /* TrainingRecordListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006F /* TrainingRecordListView.swift */; };
+		AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000071 /* TrainingRecordDetailView.swift */; };
+		AA0000000000000000000074 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000073 /* DashboardViewModel.swift */; };
+		AA0000000000000000000076 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000075 /* SettingsView.swift */; };
+		AA0000000000000000000078 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000077 /* AccountView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +71,16 @@
 		AA000000000000000000005F /* PetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDetailView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000061 /* PetAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetAvatarView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000063 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000065 /* TrainingRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecord.swift; sourceTree = "<group>"; };
+		AA0000000000000000000067 /* TrainingRecordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000069 /* StatusBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadgeView.swift; sourceTree = "<group>"; };
+		AA000000000000000000006B /* TrainingRecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000006D /* TrainingRecordFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordFormView.swift; sourceTree = "<group>"; };
+		AA000000000000000000006F /* TrainingRecordListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordListView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000071 /* TrainingRecordDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000073 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		AA0000000000000000000075 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000077 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +157,7 @@
 				AA0000000000000000000046 /* AuthService.swift */,
 				AA0000000000000000000055 /* PetService.swift */,
 				AA0000000000000000000057 /* StorageService.swift */,
+				AA0000000000000000000067 /* TrainingRecordService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -157,6 +178,7 @@
 			children = (
 				AA0000000000000000000044 /* Profile.swift */,
 				AA0000000000000000000053 /* Pet.swift */,
+				AA0000000000000000000065 /* TrainingRecord.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -175,7 +197,7 @@
 				AA0000000000000000000037 /* Dashboard */,
 				AA0000000000000000000038 /* Pets */,
 				AA0000000000000000000039 /* TrainingRecords */,
-				AA000000000000000000003A /* Materials */,
+				AA000000000000000000003A /* Resources */,
 				AA000000000000000000003B /* Plans */,
 				AA000000000000000000003C /* Achievements */,
 				AA000000000000000000003D /* Settings */,
@@ -187,6 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000063 /* DashboardView.swift */,
+				AA0000000000000000000073 /* DashboardViewModel.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -206,15 +229,19 @@
 		AA0000000000000000000039 /* TrainingRecords */ = {
 			isa = PBXGroup;
 			children = (
+				AA000000000000000000006B /* TrainingRecordViewModel.swift */,
+				AA000000000000000000006D /* TrainingRecordFormView.swift */,
+				AA000000000000000000006F /* TrainingRecordListView.swift */,
+				AA0000000000000000000071 /* TrainingRecordDetailView.swift */,
 			);
 			path = TrainingRecords;
 			sourceTree = "<group>";
 		};
-		AA000000000000000000003A /* Materials */ = {
+		AA000000000000000000003A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 			);
-			path = Materials;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		AA000000000000000000003B /* Plans */ = {
@@ -234,6 +261,8 @@
 		AA000000000000000000003D /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000075 /* SettingsView.swift */,
+				AA0000000000000000000077 /* AccountView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -290,6 +319,7 @@
 		AA0000000000000000000042 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				AA0000000000000000000069 /* StatusBadgeView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -406,6 +436,16 @@
 				AA0000000000000000000060 /* PetDetailView.swift in Sources */,
 				AA0000000000000000000062 /* PetAvatarView.swift in Sources */,
 				AA0000000000000000000064 /* DashboardView.swift in Sources */,
+				AA0000000000000000000066 /* TrainingRecord.swift in Sources */,
+				AA0000000000000000000068 /* TrainingRecordService.swift in Sources */,
+				AA000000000000000000006A /* StatusBadgeView.swift in Sources */,
+				AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */,
+				AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */,
+				AA0000000000000000000070 /* TrainingRecordListView.swift in Sources */,
+				AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */,
+				AA0000000000000000000074 /* DashboardViewModel.swift in Sources */,
+				AA0000000000000000000076 /* SettingsView.swift in Sources */,
+				AA0000000000000000000078 /* AccountView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

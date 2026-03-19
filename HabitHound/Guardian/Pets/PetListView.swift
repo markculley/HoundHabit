@@ -19,7 +19,7 @@ struct PetListView: View {
                 } else {
                     List {
                         ForEach(viewModel.pets) { pet in
-                            NavigationLink(destination: PetDetailView(petId: pet.id, viewModel: viewModel)) {
+                            NavigationLink(value: pet.id) {
                                 PetRow(pet: pet)
                             }
                         }
@@ -30,6 +30,9 @@ struct PetListView: View {
                                 }
                             }
                         }
+                    }
+                    .navigationDestination(for: UUID.self) { petId in
+                        PetDetailView(petId: petId, viewModel: viewModel)
                     }
                 }
             }
@@ -62,12 +65,16 @@ struct PetListView: View {
 
 // MARK: - Row
 
+#Preview {
+    PetListView()
+}
+
 private struct PetRow: View {
     let pet: Pet
 
     var body: some View {
         HStack(spacing: 12) {
-            PetAvatarView(url: pet.photoUrl, size: 44)
+            PetAvatarView(url: pet.photoUrl.map { "\($0)?t=\(Int(pet.updatedAt.timeIntervalSince1970))" }, size: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(pet.name).font(.headline)
                 if let breed = pet.breed, !breed.isEmpty {
