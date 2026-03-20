@@ -15,6 +15,11 @@ class DashboardViewModel {
 
     var records: [TrainingRecord] { recordViewModel.records }
 
+    /// The 3 most recently earned badges, shown on the dashboard.
+    var recentBadges: [Badge] {
+        badges.sorted { $0.earnedAt > $1.earnedAt }.prefix(3).map { $0 }
+    }
+
     func load() async {
         guard let userId = supabase.auth.currentUser?.id else { return }
         isLoading = true

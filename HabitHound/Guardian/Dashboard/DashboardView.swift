@@ -30,62 +30,44 @@ struct DashboardView: View {
                 }
 
                 // MARK: Achievements
-                if !viewModel.badges.isEmpty {
-                    Section {
+                Section {
+                    if viewModel.badges.isEmpty {
+                        Text("Log your first session to earn a badge!")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    } else {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                ForEach(viewModel.badges) { badge in
+                                ForEach(viewModel.recentBadges) { badge in
                                     BadgeChipView(badge: badge)
                                 }
                             }
                             .padding(.vertical, 6)
                         }
                         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-                    } header: {
-                        HStack {
-                            Text("Achievements")
-                            Spacer()
-                            Button("See All") { showAchievements = true }
-                                .font(.caption)
-                        }
+                    }
+                } header: {
+                    HStack {
+                        Text("Achievements")
+                        Spacer()
+                        Button("See All") { showAchievements = true }
+                            .font(.caption)
                     }
                 }
 
-                // MARK: Recent Sessions
-                Section("Recent Sessions") {
-                    if viewModel.isLoading && viewModel.records.isEmpty {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .listRowBackground(Color.clear)
-                    } else if viewModel.records.isEmpty {
-                        Text("No sessions yet — tap Log to get started.")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    } else {
-                        ForEach(viewModel.records) { record in
-                            NavigationLink(value: record) {
-                                DashboardSessionRow(
-                                    record: record,
-                                    petName: viewModel.petName(for: record.petId)
-                                )
-                            }
-                        }
-                        .onDelete { offsets in
-                            Task {
-                                for i in offsets {
-                                    await viewModel.recordViewModel.deleteRecord(viewModel.records[i])
-                                }
-                            }
-                        }
-                    }
+                // MARK: From Your Trainer (Phase 8)
+                Section("From Your Trainer") {
+                    Text("Nothing from your trainer yet.")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
                 }
-            }
-            .navigationDestination(for: TrainingRecord.self) { record in
-                TrainingRecordDetailView(
-                    record: record,
-                    petName: viewModel.petName(for: record.petId),
-                    viewModel: viewModel.recordViewModel
-                )
+
+                // MARK: Your Trainer (Phase 7)
+                Section("Your Trainer") {
+                    Text("No trainer linked yet.")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                }
             }
             .navigationTitle("Home")
             .task { await viewModel.load() }
@@ -130,36 +112,3 @@ private struct BadgeChipView: View {
     }
 }
 
-// MARK: - Session row
-
-private struct DashboardSessionRow: View {
-    let record: TrainingRecord
-    let petName: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            StatusBadgeView(status: record.status, size: 16)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(petName)
-                        .font(.headline)
-                    Text("·")
-                        .foregroundStyle(.secondary)
-                    Text(record.recordedAt.formatted(date: .abbreviated, time: .omitted))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                HStack(spacing: 8) {
-                    Text(record.distance.label)
-                    Text("·")
-                    Text(record.distraction.label)
-                    Text("·")
-                    Text(record.duration.label)
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-}

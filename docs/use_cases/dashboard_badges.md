@@ -66,7 +66,9 @@ sequenceDiagram
 
 ## UC-5.3 View Earned Badges on Home Tab
 
-The Home tab shows a horizontal scroll row of earned badge chips under an "Achievements" section header.  A **See All** button opens `AchievementsView` as a sheet.
+The Home tab Achievements section shows a horizontal scroll row of the **3 most recently earned** badge chips (sorted by `earnedAt` descending, via `DashboardViewModel.recentBadges`). A **See All** button opens `AchievementsView` as a sheet showing the full gallery. If no badges have been earned, the section shows an encouraging empty-state message instead of hiding.
+
+> **Per-pet achievements**: Badges are currently per-user (not per-pet). A future enhancement may group or filter badges by pet for households with multiple pets.
 
 ```mermaid
 sequenceDiagram
@@ -82,8 +84,9 @@ sequenceDiagram
     SVC->>DB: SELECT * FROM badges WHERE user_id = ? ORDER BY earned_at
     DB-->>SVC: [Badge]
     SVC-->>DVM: [Badge]
-    DVM-->>DV: badges: [Badge]
-    DV->>G: Horizontal chip row — icon + short title per earned badge
+    DVM->>DVM: recentBadges — sorts by earnedAt desc, takes prefix(3)
+    DVM-->>DV: recentBadges: [Badge]
+    DV->>G: Horizontal chip row — up to 3 most recent badges
 
     G->>DV: Tap "See All"
     DV->>G: AchievementsView sheet — all 4 badge types, earned coloured with date, locked greyed out
@@ -178,4 +181,17 @@ Pets and badges are fetched concurrently.  Badge failure is swallowed (`try?`) s
 
 ### T-5.7 Empty Achievements section
 1. Sign in as a guardian with no badges earned.
-2. Confirm the Achievements section is **not shown** on the Home tab (section only renders when `!viewModel.badges.isEmpty`).
+2. Confirm the Achievements section **is shown** with the message "Log your first session to earn a badge!" (section is always visible).
+
+---
+
+## Dashboard Layout (as of Phase 5)
+
+| Section | Content | Phase filled |
+|---------|---------|-------------|
+| Streak | Flame icon + day count | Phase 5 ✓ |
+| Achievements | Up to 3 recent badge chips; empty state if none | Phase 5 ✓ |
+| From Your Trainer | Trainer comments on sessions | Phase 8 |
+| Your Trainer | Linked trainer name + contact | Phase 7 |
+
+**Log tab** is a real tab (not a FAB) hosting `TrainingRecordListView` with all sessions and a "+" toolbar button to add a new session. Future phases will add search and filter by pet, date, and status.

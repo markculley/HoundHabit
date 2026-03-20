@@ -58,7 +58,10 @@ HabitHound/
 
 ### Navigation
 
-**Guardian Tabs**: Home · Pets · Log (center) · Resources · Settings
+**Guardian Tabs**: Home · Pets · Log · Resources · Settings
+
+- **Home**: Streak, recent achievements, placeholder cards for trainer info (Phase 7), trainer comments (Phase 8), and training plans (Phase 9)
+- **Log**: Full session list (`TrainingRecordListView`) with "+" toolbar button to add a session. Future: search/filter by pet, date, status
 
 **Trainer Tabs**: Guardians · Plans · Invite · Settings
 
@@ -206,15 +209,15 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 **Files**: `Core/Models/TrainingRecord.swift`, `Core/Services/TrainingRecordService.swift`, `Guardian/TrainingRecords/`
 
 ### Phase 5 — Dashboard & Badges
-- `DashboardViewModel`: streak computation, recent records, badge fetch
+- `DashboardViewModel`: streak computation, badge fetch, `recentBadges` (3 most recent)
 - Postgres FUNCTION + trigger for badge awards on `training_records` INSERT
 - `Core/Models/Badge.swift`
-- `DashboardView`: streak counter, badge scroll row, quick-log button, recent records
+- `DashboardView`: streak counter, recent badge chips (up to 3), placeholder cards for trainer (Phase 7), trainer comments (Phase 8)
 - `AchievementsView`: full badge gallery with locked/earned states
-- `Shared/Components/EmptyStateView.swift`
-- Wire Guardian Tab 1
+- Log tab changed from FAB to real `NavigationStack` hosting `TrainingRecordListView`
+- Session history removed from Home tab — lives in Log tab only
 
-**Files**: `Guardian/Dashboard/`, `Guardian/Achievements/`, `Core/Models/Badge.swift`, Supabase SQL function
+**Files**: `Guardian/Dashboard/`, `Guardian/Achievements/`, `Guardian/GuardianTabView.swift`, `Core/Models/Badge.swift`, Supabase SQL function
 
 ### Phase 6 — Resources (Guardian)
 - `Core/Models/Resource.swift` with `ResourceKind` enum
