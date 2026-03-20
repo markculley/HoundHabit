@@ -25,6 +25,17 @@ make run     # build, install, and launch on simulator
 
 > Requires `Secrets.xcconfig` at the project root (gitignored). Copy from a teammate or the project 1Password vault.
 
+## Badges
+
+Badges are awarded automatically by a Postgres trigger when a guardian logs a session. Each badge can only be earned once.
+
+| Badge | Condition |
+|---|---|
+| 🐾 **First Step** | Logged your first training session |
+| ✅ **Green Light** | Earned your first green (Success) status |
+| 🔥 **Week Warrior** | Trained 7 days in a row |
+| 🏆 **Monthly Master** | Trained 30 days in a row |
+
 ## Implementation Plan
 
 See [`docs/mvp_plan.md`](docs/mvp_plan.md) for the full 12-phase execution plan and database schema.

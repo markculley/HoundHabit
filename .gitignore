@@ -66,3 +66,4 @@ fastlane/test_output
 
 # Secrets — never commit
 Secrets.xcconfig
+.db_url

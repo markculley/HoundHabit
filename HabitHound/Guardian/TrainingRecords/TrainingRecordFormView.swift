@@ -52,7 +52,7 @@ struct TrainingRecordFormView: View {
 
                 // Date & Time
                 Section("Date & Time") {
-                    DatePicker("Session", selection: $recordedAt, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("Session", selection: $recordedAt, displayedComponents: .date)
                         .datePickerStyle(.compact)
                 }
 
@@ -173,6 +173,13 @@ struct TrainingRecordFormView: View {
         isShared       = r.isShared
     }
 
+    /// Normalise to noon local time so the UTC date always matches the user's
+    /// intended calendar date regardless of timezone. A 9 PM session on Mar 18
+    /// (EST) would otherwise be stored as Mar 19 UTC, breaking streak logic.
+    private var normalizedDate: Date {
+        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: recordedAt) ?? recordedAt
+    }
+
     private func save() async {
         guard let petId = selectedPetId,
               let userId = supabase.auth.currentUser?.id else { return }
@@ -183,7 +190,7 @@ struct TrainingRecordFormView: View {
             if let existing = existingRecord {
                 var updated = existing
                 updated.petId       = petId
-                updated.recordedAt  = recordedAt
+                updated.recordedAt  = normalizedDate
                 updated.status      = status
                 updated.distance    = distance
                 updated.distraction = distraction
@@ -195,7 +202,7 @@ struct TrainingRecordFormView: View {
                 record = try await recordService.createRecord(
                     petId: petId,
                     guardianId: userId,
-                    recordedAt: recordedAt,
+                    recordedAt: normalizedDate,
                     status: status,
                     distance: distance,
                     distraction: distraction,

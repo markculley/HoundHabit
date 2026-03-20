@@ -3,20 +3,65 @@ import SwiftUI
 struct DashboardView: View {
     var viewModel: DashboardViewModel
 
+    @State private var showAchievements = false
+
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.isLoading && viewModel.records.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.records.isEmpty {
-                    ContentUnavailableView(
-                        "No Sessions Yet",
-                        systemImage: "list.bullet.clipboard",
-                        description: Text("Tap Log to record your first training session.")
-                    )
-                } else {
-                    List {
+            List {
+                // MARK: Streak
+                Section {
+                    HStack(spacing: 14) {
+                        Image(systemName: "flame.fill")
+                            .font(.title)
+                            .foregroundStyle(viewModel.currentStreak > 0 ? .orange : Color(.tertiaryLabel))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(viewModel.currentStreak == 1
+                                 ? "1-day streak"
+                                 : "\(viewModel.currentStreak)-day streak")
+                                .font(.headline)
+                            Text(viewModel.currentStreak == 0
+                                 ? "Log a session to start your streak!"
+                                 : "Keep it up!")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // MARK: Achievements
+                if !viewModel.badges.isEmpty {
+                    Section {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(viewModel.badges) { badge in
+                                    BadgeChipView(badge: badge)
+                                }
+                            }
+                            .padding(.vertical, 6)
+                        }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                    } header: {
+                        HStack {
+                            Text("Achievements")
+                            Spacer()
+                            Button("See All") { showAchievements = true }
+                                .font(.caption)
+                        }
+                    }
+                }
+
+                // MARK: Recent Sessions
+                Section("Recent Sessions") {
+                    if viewModel.isLoading && viewModel.records.isEmpty {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .listRowBackground(Color.clear)
+                    } else if viewModel.records.isEmpty {
+                        Text("No sessions yet — tap Log to get started.")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    } else {
                         ForEach(viewModel.records) { record in
                             NavigationLink(value: record) {
                                 DashboardSessionRow(
@@ -33,13 +78,20 @@ struct DashboardView: View {
                             }
                         }
                     }
-                    .navigationDestination(for: TrainingRecord.self) { record in
-                        TrainingRecordDetailView(record: record, petName: viewModel.petName(for: record.petId), viewModel: viewModel.recordViewModel)
-                    }
                 }
+            }
+            .navigationDestination(for: TrainingRecord.self) { record in
+                TrainingRecordDetailView(
+                    record: record,
+                    petName: viewModel.petName(for: record.petId),
+                    viewModel: viewModel.recordViewModel
+                )
             }
             .navigationTitle("Home")
             .task { await viewModel.load() }
+            .sheet(isPresented: $showAchievements) {
+                AchievementsView(earnedBadges: viewModel.badges)
+            }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -56,7 +108,29 @@ struct DashboardView: View {
     DashboardView(viewModel: DashboardViewModel())
 }
 
-// MARK: - Row
+// MARK: - Badge chip (horizontal scroll)
+
+private struct BadgeChipView: View {
+    let badge: Badge
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .fill(badge.badgeType.color.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Image(systemName: badge.badgeType.systemImage)
+                    .foregroundStyle(badge.badgeType.color)
+            }
+            Text(badge.badgeType.title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: 60)
+    }
+}
+
+// MARK: - Session row
 
 private struct DashboardSessionRow: View {
     let record: TrainingRecord

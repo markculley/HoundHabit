@@ -30,8 +30,8 @@ struct TrainingRecordDetailView: View {
                         .padding(.vertical, 4)
                     }
 
-                    Section("Date & Time") {
-                        Text(r.recordedAt.formatted(date: .long, time: .shortened))
+                    Section("Date") {
+                        Text(r.recordedAt.formatted(date: .long, time: .omitted))
                     }
 
                     Section("Three D's") {

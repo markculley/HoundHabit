@@ -20,7 +20,7 @@ class AppRouter {
     private func observeAuthChanges() async {
         for await (event, _) in supabase.auth.authStateChanges {
             switch event {
-            case .signedIn, .tokenRefreshed, .userUpdated:
+            case .initialSession, .signedIn, .tokenRefreshed, .userUpdated:
                 await resolveRoute()
             case .signedOut, .userDeleted:
                 await MainActor.run { route = .unauthenticated }

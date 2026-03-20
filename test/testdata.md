@@ -4,7 +4,7 @@
 
 ### Signup
 email: woodchuck@fastmail.com
-pwd: ***
+pwd: ScoobyDoo
 
 ### SignIn
 

@@ -5,10 +5,13 @@ class DashboardViewModel {
     /// Shared with TrainingRecordDetailView so edits/deletes propagate back to the feed.
     var recordViewModel = TrainingRecordViewModel()
     var pets: [Pet] = []
+    var badges: [Badge] = []
+    var currentStreak: Int = 0
     var isLoading = false
     var errorMessage: String?
 
     private let petService = PetService()
+    private let badgeService = BadgeService()
 
     var records: [TrainingRecord] { recordViewModel.records }
 
@@ -18,9 +21,12 @@ class DashboardViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            async let fetchedPets = petService.fetchPets(guardianId: userId)
+            async let fetchedPets   = petService.fetchPets(guardianId: userId)
+            async let fetchedBadges = badgeService.fetchBadges(userId: userId)
             await recordViewModel.loadRecords()
-            pets = try await fetchedPets
+            pets   = try await fetchedPets
+            badges = (try? await fetchedBadges) ?? []
+            currentStreak = computeStreak()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -28,5 +34,38 @@ class DashboardViewModel {
 
     func petName(for petId: UUID) -> String {
         pets.first { $0.id == petId }?.name ?? "Unknown Pet"
+    }
+
+    // MARK: - Streak
+
+    private func computeStreak() -> Int {
+        DashboardViewModel.computeStreak(sessionDates: records.map { $0.recordedAt })
+    }
+
+    /// Pure function — extracted for testability.
+    /// `today` defaults to now; pass a fixed date in tests.
+    static func computeStreak(sessionDates: [Date], today: Date = Date()) -> Int {
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: today)
+
+        // Unique calendar days that have at least one session
+        let sessionDays = Set(sessionDates.map { calendar.startOfDay(for: $0) })
+        guard !sessionDays.isEmpty else { return 0 }
+
+        // Start from today; if no session today, try yesterday
+        var checkDate = todayStart
+        if !sessionDays.contains(todayStart) {
+            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart),
+                  sessionDays.contains(yesterday) else { return 0 }
+            checkDate = yesterday
+        }
+
+        var streak = 0
+        while sessionDays.contains(checkDate) {
+            streak += 1
+            guard let prev = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
+            checkDate = prev
+        }
+        return streak
     }
 }

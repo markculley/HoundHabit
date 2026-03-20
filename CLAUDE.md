@@ -40,6 +40,19 @@ Every SwiftUI view file must include a `#Preview` block at the bottom. Use reali
 }
 ```
 
+### Testing
+
+Tests live in `HabitHoundTests/` and use **Swift Testing** (`import Testing`, `@testable import HabitHound`). Run with `make test`.
+
+When adding new code, also add tests for:
+- **New `Codable` models** — one test per enum, verifying the exact raw string Supabase sends decodes to the correct Swift case. Put in `HabitHoundTests/Models/`.
+- **Pure logic on ViewModels** — any method that computes derived state (streaks, filters, aggregations) without hitting the network. Extract to a `static func` if needed and put tests in `HabitHoundTests/Logic/`.
+
+Skip tests for:
+- SwiftUI views (use `#Preview` instead)
+- Service layer methods (they require a live Supabase connection — defer until Phase 7+)
+- Postgres trigger/badge logic (test via Supabase SQL directly)
+
 ### General
 - Pattern: MVVM + Service Layer (`@Observable` ViewModels, stateless `async throws` Services)
 - No third-party dependencies beyond `supabase-swift` v2.x
