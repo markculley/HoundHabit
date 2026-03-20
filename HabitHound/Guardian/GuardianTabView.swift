@@ -21,9 +21,12 @@ struct GuardianTabView: View {
             .tabItem { Label("Log", systemImage: "list.bullet.clipboard") }
             .tag(2)
 
-            Text("Resources")
-                .tabItem { Label("Resources", systemImage: "folder") }
-                .tag(3)
+            NavigationStack {
+                ResourceListView()
+                    .navigationTitle("Resources")
+            }
+            .tabItem { Label("Resources", systemImage: "folder") }
+            .tag(3)
 
             NavigationStack {
                 SettingsView()

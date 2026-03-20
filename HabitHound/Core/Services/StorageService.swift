@@ -16,4 +16,16 @@ struct StorageService {
         let url = try supabase.storage.from("pet-photos").getPublicURL(path: path)
         return url.absoluteString
     }
+
+    // MARK: - Resource Photos
+
+    /// Uploads image data to the resources bucket and returns the public URL string.
+    func uploadResourcePhoto(data: Data, guardianId: UUID, resourceId: UUID) async throws -> String {
+        let path = "\(guardianId.uuidString.lowercased())/\(resourceId.uuidString.lowercased()).jpg"
+        try await supabase.storage
+            .from("resources")
+            .upload(path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true))
+        let url = try supabase.storage.from("resources").getPublicURL(path: path)
+        return url.absoluteString
+    }
 }

@@ -19,11 +19,36 @@ A pet training tracker that bridges the gap between trainer visits. Guardians lo
 ## Build & Run
 
 ```bash
-make build   # build for simulator
-make run     # build, install, and launch on simulator
+make build            # build for simulator
+make run              # build, install, and launch on simulator
+make emulator         # boot the simulator without building
+make test             # run unit tests
 ```
 
 > Requires `Secrets.xcconfig` at the project root (gitignored). Copy from a teammate or the project 1Password vault.
+
+## Database Utilities
+
+Requires a `.db_url` file at the project root (gitignored) containing your Supabase connection string. Get it from Dashboard → Project Settings → Database → Connection pooling → URI.
+
+```bash
+make sql-last-auth              # show active auth sessions
+make sql-last-sessions          # show last 10 training sessions
+make sql-last-sessions N=25     # show last N training sessions
+make sql-storage                # list all files across storage buckets
+```
+
+SQL scripts live in [`scripts/sql/`](scripts/sql/).
+
+## Storage
+
+User-generated files (pet photos, resource photos) are stored in Supabase Storage buckets. Paths encode the owner's user ID so RLS can enforce access at the storage layer — not just the database layer.
+
+| Bucket | Path | Contents |
+|--------|------|----------|
+| `pet-photos` | `{guardian_id}/{pet_id}/photo.jpg` | Pet profile photos |
+| `resources` | `{guardian_id}/{resource_id}.jpg` | Guardian resource photos |
+| `avatars` | `{user_id}.jpg` | User profile pictures |
 
 ## Badges
 

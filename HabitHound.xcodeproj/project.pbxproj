@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4D2170FC2F6E01FC000CD4D8 /* ResourceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */; };
+		4D2170FD2F6E01FC000CD4D8 /* ResourceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */; };
+		4D2170FE2F6E01FC000CD4D8 /* ResourceFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */; };
+		4D2171012F6E0221000CD4D8 /* PhotoPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */; };
+		4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171002F6E0221000CD4D8 /* SafariView.swift */; };
+		4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171032F6E0654000CD4D8 /* Resource.swift */; };
+		4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171052F6E067B000CD4D8 /* ResourceService.swift */; };
 		AA000000000000000000000A /* HabitHoundApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HabitHoundApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
@@ -58,6 +65,13 @@
 
 /* Begin PBXFileReference section */
 		4D2170E62F6DBBEC000CD4D8 /* HabitHoundTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HabitHoundTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceDetailView.swift; sourceTree = "<group>"; };
+		4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceFormView.swift; sourceTree = "<group>"; };
+		4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceListView.swift; sourceTree = "<group>"; };
+		4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerView.swift; sourceTree = "<group>"; };
+		4D2171002F6E0221000CD4D8 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		4D2171032F6E0654000CD4D8 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
+		4D2171052F6E067B000CD4D8 /* ResourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceService.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* HabitHound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitHound.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HabitHoundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitHoundApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -171,6 +185,7 @@
 		AA0000000000000000000028 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				4D2171052F6E067B000CD4D8 /* ResourceService.swift */,
 				AA0000000000000000000029 /* SupabaseClient.swift */,
 				AA0000000000000000000046 /* AuthService.swift */,
 				AA0000000000000000000055 /* PetService.swift */,
@@ -250,6 +265,7 @@
 		AA0000000000000000000035 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4D2171032F6E0654000CD4D8 /* Resource.swift */,
 				AA0000000000000000000044 /* Profile.swift */,
 				AA0000000000000000000053 /* Pet.swift */,
 				AA0000000000000000000065 /* TrainingRecord.swift */,
@@ -300,6 +316,9 @@
 		AA000000000000000000003A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */,
+				4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */,
+				4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -359,6 +378,8 @@
 		AA0000000000000000000042 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */,
+				4D2171002F6E0221000CD4D8 /* SafariView.swift */,
 				AA0000000000000000000069 /* StatusBadgeView.swift */,
 			);
 			path = Components;
@@ -511,6 +532,9 @@
 				AA0000000000000000000062 /* PetAvatarView.swift in Sources */,
 				AA0000000000000000000064 /* DashboardView.swift in Sources */,
 				AA0000000000000000000066 /* TrainingRecord.swift in Sources */,
+				4D2170FC2F6E01FC000CD4D8 /* ResourceDetailView.swift in Sources */,
+				4D2170FD2F6E01FC000CD4D8 /* ResourceListView.swift in Sources */,
+				4D2170FE2F6E01FC000CD4D8 /* ResourceFormView.swift in Sources */,
 				AA0000000000000000000068 /* TrainingRecordService.swift in Sources */,
 				AA000000000000000000006A /* StatusBadgeView.swift in Sources */,
 				AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */,
@@ -519,10 +543,14 @@
 				AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */,
 				AA0000000000000000000074 /* DashboardViewModel.swift in Sources */,
 				AA0000000000000000000076 /* SettingsView.swift in Sources */,
+				4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */,
 				AA0000000000000000000078 /* AccountView.swift in Sources */,
 				AA000000000000000000007A /* Badge.swift in Sources */,
 				AA000000000000000000007C /* BadgeService.swift in Sources */,
 				AA000000000000000000007E /* AchievementsView.swift in Sources */,
+				4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */,
+				4D2171012F6E0221000CD4D8 /* PhotoPickerView.swift in Sources */,
+				4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

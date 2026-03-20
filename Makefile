@@ -4,7 +4,7 @@ XCODEBUILD = /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild
 SIMCTL = /Applications/Xcode.app/Contents/Developer/usr/bin/simctl
 DB_URL ?= $(shell cat .db_url 2>/dev/null)
 
-.PHONY: emulator test build run sql-last-auth sql-last-sessions
+.PHONY: emulator test build run sql-last-auth sql-last-sessions sql-storage
 
 sql-last-auth:
 	@test -n "$(DB_URL)" || (echo "Error: create a .db_url file containing your Supabase connection string"; exit 1)
@@ -13,6 +13,10 @@ sql-last-auth:
 sql-last-sessions:
 	@test -n "$(DB_URL)" || (echo "Error: create a .db_url file containing your Supabase connection string"; exit 1)
 	psql "$(DB_URL)" -v N=$(or $(N),10) -f scripts/sql/recent_sessions.sql
+
+sql-storage:
+	@test -n "$(DB_URL)" || (echo "Error: create a .db_url file containing your Supabase connection string"; exit 1)
+	psql "$(DB_URL)" -f scripts/sql/storage_objects.sql
 
 emulator:
 	$(SIMCTL) boot $(SIMULATOR_ID) 2>/dev/null || true
