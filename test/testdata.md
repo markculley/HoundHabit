@@ -2,8 +2,12 @@
 
 ## Use cases
 
-### Signup
+### Guardian
 email: woodchuck@fastmail.com
+pwd: ScoobyDoo
+
+### Trainer
+email: woodchuck+1@fastmail.com
 pwd: ScoobyDoo
 
 ### SignIn

@@ -3,12 +3,19 @@ import SwiftUI
 struct SettingsView: View {
     private let authService = AuthService()
     @State private var errorMessage: String?
+    @State private var showEnterCode = false
 
     var body: some View {
         List {
             Section {
                 NavigationLink("Account") {
                     AccountView()
+                }
+            }
+
+            Section("Trainer") {
+                Button("Enter Invite Code") {
+                    showEnterCode = true
                 }
             }
 
@@ -25,6 +32,9 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .sheet(isPresented: $showEnterCode) {
+            EnterInviteCodeView()
+        }
         .alert("Error", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }

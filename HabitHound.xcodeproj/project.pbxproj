@@ -14,6 +14,12 @@
 		4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171002F6E0221000CD4D8 /* SafariView.swift */; };
 		4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171032F6E0654000CD4D8 /* Resource.swift */; };
 		4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171052F6E067B000CD4D8 /* ResourceService.swift */; };
+		4D2171172F705115000CD4D8 /* TrainerGuardianLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */; };
+		4D2171182F705115000CD4D8 /* Invite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171152F705115000CD4D8 /* Invite.swift */; };
+		4D21711A2F705126000CD4D8 /* InviteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171192F705126000CD4D8 /* InviteService.swift */; };
+		4D21711C2F705139000CD4D8 /* InviteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711B2F705139000CD4D8 /* InviteView.swift */; };
+		4D21711E2F705157000CD4D8 /* EnterInviteCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */; };
+		4D2171202F7051A9000CD4D8 /* GuardianListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */; };
 		AA000000000000000000000A /* HabitHoundApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HabitHoundApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
@@ -72,6 +78,12 @@
 		4D2171002F6E0221000CD4D8 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		4D2171032F6E0654000CD4D8 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
 		4D2171052F6E067B000CD4D8 /* ResourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceService.swift; sourceTree = "<group>"; };
+		4D2171152F705115000CD4D8 /* Invite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invite.swift; sourceTree = "<group>"; };
+		4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerGuardianLink.swift; sourceTree = "<group>"; };
+		4D2171192F705126000CD4D8 /* InviteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteService.swift; sourceTree = "<group>"; };
+		4D21711B2F705139000CD4D8 /* InviteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteView.swift; sourceTree = "<group>"; };
+		4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterInviteCodeView.swift; sourceTree = "<group>"; };
+		4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianListView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* HabitHound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitHound.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HabitHoundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitHoundApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -185,6 +197,7 @@
 		AA0000000000000000000028 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				4D2171192F705126000CD4D8 /* InviteService.swift */,
 				4D2171052F6E067B000CD4D8 /* ResourceService.swift */,
 				AA0000000000000000000029 /* SupabaseClient.swift */,
 				AA0000000000000000000046 /* AuthService.swift */,
@@ -265,6 +278,8 @@
 		AA0000000000000000000035 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4D2171152F705115000CD4D8 /* Invite.swift */,
+				4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */,
 				4D2171032F6E0654000CD4D8 /* Resource.swift */,
 				AA0000000000000000000044 /* Profile.swift */,
 				AA0000000000000000000053 /* Pet.swift */,
@@ -341,6 +356,7 @@
 		AA000000000000000000003D /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */,
 				AA0000000000000000000075 /* SettingsView.swift */,
 				AA0000000000000000000077 /* AccountView.swift */,
 			);
@@ -350,6 +366,7 @@
 		AA000000000000000000003E /* Guardians */ = {
 			isa = PBXGroup;
 			children = (
+				4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */,
 			);
 			path = Guardians;
 			sourceTree = "<group>";
@@ -364,6 +381,7 @@
 		AA0000000000000000000040 /* Invites */ = {
 			isa = PBXGroup;
 			children = (
+				4D21711B2F705139000CD4D8 /* InviteView.swift */,
 			);
 			path = Invites;
 			sourceTree = "<group>";
@@ -514,8 +532,10 @@
 				AA000000000000000000000A /* HabitHoundApp.swift in Sources */,
 				AA000000000000000000002A /* SupabaseClient.swift in Sources */,
 				AA000000000000000000002E /* GuardianTabView.swift in Sources */,
+				4D21711C2F705139000CD4D8 /* InviteView.swift in Sources */,
 				AA0000000000000000000031 /* TrainerTabView.swift in Sources */,
 				AA0000000000000000000045 /* Profile.swift in Sources */,
+				4D21711E2F705157000CD4D8 /* EnterInviteCodeView.swift in Sources */,
 				AA0000000000000000000047 /* AuthService.swift in Sources */,
 				AA0000000000000000000049 /* AuthViewModel.swift in Sources */,
 				AA000000000000000000004B /* LoginView.swift in Sources */,
@@ -540,12 +560,16 @@
 				AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */,
 				AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */,
 				AA0000000000000000000070 /* TrainingRecordListView.swift in Sources */,
+				4D2171172F705115000CD4D8 /* TrainerGuardianLink.swift in Sources */,
+				4D2171182F705115000CD4D8 /* Invite.swift in Sources */,
+				4D2171202F7051A9000CD4D8 /* GuardianListView.swift in Sources */,
 				AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */,
 				AA0000000000000000000074 /* DashboardViewModel.swift in Sources */,
 				AA0000000000000000000076 /* SettingsView.swift in Sources */,
 				4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */,
 				AA0000000000000000000078 /* AccountView.swift in Sources */,
 				AA000000000000000000007A /* Badge.swift in Sources */,
+				4D21711A2F705126000CD4D8 /* InviteService.swift in Sources */,
 				AA000000000000000000007C /* BadgeService.swift in Sources */,
 				AA000000000000000000007E /* AchievementsView.swift in Sources */,
 				4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */,
@@ -573,7 +597,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = H2GJCHNLXM;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HabitHoundTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -595,7 +619,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = H2GJCHNLXM;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HabitHoundTests;
@@ -623,7 +647,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HabitHound/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -649,7 +673,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HabitHound/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -43,5 +43,15 @@ struct AuthService {
             .execute()
             .value
     }
+
+    func fetchProfile(id: UUID) async throws -> Profile? {
+        try await supabase
+            .from("profiles")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+    }
 }
 
