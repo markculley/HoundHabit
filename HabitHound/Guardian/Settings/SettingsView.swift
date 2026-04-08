@@ -2,8 +2,10 @@ import SwiftUI
 
 struct SettingsView: View {
     private let authService = AuthService()
+    private let inviteService = InviteService()
     @State private var errorMessage: String?
     @State private var showEnterCode = false
+    @State private var linkedTrainer: LinkedTrainer?
 
     var body: some View {
         List {
@@ -14,8 +16,16 @@ struct SettingsView: View {
             }
 
             Section("Trainer") {
-                Button("Enter Invite Code") {
-                    showEnterCode = true
+                if let trainer = linkedTrainer {
+                    LabeledContent("Linked Trainer",
+                        value: trainer.profile.fullName ?? "Trainer")
+                    Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Button("Enter Invite Code") {
+                        showEnterCode = true
+                    }
                 }
             }
 
@@ -32,6 +42,9 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .task {
+            linkedTrainer = try? await inviteService.fetchLinkedTrainer()
+        }
         .sheet(isPresented: $showEnterCode) {
             EnterInviteCodeView()
         }

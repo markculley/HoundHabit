@@ -73,6 +73,23 @@ class TrainingRecordViewModel {
         }
     }
 
+    // MARK: - Toggle Sharing
+
+    func toggleSharing(_ record: TrainingRecord) async {
+        // Optimistic update — avoids isLoading re-render snapping the swipe closed
+        guard let idx = records.firstIndex(where: { $0.id == record.id }) else { return }
+        records[idx].isShared = !record.isShared
+        var updated = record
+        updated.isShared = !record.isShared
+        do {
+            let saved = try await service.updateRecord(updated)
+            records[idx] = saved
+        } catch {
+            records[idx] = record   // revert on failure
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - Delete
 
     func deleteRecord(_ record: TrainingRecord) async {

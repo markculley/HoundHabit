@@ -62,11 +62,18 @@ struct DashboardView: View {
                         .font(.subheadline)
                 }
 
-                // MARK: Your Trainer (Phase 7)
+                // MARK: Your Trainer
                 Section("Your Trainer") {
-                    Text("No trainer linked yet.")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
+                    if let trainer = viewModel.linkedTrainer {
+                        LabeledContent("Name", value: trainer.profile.fullName ?? "Trainer")
+                        Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("No trainer linked yet.")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
                 }
             }
             .navigationTitle("Home")

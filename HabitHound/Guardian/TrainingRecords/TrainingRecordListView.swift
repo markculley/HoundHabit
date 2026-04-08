@@ -29,6 +29,17 @@ struct TrainingRecordListView: View {
                         NavigationLink(value: record) {
                             TrainingRecordRow(record: record)
                         }
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                Task { await viewModel.toggleSharing(record) }
+                            } label: {
+                                Label(
+                                    record.isShared ? "Unshare" : "Share",
+                                    systemImage: record.isShared ? "person.2.slash" : "person.2.fill"
+                                )
+                            }
+                            .tint(record.isShared ? .gray : .blue)
+                        }
                     }
                     .onDelete { offsets in
                         Task {
@@ -39,7 +50,12 @@ struct TrainingRecordListView: View {
                     }
                 }
                 .navigationDestination(for: TrainingRecord.self) { record in
-                    TrainingRecordDetailView(record: record, petName: petName ?? "Unknown Pet", viewModel: viewModel)
+                    TrainingRecordDetailView(
+                        record: record,
+                        petName: petName ?? "Unknown Pet",
+                        viewModel: viewModel,
+                        selfLoadComments: true
+                    )
                 }
             }
         }

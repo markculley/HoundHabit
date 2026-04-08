@@ -10,8 +10,11 @@ class DashboardViewModel {
     var isLoading = false
     var errorMessage: String?
 
+    var linkedTrainer: LinkedTrainer?
+
     private let petService = PetService()
     private let badgeService = BadgeService()
+    private let inviteService = InviteService()
 
     var records: [TrainingRecord] { recordViewModel.records }
 
@@ -26,11 +29,13 @@ class DashboardViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            async let fetchedPets   = petService.fetchPets(guardianId: userId)
-            async let fetchedBadges = badgeService.fetchBadges(userId: userId)
+            async let fetchedPets    = petService.fetchPets(guardianId: userId)
+            async let fetchedBadges  = badgeService.fetchBadges(userId: userId)
+            async let fetchedTrainer = inviteService.fetchLinkedTrainer()
             await recordViewModel.loadRecords()
-            pets   = try await fetchedPets
-            badges = (try? await fetchedBadges) ?? []
+            pets          = try await fetchedPets
+            badges        = (try? await fetchedBadges) ?? []
+            linkedTrainer = try? await fetchedTrainer
             currentStreak = computeStreak()
         } catch {
             errorMessage = error.localizedDescription

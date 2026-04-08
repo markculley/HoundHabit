@@ -46,7 +46,7 @@ struct GuardianListView: View {
                     }
                 }
                 .navigationDestination(for: LinkedGuardian.self) { guardian in
-                    GuardianStubView(guardian: guardian)
+                    GuardianDetailView(guardian: guardian)
                 }
             }
         }

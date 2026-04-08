@@ -62,6 +62,19 @@ struct InviteService {
 
     // MARK: - Guardian
 
+    /// Returns the active linked trainer for the current guardian, or nil if none.
+    func fetchLinkedTrainer() async throws -> LinkedTrainer? {
+        guard let guardianId = supabase.auth.currentUser?.id else { return nil }
+        let results: [LinkedTrainer] = try await supabase
+            .from("trainer_guardian_links")
+            .select("*, profiles!trainer_guardian_links_trainer_id_fkey(*)")
+            .eq("guardian_id", value: guardianId)
+            .eq("status", value: "active")
+            .execute()
+            .value
+        return results.first
+    }
+
     /// Looks up a pending, non-expired invite by code.
     /// Throws `InviteError.invalidCode`, `.expired`, or `.alreadyUsed` on bad codes.
     func fetchInviteByCode(_ code: String) async throws -> Invite {
@@ -122,6 +135,28 @@ struct InviteService {
     private func generateCode() -> String {
         let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // omit O, 0, I, 1 for readability
         return String((0..<8).map { _ in chars.randomElement()! })
+    }
+}
+
+// MARK: - Linked trainer (join result, guardian's perspective)
+
+struct LinkedTrainer: Identifiable, Decodable, Hashable {
+    static func == (lhs: LinkedTrainer, rhs: LinkedTrainer) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+    let id: UUID           // trainer_guardian_links.id
+    let trainerId: UUID
+    let guardianId: UUID
+    let status: LinkStatus
+    let linkedAt: Date
+    let profile: Profile   // trainer's profile
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case trainerId  = "trainer_id"
+        case guardianId = "guardian_id"
+        case status
+        case linkedAt   = "linked_at"
+        case profile    = "profiles"
     }
 }
 
