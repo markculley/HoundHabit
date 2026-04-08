@@ -114,7 +114,10 @@ struct TrainingPlanService {
     // MARK: - Trainer: Assignments
 
     func assignPlan(planId: UUID, guardianId: UUID, petId: UUID?) async throws -> PlanAssignment {
-        let insert = AssignmentInsert(planId: planId, guardianId: guardianId, petId: petId)
+        guard let trainerId = supabase.auth.currentUser?.id else {
+            throw PlanError.notAuthenticated
+        }
+        let insert = AssignmentInsert(planId: planId, trainerId: trainerId, guardianId: guardianId, petId: petId)
         return try await supabase
             .from("plan_assignments")
             .insert(insert)
@@ -247,11 +250,13 @@ private struct ItemUpdate: Encodable {
 
 private struct AssignmentInsert: Encodable {
     let planId: UUID
+    let trainerId: UUID
     let guardianId: UUID
     let petId: UUID?
 
     enum CodingKeys: String, CodingKey {
         case planId      = "plan_id"
+        case trainerId   = "trainer_id"
         case guardianId  = "guardian_id"
         case petId       = "pet_id"
     }

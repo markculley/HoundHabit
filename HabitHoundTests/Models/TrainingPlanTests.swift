@@ -81,6 +81,7 @@ struct TrainingPlanTests {
         {
             "id": "55555555-5555-5555-5555-555555555555",
             "plan_id": "66666666-6666-6666-6666-666666666666",
+            "trainer_id": "99999999-9999-9999-9999-999999999999",
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": "88888888-8888-8888-8888-888888888888",
             "assigned_at": "2025-03-01T09:00:00Z"
@@ -90,6 +91,7 @@ struct TrainingPlanTests {
         let assignment = try decoder.decode(PlanAssignment.self, from: json)
 
         #expect(assignment.planId == UUID(uuidString: "66666666-6666-6666-6666-666666666666"))
+        #expect(assignment.trainerId == UUID(uuidString: "99999999-9999-9999-9999-999999999999"))
         #expect(assignment.guardianId == UUID(uuidString: "77777777-7777-7777-7777-777777777777"))
         #expect(assignment.petId == UUID(uuidString: "88888888-8888-8888-8888-888888888888"))
     }
@@ -100,6 +102,7 @@ struct TrainingPlanTests {
         {
             "id": "55555555-5555-5555-5555-555555555555",
             "plan_id": "66666666-6666-6666-6666-666666666666",
+            "trainer_id": "99999999-9999-9999-9999-999999999999",
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": null,
             "assigned_at": "2025-03-01T09:00:00Z"

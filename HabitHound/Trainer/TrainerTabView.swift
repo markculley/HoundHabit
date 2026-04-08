@@ -8,8 +8,10 @@ struct TrainerTabView: View {
             }
             .tabItem { Label("Guardians", systemImage: "person.2") }
 
-            Text("Plans")
-                .tabItem { Label("Plans", systemImage: "list.bullet.clipboard") }
+            NavigationStack {
+                TrainerPlanListView()
+            }
+            .tabItem { Label("Plans", systemImage: "list.bullet.clipboard") }
 
             NavigationStack {
                 InviteView()
