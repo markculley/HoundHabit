@@ -23,6 +23,9 @@
 		4D2171212F800001000CD4D8 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171222F800001000CD4D8 /* Comment.swift */; };
 		4D2171232F800002000CD4D8 /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171242F800002000CD4D8 /* CommentService.swift */; };
 		4D2171252F800003000CD4D8 /* GuardianDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171262F800003000CD4D8 /* GuardianDetailView.swift */; };
+		4D349EB02F870ADB00CEC1E3 /* TrainingPlanItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */; };
+		4D349EB12F870ADB00CEC1E3 /* PlanAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */; };
+		4D349EB22F870ADB00CEC1E3 /* TrainingPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */; };
 		AA000000000000000000000A /* HabitHoundApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HabitHoundApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
@@ -90,6 +93,9 @@
 		4D2171222F800001000CD4D8 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 		4D2171242F800002000CD4D8 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
 		4D2171262F800003000CD4D8 /* GuardianDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianDetailView.swift; sourceTree = "<group>"; };
+		4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanAssignment.swift; sourceTree = "<group>"; };
+		4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlan.swift; sourceTree = "<group>"; };
+		4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlanItem.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* HabitHound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitHound.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HabitHoundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitHoundApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -293,6 +299,9 @@
 				AA0000000000000000000053 /* Pet.swift */,
 				AA0000000000000000000065 /* TrainingRecord.swift */,
 				AA0000000000000000000079 /* Badge.swift */,
+				4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */,
+				4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */,
+				4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -572,6 +581,9 @@
 				4D2171172F705115000CD4D8 /* TrainerGuardianLink.swift in Sources */,
 				4D2171182F705115000CD4D8 /* Invite.swift in Sources */,
 				4D2171202F7051A9000CD4D8 /* GuardianListView.swift in Sources */,
+				4D349EB02F870ADB00CEC1E3 /* TrainingPlanItem.swift in Sources */,
+				4D349EB12F870ADB00CEC1E3 /* PlanAssignment.swift in Sources */,
+				4D349EB22F870ADB00CEC1E3 /* TrainingPlan.swift in Sources */,
 				4D2171212F800001000CD4D8 /* Comment.swift in Sources */,
 				4D2171232F800002000CD4D8 /* CommentService.swift in Sources */,
 				4D2171252F800003000CD4D8 /* GuardianDetailView.swift in Sources */,
