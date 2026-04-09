@@ -35,6 +35,9 @@ class AppRouter {
             if let profile = try await authService.currentProfile() {
                 let newRoute: AppRoute = profile.role == .guardian ? .guardian : .trainer
                 await MainActor.run { route = newRoute }
+                if profile.role == .guardian {
+                    Task { await NotificationManager().rescheduleIfNeeded() }
+                }
             } else {
                 await MainActor.run { route = .unauthenticated }
             }

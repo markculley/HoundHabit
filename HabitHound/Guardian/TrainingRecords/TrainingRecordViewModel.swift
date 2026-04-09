@@ -4,10 +4,12 @@ import Supabase
 @Observable
 class TrainingRecordViewModel {
     var records: [TrainingRecord] = []
+    var petNames: [UUID: String] = [:]
     var isLoading = false
     var errorMessage: String?
 
     private let service = TrainingRecordService()
+    private let petService = PetService()
 
     // MARK: - Fetch
 
@@ -17,7 +19,11 @@ class TrainingRecordViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            records = try await service.fetchRecords(guardianId: userId, petId: petId)
+            async let fetchedRecords = service.fetchRecords(guardianId: userId, petId: petId)
+            async let fetchedPets = petService.fetchPets(guardianId: userId)
+            let (r, pets) = try await (fetchedRecords, fetchedPets)
+            records = r
+            petNames = Dictionary(uniqueKeysWithValues: pets.map { ($0.id, $0.name) })
         } catch {
             errorMessage = error.localizedDescription
         }

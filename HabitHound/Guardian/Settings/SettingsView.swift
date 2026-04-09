@@ -13,6 +13,9 @@ struct SettingsView: View {
                 NavigationLink("Account") {
                     AccountView()
                 }
+                NavigationLink("Notifications") {
+                    NotificationSettingsView()
+                }
                 NavigationLink("Resources") {
                     ResourceListView()
                         .navigationTitle("Resources")

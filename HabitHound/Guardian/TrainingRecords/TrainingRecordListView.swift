@@ -52,7 +52,7 @@ struct TrainingRecordListView: View {
                 .navigationDestination(for: TrainingRecord.self) { record in
                     TrainingRecordDetailView(
                         record: record,
-                        petName: petName ?? "Unknown Pet",
+                        petName: petName ?? viewModel.petNames[record.petId] ?? "Unknown Pet",
                         viewModel: viewModel,
                         selfLoadComments: true
                     )

@@ -3,6 +3,9 @@ import SwiftUI
 struct GuardianTabView: View {
     @State private var selectedTab = 0
     @State private var dashboardViewModel = DashboardViewModel()
+    @State private var logPath = NavigationPath()
+    @State private var plansPath = NavigationPath()
+    @State private var settingsPath = NavigationPath()
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -16,20 +19,20 @@ struct GuardianTabView: View {
                 .tabItem { Label("Pets", systemImage: "pawprint") }
                 .tag(1)
 
-            NavigationStack {
+            NavigationStack(path: $logPath) {
                 TrainingRecordListView()
                     .navigationTitle("Sessions")
             }
             .tabItem { Label("Log", systemImage: "list.bullet.clipboard") }
             .tag(2)
 
-            NavigationStack {
+            NavigationStack(path: $plansPath) {
                 GuardianPlanListView()
             }
             .tabItem { Label("Plans", systemImage: "list.bullet.clipboard") }
             .tag(3)
 
-            NavigationStack {
+            NavigationStack(path: $settingsPath) {
                 SettingsView()
             }
             .tabItem { Label("Settings", systemImage: "gearshape") }
@@ -37,6 +40,9 @@ struct GuardianTabView: View {
         }
         .onChange(of: selectedTab) { _, newTab in
             if newTab == 0 { Task { await dashboardViewModel.load() } }
+            logPath = NavigationPath()
+            plansPath = NavigationPath()
+            settingsPath = NavigationPath()
         }
     }
 }

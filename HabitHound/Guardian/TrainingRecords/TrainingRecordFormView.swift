@@ -25,6 +25,8 @@ struct TrainingRecordFormView: View {
 
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var timerViewModel = TimerViewModel()
+    @State private var timerExpanded = false
 
     private let petService = PetService()
     private let recordService = TrainingRecordService()
@@ -112,6 +114,27 @@ struct TrainingRecordFormView: View {
                     }
                 }
 
+                // Training Timer
+                Section {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { timerExpanded.toggle() }
+                    } label: {
+                        HStack {
+                            Label("Training Timer", systemImage: "timer")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: timerExpanded ? "chevron.up" : "chevron.down")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+
+                    if timerExpanded {
+                        TimerView(viewModel: timerViewModel)
+                    }
+                }
+
                 // Notes
                 Section("Notes") {
                     TextField("Optional notes…", text: $notes, axis: .vertical)
@@ -138,6 +161,7 @@ struct TrainingRecordFormView: View {
             }
             .disabled(isSaving)
             .overlay { if isSaving { ProgressView() } }
+            .onDisappear { timerViewModel.reset() }
             .alert("Error", isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { if !$0 { errorMessage = nil } }
@@ -212,6 +236,7 @@ struct TrainingRecordFormView: View {
                 )
             }
             onSave?(record)
+            HapticManager.light()
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

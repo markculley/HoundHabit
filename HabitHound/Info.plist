@@ -22,6 +22,8 @@
     <string>$(SUPABASE_URL)</string>
     <key>SupabaseAnonKey</key>
     <string>$(SUPABASE_ANON_KEY)</string>
+    <key>NSUserNotificationUsageDescription</key>
+    <string>HabitHound uses notifications to remind you to train your pet each day.</string>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UILaunchScreen</key>
