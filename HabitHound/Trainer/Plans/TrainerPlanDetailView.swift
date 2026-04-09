@@ -130,7 +130,10 @@ struct TrainerPlanDetailView: View {
             }
         }
         .sheet(isPresented: $showAssignSheet) {
-            AssignPlanSheet(plan: plan) {
+            AssignPlanSheet(
+                plan: plan,
+                existingAssignments: viewModel.assignments[plan.id] ?? []
+            ) {
                 Task { await viewModel.loadAssignments(for: plan.id) }
             }
         }

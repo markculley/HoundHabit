@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AssignPlanSheet: View {
     let plan: TrainingPlan
+    let existingAssignments: [PlanAssignment]
     let onAssign: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -56,14 +57,16 @@ struct AssignPlanSheet: View {
                     Button("Assign") {
                         Task {
                             await viewModel.assign(plan: plan)
-                            onAssign()
-                            dismiss()
+                            if viewModel.errorMessage == nil {
+                                onAssign()
+                                dismiss()
+                            }
                         }
                     }
                     .disabled(viewModel.selectedGuardian == nil || viewModel.isAssigning)
                 }
             }
-            .task { await viewModel.loadGuardians() }
+            .task { await viewModel.loadGuardians(excluding: existingAssignments.map(\.guardianId)) }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -91,9 +94,10 @@ private class AssignSheetViewModel {
     private let petService = PetService()
     private let planService = TrainingPlanService()
 
-    func loadGuardians() async {
+    func loadGuardians(excluding assignedGuardianIds: [UUID]) async {
         do {
-            guardians = try await inviteService.fetchLinkedGuardians()
+            let all = try await inviteService.fetchLinkedGuardians()
+            guardians = all.filter { !assignedGuardianIds.contains($0.guardianId) }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -137,6 +141,7 @@ private class AssignSheetViewModel {
             title: "Basic Recall", description: nil,
             createdAt: Date(), updatedAt: Date()
         ),
+        existingAssignments: [],
         onAssign: {}
     )
 }
