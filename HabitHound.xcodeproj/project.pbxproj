@@ -33,6 +33,9 @@
 		4D349ECE2F870FC200CEC1E3 /* AssignPlanSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC52F870FC200CEC1E3 /* AssignPlanSheet.swift */; };
 		4D349ECF2F870FC200CEC1E3 /* TrainerPlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC62F870FC200CEC1E3 /* TrainerPlanDetailView.swift */; };
 		4D349ED02F870FC200CEC1E3 /* TrainerPlanFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC72F870FC200CEC1E3 /* TrainerPlanFormView.swift */; };
+		4D349ED42F87F78600CEC1E3 /* GuardianPlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */; };
+		4D349ED52F87F78600CEC1E3 /* GuardianPlanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */; };
+		4D349ED62F87F78600CEC1E3 /* GuardianPlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */; };
 		AA000000000000000000000A /* HabitHoundApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HabitHoundApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
@@ -110,6 +113,9 @@
 		4D349EC82F870FC200CEC1E3 /* TrainerPlanItemFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanItemFormView.swift; sourceTree = "<group>"; };
 		4D349EC92F870FC200CEC1E3 /* TrainerPlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanListView.swift; sourceTree = "<group>"; };
 		4D349ECA2F870FC200CEC1E3 /* TrainerPlanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanViewModel.swift; sourceTree = "<group>"; };
+		4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanDetailView.swift; sourceTree = "<group>"; };
+		4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanListView.swift; sourceTree = "<group>"; };
+		4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanViewModel.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* HabitHound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitHound.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HabitHoundApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitHoundApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -373,6 +379,9 @@
 		AA000000000000000000003B /* Plans */ = {
 			isa = PBXGroup;
 			children = (
+				4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */,
+				4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */,
+				4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */,
 			);
 			path = Plans;
 			sourceTree = "<group>";
@@ -578,6 +587,9 @@
 				4D349ECB2F870FC200CEC1E3 /* TrainerPlanViewModel.swift in Sources */,
 				4D349ECC2F870FC200CEC1E3 /* TrainerPlanItemFormView.swift in Sources */,
 				4D349ECD2F870FC200CEC1E3 /* TrainerPlanListView.swift in Sources */,
+				4D349ED42F87F78600CEC1E3 /* GuardianPlanListView.swift in Sources */,
+				4D349ED52F87F78600CEC1E3 /* GuardianPlanViewModel.swift in Sources */,
+				4D349ED62F87F78600CEC1E3 /* GuardianPlanDetailView.swift in Sources */,
 				4D349ECE2F870FC200CEC1E3 /* AssignPlanSheet.swift in Sources */,
 				4D349ECF2F870FC200CEC1E3 /* TrainerPlanDetailView.swift in Sources */,
 				4D349ED02F870FC200CEC1E3 /* TrainerPlanFormView.swift in Sources */,

@@ -22,10 +22,9 @@ struct GuardianTabView: View {
             .tag(2)
 
             NavigationStack {
-                ResourceListView()
-                    .navigationTitle("Resources")
+                GuardianPlanListView()
             }
-            .tabItem { Label("Resources", systemImage: "folder") }
+            .tabItem { Label("Plans", systemImage: "list.bullet.clipboard") }
             .tag(3)
 
             NavigationStack {

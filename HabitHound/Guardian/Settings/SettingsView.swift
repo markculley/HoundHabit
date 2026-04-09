@@ -13,6 +13,10 @@ struct SettingsView: View {
                 NavigationLink("Account") {
                     AccountView()
                 }
+                NavigationLink("Resources") {
+                    ResourceListView()
+                        .navigationTitle("Resources")
+                }
             }
 
             Section("Trainer") {
