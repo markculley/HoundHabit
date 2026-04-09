@@ -11,10 +11,12 @@ class DashboardViewModel {
     var errorMessage: String?
 
     var linkedTrainer: LinkedTrainer?
+    var planCount: Int = 0
 
     private let petService = PetService()
     private let badgeService = BadgeService()
     private let inviteService = InviteService()
+    private let planService = TrainingPlanService()
 
     var records: [TrainingRecord] { recordViewModel.records }
 
@@ -32,10 +34,12 @@ class DashboardViewModel {
             async let fetchedPets    = petService.fetchPets(guardianId: userId)
             async let fetchedBadges  = badgeService.fetchBadges(userId: userId)
             async let fetchedTrainer = inviteService.fetchLinkedTrainer()
+            async let fetchedPlans   = planService.fetchAssignedPlans()
             await recordViewModel.loadRecords()
             pets          = try await fetchedPets
             badges        = (try? await fetchedBadges) ?? []
             linkedTrainer = try? await fetchedTrainer
+            planCount     = (try? await fetchedPlans)?.count ?? 0
             currentStreak = computeStreak()
         } catch {
             errorMessage = error.localizedDescription

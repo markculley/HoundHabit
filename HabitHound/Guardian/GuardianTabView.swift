@@ -6,7 +6,9 @@ struct GuardianTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            DashboardView(viewModel: dashboardViewModel)
+            DashboardView(viewModel: dashboardViewModel, switchToPlansTab: {
+                selectedTab = 3
+            })
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(0)
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     var viewModel: DashboardViewModel
+    var switchToPlansTab: (() -> Void)? = nil
 
     @State private var showAchievements = false
 
@@ -55,11 +56,22 @@ struct DashboardView: View {
                     }
                 }
 
-                // MARK: From Your Trainer (Phase 8)
-                Section("From Your Trainer") {
-                    Text("Nothing from your trainer yet.")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
+                // MARK: Training Plans
+                Section("Training Plans") {
+                    if viewModel.planCount == 0 {
+                        Text("No plans assigned yet.")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    } else {
+                        Button {
+                            switchToPlansTab?()
+                        } label: {
+                            Label(
+                                "\(viewModel.planCount) plan\(viewModel.planCount == 1 ? "" : "s") assigned",
+                                systemImage: "list.bullet.clipboard"
+                            )
+                        }
+                    }
                 }
 
                 // MARK: Your Trainer
