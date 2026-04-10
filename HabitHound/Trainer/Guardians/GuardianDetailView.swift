@@ -72,6 +72,7 @@ class GuardianViewModel {
 struct GuardianDetailView: View {
     let guardian: LinkedGuardian
     @State private var viewModel = GuardianViewModel()
+    @State private var showAddResource = false
 
     var body: some View {
         Group {
@@ -141,6 +142,18 @@ struct GuardianDetailView: View {
         }
         .navigationTitle(guardian.profile.fullName ?? "Guardian")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showAddResource = true
+                } label: {
+                    Label("Add Resource", systemImage: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddResource) {
+            TrainerAddResourceView(guardian: guardian)
+        }
         .onAppear { Task { await viewModel.load(guardian: guardian) } }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },

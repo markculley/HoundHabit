@@ -40,6 +40,34 @@ struct ResourceService {
             .value
     }
 
+    func createResourceForGuardian(
+        id: UUID = UUID(),
+        guardianId: UUID,
+        addedById: UUID,
+        kind: ResourceKind,
+        title: String,
+        url: String?,
+        body: String?
+    ) async throws -> Resource {
+        let insert = ResourceInsert(
+            id: id,
+            ownerId: guardianId,
+            addedById: addedById,
+            guardianId: guardianId,
+            kind: kind,
+            url: url,
+            body: body,
+            title: title
+        )
+        return try await supabase
+            .from("resources")
+            .insert(insert)
+            .select()
+            .single()
+            .execute()
+            .value
+    }
+
     func deleteResource(id: UUID) async throws {
         try await supabase
             .from("resources")
