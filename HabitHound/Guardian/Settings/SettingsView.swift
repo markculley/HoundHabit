@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    var isTrainer: Bool = false
+
     private let authService = AuthService()
     private let inviteService = InviteService()
     @State private var errorMessage: String?
@@ -16,22 +18,26 @@ struct SettingsView: View {
                 NavigationLink("Notifications") {
                     NotificationSettingsView()
                 }
-                NavigationLink("Resources") {
-                    ResourceListView()
-                        .navigationTitle("Resources")
+                if !isTrainer {
+                    NavigationLink("Resources") {
+                        ResourceListView()
+                            .navigationTitle("Resources")
+                    }
                 }
             }
 
-            Section("Trainer") {
-                if let trainer = linkedTrainer {
-                    LabeledContent("Linked Trainer",
-                        value: trainer.profile.fullName ?? "Trainer")
-                    Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Button("Enter Invite Code") {
-                        showEnterCode = true
+            if !isTrainer {
+                Section("Trainer") {
+                    if let trainer = linkedTrainer {
+                        LabeledContent("Linked Trainer",
+                            value: trainer.profile.fullName ?? "Trainer")
+                        Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Button("Enter Invite Code") {
+                            showEnterCode = true
+                        }
                     }
                 }
             }
@@ -50,7 +56,9 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .task {
-            linkedTrainer = try? await inviteService.fetchLinkedTrainer()
+            if !isTrainer {
+                linkedTrainer = try? await inviteService.fetchLinkedTrainer()
+            }
         }
         .sheet(isPresented: $showEnterCode) {
             EnterInviteCodeView()

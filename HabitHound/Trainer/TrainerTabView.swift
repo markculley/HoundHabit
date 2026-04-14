@@ -19,7 +19,7 @@ struct TrainerTabView: View {
             .tabItem { Label("Invite", systemImage: "envelope") }
 
             NavigationStack {
-                SettingsView()
+                SettingsView(isTrainer: true)
             }
             .tabItem { Label("Settings", systemImage: "gearshape") }
         }

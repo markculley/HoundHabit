@@ -1,5 +1,20 @@
 import Foundation
 
+enum PlanProgress {
+    case todo
+    case inProgress
+    case done
+
+    var label: String {
+        switch self {
+        case .todo:       return "To Do"
+        case .inProgress: return "In Progress"
+        case .done:       return "Done"
+        }
+    }
+}
+
+@MainActor
 @Observable
 class GuardianPlanViewModel {
     var assignedPlans: [AssignedPlan] = []
@@ -18,6 +33,24 @@ class GuardianPlanViewModel {
         defer { isLoading = false }
         do {
             assignedPlans = try await service.fetchAssignedPlans()
+            // Fetch items for all plans concurrently, collect results, then apply in one write.
+            let fetched: [(UUID, [TrainingPlanItem])] = await withTaskGroup(
+                of: (UUID, [TrainingPlanItem]).self
+            ) { group in
+                for ap in assignedPlans {
+                    let planId = ap.plan.id
+                    group.addTask {
+                        let result = try? await TrainingPlanService().fetchAssignedPlanItems(planId: planId)
+                        return (planId, result ?? [])
+                    }
+                }
+                var collected: [(UUID, [TrainingPlanItem])] = []
+                for await pair in group { collected.append(pair) }
+                return collected
+            }
+            for (planId, planItems) in fetched {
+                items[planId] = planItems
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -29,6 +62,15 @@ class GuardianPlanViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Plan Progress
+
+    func planProgress(for assignedPlan: AssignedPlan) -> PlanProgress {
+        guard let currentId = assignedPlan.assignment.currentItemId else { return .todo }
+        let sorted = (items[assignedPlan.plan.id] ?? []).sorted { $0.sortOrder < $1.sortOrder }
+        guard let lastItem = sorted.last else { return .inProgress }
+        return currentId == lastItem.id ? .done : .inProgress
     }
 
     // MARK: - Current Step

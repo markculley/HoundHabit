@@ -5,6 +5,8 @@ struct GuardianPlanDetailView: View {
     let viewModel: GuardianPlanViewModel
 
     @State private var showPracticeSheet = false
+    @State private var showStepInfoSheet = false
+    @State private var selectedInfoItem: TrainingPlanItem? = nil
     @State private var showAdvancementAlert = false
 
     private var items: [TrainingPlanItem] {
@@ -38,46 +40,29 @@ struct GuardianPlanDetailView: View {
                 } else {
                     ForEach(items) { item in
                         let isCurrent = item.id == currentItem?.id
-                        StepRow(item: item, isCurrent: isCurrent)
-                    }
-                }
-            }
-
-            // Practice current step
-            if let current = currentItem {
-                Section {
-                    Button {
-                        showPracticeSheet = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.green)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Practice Step \(current.sortOrder + 1)")
-                                    .font(.headline)
-                                Text(current.title)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                        Button {
+                            if isCurrent {
+                                showPracticeSheet = true
+                            } else {
+                                selectedInfoItem = item
+                                showStepInfoSheet = true
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
+                        } label: {
+                            StepRow(item: item, isCurrent: isCurrent)
                         }
-                        .padding(.vertical, 4)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
         .navigationTitle(assignedPlan.plan.title)
         .navigationBarTitleDisplayMode(.large)
         .task { await viewModel.loadItems(for: assignedPlan.plan.id) }
+        // Practice sheet — current step
         .sheet(isPresented: $showPracticeSheet) {
             if let current = currentItem {
                 TrainingRecordFormView(
-                    preselectedPetId: assignedPlan.assignment.petId,
+                    lockedPetId: assignedPlan.assignment.petId,
                     planItem: current
                 ) { savedRecord in
                     Task {
@@ -89,6 +74,12 @@ struct GuardianPlanDetailView: View {
                         showAdvancementAlert = true
                     }
                 }
+            }
+        }
+        // Info sheet — non-current steps
+        .sheet(isPresented: $showStepInfoSheet) {
+            if let item = selectedInfoItem {
+                StepInfoSheet(item: item)
             }
         }
         .alert("Session Logged", isPresented: $showAdvancementAlert) {
@@ -125,15 +116,49 @@ private struct StepRow: View {
                     StepTag(item.distraction.label)
                 }
             }
-            if isCurrent {
-                Spacer()
-                Image(systemName: "arrow.right.circle.fill")
-                    .foregroundStyle(.green.opacity(0.7))
-            }
+            Spacer()
+            Image(systemName: isCurrent ? "play.circle.fill" : "info.circle")
+                .foregroundStyle(isCurrent ? .green : .secondary.opacity(0.5))
         }
         .padding(.vertical, 2)
     }
 }
+
+// MARK: - StepInfoSheet
+
+private struct StepInfoSheet: View {
+    let item: TrainingPlanItem
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    LabeledContent("Distance",    value: item.distance.label)
+                    LabeledContent("Duration",    value: item.duration.label)
+                    LabeledContent("Distraction", value: item.distraction.label)
+                } header: {
+                    Text("Three D's")
+                }
+
+                Section {
+                    Text("This isn't your current step yet. Complete your current step to progress here.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Step \(item.sortOrder + 1): \(item.title)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - StepTag
 
 private struct StepTag: View {
     let label: String

@@ -18,10 +18,14 @@ struct GuardianPlanListView: View {
                 List {
                     ForEach(viewModel.assignedPlans) { assignedPlan in
                         NavigationLink(value: assignedPlan) {
-                            AssignedPlanRow(assignedPlan: assignedPlan)
+                            AssignedPlanRow(
+                                assignedPlan: assignedPlan,
+                                progress: viewModel.planProgress(for: assignedPlan)
+                            )
                         }
                     }
                 }
+                .refreshable { await viewModel.load() }
                 .navigationDestination(for: AssignedPlan.self) { assignedPlan in
                     GuardianPlanDetailView(assignedPlan: assignedPlan, viewModel: viewModel)
                 }
@@ -44,22 +48,58 @@ struct GuardianPlanListView: View {
 
 private struct AssignedPlanRow: View {
     let assignedPlan: AssignedPlan
+    let progress: PlanProgress
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(assignedPlan.plan.title)
-                .font(.headline)
-            if let description = assignedPlan.plan.description, !description.isEmpty {
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(assignedPlan.plan.title)
+                    .font(.headline)
+                if let description = assignedPlan.plan.description, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Text("Assigned \(assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
-            Text("Assigned \(assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            Spacer()
+            PlanProgressBadge(progress: progress)
         }
         .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Badge
+
+private struct PlanProgressBadge: View {
+    let progress: PlanProgress
+
+    var body: some View {
+        Text(progress.label)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(foregroundColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(backgroundColor, in: Capsule())
+    }
+
+    private var foregroundColor: Color {
+        switch progress {
+        case .todo:       return .secondary
+        case .inProgress: return .orange
+        case .done:       return .green
+        }
+    }
+
+    private var backgroundColor: Color {
+        switch progress {
+        case .todo:       return Color(.systemGray5)
+        case .inProgress: return .orange.opacity(0.15)
+        case .done:       return .green.opacity(0.15)
+        }
     }
 }
 

@@ -140,11 +140,27 @@ For any back office services required assume that AWS will be used.
 
 ## CRUD a Training Plan
 
-- Used by both trainers and guardians
-- User can add up to 5 user-defined properties (Table Columns)
-- For one Guardian
-- For all Guardians
-- TBD
+- Used by trainers
+- A Training Plan contains one or more **Behaviors**
+- A Behavior contains one or more **Steps**
+- Hierarchy: Training Plan → Behavior → Step
+
+### Training Plan Detail (Trainer)
+- Header section shows plan title, description, and "Assigned To" (Guardian name, or an "Assign" button when unassigned)
+- Body lists Behavior names with an "Add Behavior" button
+
+### Behavior
+- Properties: Name, ordered list of Steps
+- When entering a Behavior name, the app suggests these defaults:
+  - Sit, Down, Leave It, Drop It, Stand, Wait/Stay, Walk, Touch, Go to Mat, Recall, Off, Attention
+- Tapping a Behavior in the plan detail opens the Behavior detail view showing its name and Steps
+
+### Step (Training Plan Item)
+- Properties: Title, Three D's (Distance, Duration, Distraction)
+- Three D's have preset options **and** a free-text custom value option:
+  - Distance presets: Arm's Length, 6 ft, 12 ft; + Custom
+  - Duration presets: Instant, 5 Seconds; + Custom
+  - Distraction presets: None, Any; + Custom
 
 ## Attach Training Plan to Pet
 
@@ -192,13 +208,13 @@ For any back office services required assume that AWS will be used.
 
 ## Behavior Record
 
+A Behavior is a child of a Training Plan and a parent of Steps.
+
 **Table Properties**
 
-- Behavior
-    - Enumerated list
-- DateTime
-- Trigger
-- Notes
+- `plan_id` — FK to Training Plan
+- `name` — free text (trainer-entered; app suggests defaults)
+- `sort_order` — display order within the plan
 
 ## Pet Record
 
@@ -236,14 +252,14 @@ For any back office services required assume that AWS will be used.
         - Arm’s length
         - 6 feet
         - 12 feet
-        - 20 feet
-        - 20+ feet
+        - Custom (free text)
     - Distraction - Owner editable
         - None
         - Any
+        - Custom (free text)
     - Duration - Owner editable
-        - instant
+        - Instant
         - 5 seconds
-        - 5+ seconds
+        - Custom (free text)
 - **Notes**
 

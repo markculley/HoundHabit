@@ -3,6 +3,8 @@ import SwiftUI
 struct TrainingRecordFormView: View {
     /// Pre-select a pet (e.g. when opened from PetDetailView).
     var preselectedPetId: UUID? = nil
+    /// When set, locks the pet to this ID — picker is hidden and pet name shown read-only.
+    var lockedPetId: UUID? = nil
     /// Existing record to edit; nil means create.
     var existingRecord: TrainingRecord? = nil
     /// Pet name to show in the nav title when known (edit mode from detail view).
@@ -44,7 +46,10 @@ struct TrainingRecordFormView: View {
             Form {
                 // Pet
                 Section("Pet") {
-                    if pets.isEmpty {
+                    if let lockedId = lockedPetId {
+                        let name = pets.first { $0.id == lockedId }?.name ?? "Loading…"
+                        LabeledContent("Pet", value: name)
+                    } else if pets.isEmpty {
                         Text("No pets yet — add a pet first.")
                             .foregroundStyle(.secondary)
                     } else {
@@ -200,7 +205,7 @@ struct TrainingRecordFormView: View {
         guard let userId = supabase.auth.currentUser?.id else { return }
         pets = (try? await petService.fetchPets(guardianId: userId)) ?? []
         if selectedPetId == nil {
-            selectedPetId = preselectedPetId ?? pets.first?.id
+            selectedPetId = lockedPetId ?? preselectedPetId ?? pets.first?.id
         }
     }
 

@@ -16,10 +16,12 @@ sequenceDiagram
     UI->>UI: sheet presented
     UI->>SVC: fetchPets(guardianId) [.task]
     SVC-->>UI: [Pet] list
-    UI->>G: Show form (pet picker, date, status, 3 D's, notes, share toggle)
+    UI->>G: Show form (pet picker, date, score stepper 0-5, 3 D's, notes, share toggle)
+    note over UI,G: status is derived from score — no manual picker
 
     G->>UI: Select pet, fill fields, tap "Log"
-    UI->>SVC: createRecord(petId, guardianId, recordedAt, status, distance, distraction, duration, notes, isShared)
+    UI->>SVC: createRecord(petId, guardianId, recordedAt, score, distance, distraction, duration, notes, isShared)
+    note over UI,SVC: service derives status = TrainingStatus.from(score:) internally
     SVC->>DB: INSERT INTO training_records ... RETURNING *
     DB-->>SVC: TrainingRecord (with id, created_at, updated_at)
     SVC-->>UI: TrainingRecord
@@ -51,7 +53,7 @@ sequenceDiagram
     SVC->>DB: SELECT * FROM pets WHERE guardian_id = ?
     DB-->>DVM: [TrainingRecord], [Pet]
     DVM-->>DV: records + petName(for:) helper
-    DV->>G: Feed rows: status badge · pet name · date · Three D's
+    DV->>G: Feed rows: status badge (derived from score) · pet name · date · Three D's
 
     note over DV,DB: Per-pet view uses TrainingRecordListView with petId filter (unchanged)
 ```
@@ -72,7 +74,7 @@ sequenceDiagram
     participant DB as Supabase (training_records)
 
     G->>DV: Tap session row (NavigationLink)
-    DV->>G: Show detail (status, date, 3 D's, notes, shared)
+    DV->>G: Show detail (score, derived status, date, 3 D's, notes, shared)
     G->>DV: Tap Edit
     DV->>FV: sheet(existingRecord: r)
     FV->>FV: populateIfEditing() — fills form fields
@@ -121,10 +123,12 @@ sequenceDiagram
 1. Build and run the app.
 2. Tap the **Log** tab (centre, plus icon) — the Log Session sheet should appear.
 3. Confirm the pet picker is populated with your existing pets.
-4. Select a pet, leave the date as now, pick a status (e.g. Green), set distance / distraction / duration.
-5. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form.
-6. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of the **Home** tab feed (no tab-switching required).
-7. In Supabase → Table Editor → `training_records`: confirm a new row appears with the correct `pet_id`, `guardian_id`, and field values.
+4. Select a pet, leave the date as now. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status (coloured circle + label) should update live as you adjust the score.
+5. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
+6. Set distance / distraction / duration.
+7. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form.
+8. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of the **Home** tab feed (no tab-switching required).
+9. In Supabase → Table Editor → `training_records`: confirm a new row appears with the correct `pet_id`, `guardian_id`, `score`, and `status` (derived) field values. `plan_item_id` should be `null` for a standalone session.
 
 ### T-4.2 View sessions — Home tab (all pets)
 1. Go to the **Home** tab.
@@ -145,9 +149,9 @@ sequenceDiagram
 ### T-4.4 Edit a session
 1. Tap a session row to open the detail view.
 2. Confirm all fields display correctly.
-3. Tap **Edit** — the Edit Session sheet should appear with all fields pre-populated.
-4. Change the status (e.g. Green → Yellow) and tap **Save**.
-5. Confirm the detail view reflects the updated status immediately (no reload required).
+3. Tap **Edit** — the Edit Session sheet should appear with all fields pre-populated, including the score stepper.
+4. Change the score (e.g. 5 → 3) and tap **Save** — the derived status should update (Green → Yellow).
+5. Confirm the detail view reflects the updated score and status immediately (no reload required).
 6. Confirm the Supabase row is updated.
 
 ### T-4.5 Delete from detail view
