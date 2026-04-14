@@ -117,15 +117,17 @@ struct TrainerPlanDetailView: View {
             }
         }
         .sheet(isPresented: $showAddItemSheet) {
-            TrainerPlanItemFormView(mode: .add) { title, description in
-                Task { await viewModel.addItem(to: plan.id, title: title, description: description) }
+            TrainerPlanItemFormView(mode: .add) { title, distance, duration, distraction in
+                Task { await viewModel.addItem(to: plan.id, title: title, distance: distance, duration: duration, distraction: distraction) }
             }
         }
         .sheet(item: $itemToEdit) { item in
-            TrainerPlanItemFormView(mode: .edit(item)) { title, description in
+            TrainerPlanItemFormView(mode: .edit(item)) { title, distance, duration, distraction in
                 var updated = item
-                updated.title = title
-                updated.description = description
+                updated.title       = title
+                updated.distance    = distance
+                updated.duration    = duration
+                updated.distraction = distraction
                 Task { await viewModel.updateItem(updated) }
             }
         }
@@ -158,7 +160,7 @@ private struct PlanItemRow: View {
             Image(systemName: "line.3.horizontal")
                 .foregroundStyle(.tertiary)
                 .frame(width: 20)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text("\(item.sortOrder + 1).")
                         .font(.caption)
@@ -166,15 +168,28 @@ private struct PlanItemRow: View {
                     Text(item.title)
                         .font(.body)
                 }
-                if let description = item.description, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, 16)
+                HStack(spacing: 8) {
+                    ThreeDTag(item.distance.label)
+                    ThreeDTag(item.duration.label)
+                    ThreeDTag(item.distraction.label)
                 }
+                .padding(.leading, 16)
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+private struct ThreeDTag: View {
+    let label: String
+    init(_ label: String) { self.label = label }
+    var body: some View {
+        Text(label)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(.secondary.opacity(0.12), in: Capsule())
     }
 }
 

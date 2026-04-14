@@ -274,6 +274,7 @@ private struct PreviewContainer: View {
         recordedAt: Date(), status: .green, distance: .sixFeet,
         distraction: .none, duration: .fiveSeconds,
         notes: "Great focus today!", isShared: true,
+        score: 5, planItemId: nil,
         createdAt: Date(), updatedAt: Date()
     )
     var body: some View {

@@ -21,23 +21,26 @@ struct TrainingRecordService {
         petId: UUID,
         guardianId: UUID,
         recordedAt: Date,
-        status: TrainingStatus,
+        score: Int,
         distance: Distance,
         distraction: Distraction,
         duration: TrainingDuration,
         notes: String?,
-        isShared: Bool
+        isShared: Bool,
+        planItemId: UUID? = nil
     ) async throws -> TrainingRecord {
         let insert = TrainingRecordInsert(
             petId: petId,
             guardianId: guardianId,
             recordedAt: recordedAt,
-            status: status,
+            status: TrainingStatus.from(score: score),
             distance: distance,
             distraction: distraction,
             duration: duration,
             notes: notes,
-            isShared: isShared
+            isShared: isShared,
+            score: score,
+            planItemId: planItemId
         )
         return try await supabase
             .from("training_records")
@@ -51,12 +54,14 @@ struct TrainingRecordService {
     func updateRecord(_ record: TrainingRecord) async throws -> TrainingRecord {
         let update = TrainingRecordUpdate(
             recordedAt: record.recordedAt,
-            status: record.status,
+            status: TrainingStatus.from(score: record.score),
             distance: record.distance,
             distraction: record.distraction,
             duration: record.duration,
             notes: record.notes,
-            isShared: record.isShared
+            isShared: record.isShared,
+            score: record.score,
+            planItemId: record.planItemId
         )
         return try await supabase
             .from("training_records")
@@ -89,6 +94,8 @@ private struct TrainingRecordInsert: Encodable {
     let duration: TrainingDuration
     let notes: String?
     let isShared: Bool
+    let score: Int
+    let planItemId: UUID?
 
     enum CodingKeys: String, CodingKey {
         case petId = "pet_id"
@@ -96,6 +103,8 @@ private struct TrainingRecordInsert: Encodable {
         case recordedAt = "recorded_at"
         case status, distance, distraction, duration, notes
         case isShared = "is_shared"
+        case score
+        case planItemId = "plan_item_id"
     }
 }
 
@@ -107,10 +116,14 @@ private struct TrainingRecordUpdate: Encodable {
     let duration: TrainingDuration
     let notes: String?
     let isShared: Bool
+    let score: Int
+    let planItemId: UUID?
 
     enum CodingKeys: String, CodingKey {
         case recordedAt = "recorded_at"
         case status, distance, distraction, duration, notes
         case isShared = "is_shared"
+        case score
+        case planItemId = "plan_item_id"
     }
 }

@@ -53,15 +53,17 @@ struct TrainingPlanTests {
 
     // MARK: - TrainingPlanItem
 
-    @Test("TrainingPlanItem decodes snake_case keys including sort_order")
+    @Test("TrainingPlanItem decodes snake_case keys including Three D's")
     func trainingPlanItemDecodesSnakeCaseKeys() throws {
         let json = """
         {
             "id": "33333333-3333-3333-3333-333333333333",
             "plan_id": "44444444-4444-4444-4444-444444444444",
             "sort_order": 2,
-            "title": "Step 3: Add distance",
-            "description": "Move 6 feet away before cuing"
+            "title": "Sit at 6 ft",
+            "distance": "6_feet",
+            "duration": "5_seconds",
+            "distraction": "none"
         }
         """.data(using: .utf8)!
 
@@ -70,7 +72,10 @@ struct TrainingPlanTests {
         #expect(item.id == UUID(uuidString: "33333333-3333-3333-3333-333333333333"))
         #expect(item.planId == UUID(uuidString: "44444444-4444-4444-4444-444444444444"))
         #expect(item.sortOrder == 2)
-        #expect(item.title == "Step 3: Add distance")
+        #expect(item.title == "Sit at 6 ft")
+        #expect(item.distance == .sixFeet)
+        #expect(item.duration == .fiveSeconds)
+        #expect(item.distraction == .none)
     }
 
     // MARK: - PlanAssignment
@@ -111,5 +116,41 @@ struct TrainingPlanTests {
 
         let assignment = try decoder.decode(PlanAssignment.self, from: json)
         #expect(assignment.petId == nil)
+    }
+
+    @Test("PlanAssignment decodes current_item_id")
+    func planAssignmentDecodesCurrentItemId() throws {
+        let json = """
+        {
+            "id": "55555555-5555-5555-5555-555555555555",
+            "plan_id": "66666666-6666-6666-6666-666666666666",
+            "trainer_id": "99999999-9999-9999-9999-999999999999",
+            "guardian_id": "77777777-7777-7777-7777-777777777777",
+            "pet_id": null,
+            "assigned_at": "2025-03-01T09:00:00Z",
+            "current_item_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        }
+        """.data(using: .utf8)!
+
+        let assignment = try decoder.decode(PlanAssignment.self, from: json)
+        #expect(assignment.currentItemId == UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
+    }
+
+    @Test("PlanAssignment decodes null current_item_id as nil")
+    func planAssignmentDecodesNullCurrentItemId() throws {
+        let json = """
+        {
+            "id": "55555555-5555-5555-5555-555555555555",
+            "plan_id": "66666666-6666-6666-6666-666666666666",
+            "trainer_id": "99999999-9999-9999-9999-999999999999",
+            "guardian_id": "77777777-7777-7777-7777-777777777777",
+            "pet_id": null,
+            "assigned_at": "2025-03-01T09:00:00Z",
+            "current_item_id": null
+        }
+        """.data(using: .utf8)!
+
+        let assignment = try decoder.decode(PlanAssignment.self, from: json)
+        #expect(assignment.currentItemId == nil)
     }
 }

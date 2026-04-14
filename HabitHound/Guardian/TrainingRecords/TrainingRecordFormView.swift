@@ -7,7 +7,9 @@ struct TrainingRecordFormView: View {
     var existingRecord: TrainingRecord? = nil
     /// Pet name to show in the nav title when known (edit mode from detail view).
     var petName: String? = nil
-    /// Called with the viewModel after a successful save so the caller can refresh.
+    /// When set, this is a plan-linked session: Three D's are locked to the step's values.
+    var planItem: TrainingPlanItem? = nil
+    /// Called with the saved record so the caller can refresh / trigger advancement.
     var onSave: ((TrainingRecord) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
@@ -16,7 +18,7 @@ struct TrainingRecordFormView: View {
     @State private var pets: [Pet] = []
     @State private var selectedPetId: UUID? = nil
     @State private var recordedAt = Date()
-    @State private var status: TrainingStatus = .green
+    @State private var score: Int = 5
     @State private var distance: Distance = .armsLength
     @State private var distraction: Distraction = .none
     @State private var duration: TrainingDuration = .instant
@@ -32,7 +34,10 @@ struct TrainingRecordFormView: View {
     private let recordService = TrainingRecordService()
 
     private var isEditing: Bool { existingRecord != nil }
+    private var isPlanSession: Bool { planItem != nil }
     private var canSave: Bool { selectedPetId != nil && !isSaving }
+
+    private var derivedStatus: TrainingStatus { TrainingStatus.from(score: score) }
 
     var body: some View {
         NavigationStack {
@@ -58,57 +63,56 @@ struct TrainingRecordFormView: View {
                         .datePickerStyle(.compact)
                 }
 
-                // Status
-                Section("Status") {
-                    HStack(spacing: 0) {
-                        ForEach(TrainingStatus.allCases, id: \.self) { s in
-                            Button {
-                                status = s
-                            } label: {
-                                VStack(spacing: 6) {
-                                    Circle()
-                                        .fill(s.color)
-                                        .frame(width: 40, height: 40)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(Color.primary, lineWidth: status == s ? 3 : 0)
-                                                .padding(2)
-                                        )
-                                        .shadow(color: status == s ? s.color.opacity(0.5) : .clear, radius: 6)
-                                    Text(s.shortLabel)
-                                        .font(.caption2)
-                                        .foregroundStyle(status == s ? .primary : .secondary)
-                                }
-                                .frame(maxWidth: .infinity)
+                // Score
+                Section {
+                    Stepper(value: $score, in: 0...5) {
+                        HStack {
+                            Text("\(score) / 5")
+                                .font(.title2.bold())
+                                .monospacedDigit()
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(derivedStatus.color)
+                                    .frame(width: 18, height: 18)
+                                Text(derivedStatus.label)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
-                    .padding(.vertical, 4)
-
-                    Text(status.label)
-                        .font(.subheadline)
+                } header: {
+                    Text("Reps out of 5")
+                } footer: {
+                    Text(scoreFooter)
                         .foregroundStyle(.secondary)
                 }
 
-                // Three D's
+                // Three D's — locked when from a plan step, editable for standalone sessions
                 Section("Three D's") {
-                    VStack(alignment: .leading, spacing: 12) {
-                        LabeledPicker(label: "Distance", selection: $distance) {
-                            ForEach(Distance.allCases, id: \.self) { d in
-                                Text(d.label).tag(d)
+                    if isPlanSession {
+                        // Read-only display
+                        LabeledContent("Distance",    value: distance.label)
+                        LabeledContent("Duration",    value: duration.label)
+                        LabeledContent("Distraction", value: distraction.label)
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            LabeledPicker(label: "Distance", selection: $distance) {
+                                ForEach(Distance.allCases, id: \.self) { d in
+                                    Text(d.label).tag(d)
+                                }
                             }
-                        }
-                        Divider()
-                        LabeledPicker(label: "Distraction", selection: $distraction) {
-                            ForEach(Distraction.allCases, id: \.self) { d in
-                                Text(d.label).tag(d)
+                            Divider()
+                            LabeledPicker(label: "Distraction", selection: $distraction) {
+                                ForEach(Distraction.allCases, id: \.self) { d in
+                                    Text(d.label).tag(d)
+                                }
                             }
-                        }
-                        Divider()
-                        LabeledPicker(label: "Duration", selection: $duration) {
-                            ForEach(TrainingDuration.allCases, id: \.self) { d in
-                                Text(d.label).tag(d)
+                            Divider()
+                            LabeledPicker(label: "Duration", selection: $duration) {
+                                ForEach(TrainingDuration.allCases, id: \.self) { d in
+                                    Text(d.label).tag(d)
+                                }
                             }
                         }
                     }
@@ -146,7 +150,7 @@ struct TrainingRecordFormView: View {
                     Toggle("Share with Trainer", isOn: $isShared)
                 }
             }
-            .navigationTitle(isEditing ? "Edit — \(petName ?? "Session")" : "Log Session")
+            .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -177,6 +181,21 @@ struct TrainingRecordFormView: View {
 
     // MARK: - Helpers
 
+    private var navTitle: String {
+        if isEditing { return "Edit — \(petName ?? "Session")" }
+        if let item = planItem { return "Practice: \(item.title)" }
+        return "Log Session"
+    }
+
+    private var scoreFooter: String {
+        switch score {
+        case 5:    return "Green — ready to advance to the next step."
+        case 3, 4: return "Yellow — keep practicing this step to build confidence."
+        case 2:    return "Orange — stay on this step a bit longer."
+        default:   return "Red — we'll drop back to the previous step."
+        }
+    }
+
     private func loadPets() async {
         guard let userId = supabase.auth.currentUser?.id else { return }
         pets = (try? await petService.fetchPets(guardianId: userId)) ?? []
@@ -186,10 +205,16 @@ struct TrainingRecordFormView: View {
     }
 
     private func populateIfEditing() {
+        if let item = planItem {
+            // Lock Three D's to the plan step
+            distance    = item.distance
+            duration    = item.duration
+            distraction = item.distraction
+        }
         guard let r = existingRecord else { return }
         selectedPetId  = r.petId
         recordedAt     = r.recordedAt
-        status         = r.status
+        score          = r.score
         distance       = r.distance
         distraction    = r.distraction
         duration       = r.duration
@@ -198,8 +223,7 @@ struct TrainingRecordFormView: View {
     }
 
     /// Normalise to noon local time so the UTC date always matches the user's
-    /// intended calendar date regardless of timezone. A 9 PM session on Mar 18
-    /// (EST) would otherwise be stored as Mar 19 UTC, breaking streak logic.
+    /// intended calendar date regardless of timezone.
     private var normalizedDate: Date {
         Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: recordedAt) ?? recordedAt
     }
@@ -215,7 +239,8 @@ struct TrainingRecordFormView: View {
                 var updated = existing
                 updated.petId       = petId
                 updated.recordedAt  = normalizedDate
-                updated.status      = status
+                updated.score       = score
+                updated.status      = derivedStatus
                 updated.distance    = distance
                 updated.distraction = distraction
                 updated.duration    = duration
@@ -227,12 +252,13 @@ struct TrainingRecordFormView: View {
                     petId: petId,
                     guardianId: userId,
                     recordedAt: normalizedDate,
-                    status: status,
+                    score: score,
                     distance: distance,
                     distraction: distraction,
                     duration: duration,
                     notes: notes.isEmpty ? nil : notes,
-                    isShared: isShared
+                    isShared: isShared,
+                    planItemId: planItem?.id
                 )
             }
             onSave?(record)
@@ -246,6 +272,16 @@ struct TrainingRecordFormView: View {
 
 #Preview("New Session") {
     TrainingRecordFormView()
+}
+
+#Preview("Plan Step Session") {
+    TrainingRecordFormView(
+        planItem: TrainingPlanItem(
+            id: UUID(), planId: UUID(), sortOrder: 1,
+            title: "Sit at 6 ft",
+            distance: .sixFeet, duration: .fiveSeconds, distraction: .none
+        )
+    )
 }
 
 // MARK: - LabeledPicker helper

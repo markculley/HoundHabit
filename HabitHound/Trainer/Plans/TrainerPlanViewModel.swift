@@ -71,13 +71,15 @@ class TrainerPlanViewModel {
         }
     }
 
-    func addItem(to planId: UUID, title: String, description: String?) async {
+    func addItem(to planId: UUID, title: String, distance: Distance, duration: TrainingDuration, distraction: Distraction) async {
         let nextOrder = items[planId, default: []].count
         do {
             let item = try await service.createItem(
                 planId: planId,
                 title: title,
-                description: description,
+                distance: distance,
+                duration: duration,
+                distraction: distraction,
                 sortOrder: nextOrder
             )
             items[planId, default: []].append(item)

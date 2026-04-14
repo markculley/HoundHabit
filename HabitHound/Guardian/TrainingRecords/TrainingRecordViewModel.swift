@@ -34,7 +34,7 @@ class TrainingRecordViewModel {
     func createRecord(
         petId: UUID,
         recordedAt: Date,
-        status: TrainingStatus,
+        score: Int,
         distance: Distance,
         distraction: Distraction,
         duration: TrainingDuration,
@@ -50,7 +50,7 @@ class TrainingRecordViewModel {
                 petId: petId,
                 guardianId: userId,
                 recordedAt: recordedAt,
-                status: status,
+                score: score,
                 distance: distance,
                 distraction: distraction,
                 duration: duration,

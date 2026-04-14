@@ -62,8 +62,16 @@ struct TrainingPlanService {
             .value
     }
 
-    func createItem(planId: UUID, title: String, description: String?, sortOrder: Int) async throws -> TrainingPlanItem {
-        let insert = ItemInsert(planId: planId, sortOrder: sortOrder, title: title, description: description)
+    func createItem(
+        planId: UUID,
+        title: String,
+        distance: Distance,
+        duration: TrainingDuration,
+        distraction: Distraction,
+        sortOrder: Int
+    ) async throws -> TrainingPlanItem {
+        let insert = ItemInsert(planId: planId, sortOrder: sortOrder, title: title,
+                                distance: distance, duration: duration, distraction: distraction)
         return try await supabase
             .from("training_plan_items")
             .insert(insert)
@@ -74,7 +82,8 @@ struct TrainingPlanService {
     }
 
     func updateItem(_ item: TrainingPlanItem) async throws -> TrainingPlanItem {
-        let update = ItemUpdate(sortOrder: item.sortOrder, title: item.title, description: item.description)
+        let update = ItemUpdate(sortOrder: item.sortOrder, title: item.title,
+                                distance: item.distance, duration: item.duration, distraction: item.distraction)
         return try await supabase
             .from("training_plan_items")
             .update(update)
@@ -103,7 +112,8 @@ struct TrainingPlanService {
             .eq("plan_id", value: planId)
             .execute()
         let inserts = items.enumerated().map { idx, item in
-            ItemInsert(planId: item.planId, sortOrder: idx, title: item.title, description: item.description)
+            ItemInsert(planId: item.planId, sortOrder: idx, title: item.title,
+                       distance: item.distance, duration: item.duration, distraction: item.distraction)
         }
         try await supabase
             .from("training_plan_items")
@@ -179,13 +189,22 @@ struct TrainingPlanService {
             .execute()
             .value
     }
+
+    func updateCurrentItem(assignmentId: UUID, itemId: UUID) async throws {
+        let update = CurrentItemUpdate(currentItemId: itemId)
+        try await supabase
+            .from("plan_assignments")
+            .update(update)
+            .eq("id", value: assignmentId)
+            .execute()
+    }
 }
 
 // MARK: - AssignedPlan (join result, guardian's perspective)
 
 struct AssignedPlan: Identifiable, Hashable {
     var id: UUID { assignment.id }
-    let assignment: PlanAssignment
+    var assignment: PlanAssignment
     let plan: TrainingPlan
 }
 
@@ -226,25 +245,41 @@ private struct ItemInsert: Encodable {
     let planId: UUID
     let sortOrder: Int
     let title: String
-    let description: String?
+    let distance: Distance
+    let duration: TrainingDuration
+    let distraction: Distraction
 
     enum CodingKeys: String, CodingKey {
         case planId      = "plan_id"
         case sortOrder   = "sort_order"
         case title
-        case description
+        case distance
+        case duration
+        case distraction
     }
 }
 
 private struct ItemUpdate: Encodable {
     let sortOrder: Int
     let title: String
-    let description: String?
+    let distance: Distance
+    let duration: TrainingDuration
+    let distraction: Distraction
 
     enum CodingKeys: String, CodingKey {
         case sortOrder   = "sort_order"
         case title
-        case description
+        case distance
+        case duration
+        case distraction
+    }
+}
+
+private struct CurrentItemUpdate: Encodable {
+    let currentItemId: UUID
+
+    enum CodingKeys: String, CodingKey {
+        case currentItemId = "current_item_id"
     }
 }
 

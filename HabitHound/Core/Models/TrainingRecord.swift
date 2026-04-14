@@ -11,6 +11,8 @@ struct TrainingRecord: Codable, Identifiable, Hashable {
     var duration: TrainingDuration
     var notes: String?
     var isShared: Bool
+    var score: Int
+    var planItemId: UUID?
     let createdAt: Date
     let updatedAt: Date
 
@@ -21,6 +23,8 @@ struct TrainingRecord: Codable, Identifiable, Hashable {
         case recordedAt = "recorded_at"
         case status, distance, distraction, duration, notes
         case isShared = "is_shared"
+        case score
+        case planItemId = "plan_item_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -46,6 +50,17 @@ enum TrainingStatus: String, Codable, CaseIterable {
         case .orange: return "Occasional success"
         case .yellow: return "Halfway there"
         case .green:  return "Success"
+        }
+    }
+
+    // Derives status from a 0–5 rep score (5 reps = one session).
+    // Green (5/5) → advance; Yellow (3–4/5) / Orange (2/5) → stay; Red (0–1/5) → drop back.
+    static func from(score: Int) -> TrainingStatus {
+        switch score {
+        case 5:     return .green
+        case 3, 4:  return .yellow
+        case 2:     return .orange
+        default:    return .red
         }
     }
 
