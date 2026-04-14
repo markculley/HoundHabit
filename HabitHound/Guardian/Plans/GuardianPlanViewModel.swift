@@ -18,7 +18,8 @@ enum PlanProgress {
 @Observable
 class GuardianPlanViewModel {
     var assignedPlans: [AssignedPlan] = []
-    var items: [UUID: [TrainingPlanItem]] = [:]   // keyed by plan.id
+    var items: [UUID: [TrainingPlanItem]] = [:]      // keyed by plan.id
+    var behaviors: [UUID: [Behavior]] = [:]           // keyed by plan.id
     var isLoading = false
     var errorMessage: String?
     var lastAdvancementMessage: String?
@@ -33,23 +34,45 @@ class GuardianPlanViewModel {
         defer { isLoading = false }
         do {
             assignedPlans = try await service.fetchAssignedPlans()
-            // Fetch items for all plans concurrently, collect results, then apply in one write.
-            let fetched: [(UUID, [TrainingPlanItem])] = await withTaskGroup(
-                of: (UUID, [TrainingPlanItem]).self
-            ) { group in
-                for ap in assignedPlans {
+            guard !assignedPlans.isEmpty else { return }
+
+            // Capture before entering task groups (main actor isolation).
+            let plansToFetch = assignedPlans
+
+            typealias ItemPair     = (UUID, [TrainingPlanItem])
+            typealias BehaviorPair = (UUID, [Behavior])
+
+            let fetchedItems: [ItemPair] = await withTaskGroup(of: ItemPair.self) { group in
+                for ap in plansToFetch {
                     let planId = ap.plan.id
                     group.addTask {
                         let result = try? await TrainingPlanService().fetchAssignedPlanItems(planId: planId)
                         return (planId, result ?? [])
                     }
                 }
-                var collected: [(UUID, [TrainingPlanItem])] = []
+                var collected: [ItemPair] = []
                 for await pair in group { collected.append(pair) }
                 return collected
             }
-            for (planId, planItems) in fetched {
+
+            let fetchedBehaviors: [BehaviorPair] = await withTaskGroup(of: BehaviorPair.self) { group in
+                for ap in plansToFetch {
+                    let planId = ap.plan.id
+                    group.addTask {
+                        let result = try? await TrainingPlanService().fetchBehaviors(planId: planId)
+                        return (planId, result ?? [])
+                    }
+                }
+                var collected: [BehaviorPair] = []
+                for await pair in group { collected.append(pair) }
+                return collected
+            }
+
+            for (planId, planItems) in fetchedItems {
                 items[planId] = planItems
+            }
+            for (planId, planBehaviors) in fetchedBehaviors {
+                behaviors[planId] = planBehaviors
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -58,7 +81,10 @@ class GuardianPlanViewModel {
 
     func loadItems(for planId: UUID) async {
         do {
-            items[planId] = try await service.fetchAssignedPlanItems(planId: planId)
+            async let fetchedItems     = service.fetchAssignedPlanItems(planId: planId)
+            async let fetchedBehaviors = service.fetchBehaviors(planId: planId)
+            items[planId]     = try await fetchedItems
+            behaviors[planId] = try await fetchedBehaviors
         } catch {
             errorMessage = error.localizedDescription
         }

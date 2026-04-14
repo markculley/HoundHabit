@@ -9,7 +9,8 @@
       "Bash(xcrun swiftc:*)",
       "Bash(rerun)",
       "Bash(make test:*)",
-      "mcp__plugin_supabase_supabase__list_projects"
+      "mcp__plugin_supabase_supabase__list_projects",
+      "Bash(python3)"
     ],
     "additionalDirectories": [
       "/tmp"

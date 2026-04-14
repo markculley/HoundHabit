@@ -40,6 +40,7 @@ struct TrainingStatusScoreTests {
 
 // MARK: - Step advancement logic
 
+@MainActor
 @Suite("GuardianPlanViewModel step advancement")
 struct StepAdvancementTests {
 
@@ -49,9 +50,10 @@ struct StepAdvancementTests {
     private func makeItems() -> [TrainingPlanItem] {
         (0..<4).map { idx in
             TrainingPlanItem(
-                id: UUID(), planId: planId, sortOrder: idx,
+                id: UUID(), planId: planId, behaviorId: nil, sortOrder: idx,
                 title: "Step \(idx + 1)",
-                distance: .armsLength, duration: .instant, distraction: .none
+                distance: .armsLength, duration: .instant, distraction: .none,
+                distanceCustomValue: nil, durationCustomValue: nil, distractionCustomValue: nil
             )
         }
     }

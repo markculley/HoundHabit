@@ -9,12 +9,28 @@ struct GuardianPlanDetailView: View {
     @State private var selectedInfoItem: TrainingPlanItem? = nil
     @State private var showAdvancementAlert = false
 
-    private var items: [TrainingPlanItem] {
-        (viewModel.items[assignedPlan.plan.id] ?? []).sorted { $0.sortOrder < $1.sortOrder }
+    private var planId: UUID { assignedPlan.plan.id }
+
+    private var allItems: [TrainingPlanItem] {
+        (viewModel.items[planId] ?? []).sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    private var behaviors: [Behavior] {
+        (viewModel.behaviors[planId] ?? []).sorted { $0.sortOrder < $1.sortOrder }
     }
 
     private var currentItem: TrainingPlanItem? {
-        viewModel.currentItem(for: assignedPlan, in: items)
+        viewModel.currentItem(for: assignedPlan, in: allItems)
+    }
+
+    /// Items belonging to a specific behavior, in order.
+    private func items(for behavior: Behavior) -> [TrainingPlanItem] {
+        allItems.filter { $0.behaviorId == behavior.id }
+    }
+
+    /// Items with no behavior assignment (legacy data).
+    private var unboundItems: [TrainingPlanItem] {
+        allItems.filter { $0.behaviorId == nil }
     }
 
     var body: some View {
@@ -33,31 +49,43 @@ struct GuardianPlanDetailView: View {
                     .foregroundStyle(.tertiary)
             }
 
-            // Steps
-            Section("Steps") {
-                if items.isEmpty {
+            if viewModel.items[planId] == nil {
+                // Still loading
+                Section {
                     ProgressView()
-                } else {
-                    ForEach(items) { item in
-                        let isCurrent = item.id == currentItem?.id
-                        Button {
-                            if isCurrent {
-                                showPracticeSheet = true
-                            } else {
-                                selectedInfoItem = item
-                                showStepInfoSheet = true
-                            }
-                        } label: {
-                            StepRow(item: item, isCurrent: isCurrent)
+                }
+            } else if allItems.isEmpty {
+                Section {
+                    Text("No steps have been added to this plan yet.")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                }
+            } else if behaviors.isEmpty {
+                // No behaviors yet — show flat steps list (legacy / pre-behavior plans)
+                Section("Steps") {
+                    stepRows(for: allItems)
+                }
+            } else {
+                // Behaviors as sections
+                ForEach(behaviors) { behavior in
+                    let behaviorItems = items(for: behavior)
+                    if !behaviorItems.isEmpty {
+                        Section(behavior.name) {
+                            stepRows(for: behaviorItems)
                         }
-                        .buttonStyle(.plain)
+                    }
+                }
+                // Unbound items fallback
+                if !unboundItems.isEmpty {
+                    Section("Other Steps") {
+                        stepRows(for: unboundItems)
                     }
                 }
             }
         }
         .navigationTitle(assignedPlan.plan.title)
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.loadItems(for: assignedPlan.plan.id) }
+        .task { await viewModel.loadItems(for: planId) }
         // Practice sheet — current step
         .sheet(isPresented: $showPracticeSheet) {
             if let current = currentItem {
@@ -69,7 +97,7 @@ struct GuardianPlanDetailView: View {
                         await viewModel.advanceCurrentStep(
                             assignedPlan: assignedPlan,
                             score: savedRecord.score,
-                            planItems: items
+                            planItems: allItems
                         )
                         showAdvancementAlert = true
                     }
@@ -86,6 +114,26 @@ struct GuardianPlanDetailView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.lastAdvancementMessage ?? "")
+        }
+    }
+
+    // MARK: - Step rows (shared between flat and grouped layouts)
+
+    @ViewBuilder
+    private func stepRows(for stepItems: [TrainingPlanItem]) -> some View {
+        ForEach(stepItems) { item in
+            let isCurrent = item.id == currentItem?.id
+            Button {
+                if isCurrent {
+                    showPracticeSheet = true
+                } else {
+                    selectedInfoItem = item
+                    showStepInfoSheet = true
+                }
+            } label: {
+                StepRow(item: item, isCurrent: isCurrent)
+            }
+            .buttonStyle(.plain)
         }
     }
 }
@@ -111,9 +159,9 @@ private struct StepRow: View {
                     .font(.body)
                     .foregroundStyle(isCurrent ? .primary : .secondary)
                 HStack(spacing: 6) {
-                    StepTag(item.distance.label)
-                    StepTag(item.duration.label)
-                    StepTag(item.distraction.label)
+                    StepTag(item.distanceLabel)
+                    StepTag(item.durationLabel)
+                    StepTag(item.distractionLabel)
                 }
             }
             Spacer()
@@ -134,9 +182,9 @@ private struct StepInfoSheet: View {
         NavigationStack {
             List {
                 Section {
-                    LabeledContent("Distance",    value: item.distance.label)
-                    LabeledContent("Duration",    value: item.duration.label)
-                    LabeledContent("Distraction", value: item.distraction.label)
+                    LabeledContent("Distance",    value: item.distanceLabel)
+                    LabeledContent("Duration",    value: item.durationLabel)
+                    LabeledContent("Distraction", value: item.distractionLabel)
                 } header: {
                     Text("Three D's")
                 }

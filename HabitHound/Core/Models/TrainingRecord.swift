@@ -9,6 +9,9 @@ struct TrainingRecord: Codable, Identifiable, Hashable {
     var distance: Distance
     var distraction: Distraction
     var duration: TrainingDuration
+    var distanceCustomValue: String?
+    var durationCustomValue: String?
+    var distractionCustomValue: String?
     var notes: String?
     var isShared: Bool
     var score: Int
@@ -18,16 +21,27 @@ struct TrainingRecord: Codable, Identifiable, Hashable {
 
     enum CodingKeys: String, CodingKey {
         case id
-        case petId = "pet_id"
-        case guardianId = "guardian_id"
-        case recordedAt = "recorded_at"
+        case petId          = "pet_id"
+        case guardianId     = "guardian_id"
+        case recordedAt     = "recorded_at"
         case status, distance, distraction, duration, notes
-        case isShared = "is_shared"
+        case distanceCustomValue    = "distance_custom"
+        case durationCustomValue    = "duration_custom"
+        case distractionCustomValue = "distraction_custom"
+        case isShared       = "is_shared"
         case score
-        case planItemId = "plan_item_id"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+        case planItemId     = "plan_item_id"
+        case createdAt      = "created_at"
+        case updatedAt      = "updated_at"
     }
+}
+
+// MARK: - Display labels
+
+extension TrainingRecord {
+    var distanceLabel: String    { distance.displayLabel(customValue: distanceCustomValue) }
+    var durationLabel: String    { duration.displayLabel(customValue: durationCustomValue) }
+    var distractionLabel: String { distraction.displayLabel(customValue: distractionCustomValue) }
 }
 
 // MARK: - Status
@@ -77,11 +91,12 @@ enum TrainingStatus: String, Codable, CaseIterable {
 // MARK: - Three D's
 
 enum Distance: String, Codable, CaseIterable {
-    case armsLength = "arms_length"
-    case sixFeet = "6_feet"
-    case twelveFeet = "12_feet"
-    case twentyFeet = "20_feet"
+    case armsLength     = "arms_length"
+    case sixFeet        = "6_feet"
+    case twelveFeet     = "12_feet"
+    case twentyFeet     = "20_feet"
     case twentyPlusFeet = "20_plus_feet"
+    case custom         = "custom"
 
     var label: String {
         switch self {
@@ -90,31 +105,48 @@ enum Distance: String, Codable, CaseIterable {
         case .twelveFeet:     return "12 ft"
         case .twentyFeet:     return "20 ft"
         case .twentyPlusFeet: return "20+ ft"
+        case .custom:         return "Custom"
         }
+    }
+
+    func displayLabel(customValue: String?) -> String {
+        self == .custom ? (customValue ?? "Custom") : label
     }
 }
 
 enum Distraction: String, Codable, CaseIterable {
     case none, any
+    case custom = "custom"
 
     var label: String {
         switch self {
-        case .none: return "None"
-        case .any:  return "Any"
+        case .none:   return "None"
+        case .any:    return "Any"
+        case .custom: return "Custom"
         }
+    }
+
+    func displayLabel(customValue: String?) -> String {
+        self == .custom ? (customValue ?? "Custom") : label
     }
 }
 
 enum TrainingDuration: String, Codable, CaseIterable {
     case instant
-    case fiveSeconds = "5_seconds"
+    case fiveSeconds    = "5_seconds"
     case fivePlusSeconds = "5_plus_seconds"
+    case custom         = "custom"
 
     var label: String {
         switch self {
         case .instant:         return "Instant"
         case .fiveSeconds:     return "5 sec"
         case .fivePlusSeconds: return "5+ sec"
+        case .custom:          return "Custom"
         }
+    }
+
+    func displayLabel(customValue: String?) -> String {
+        self == .custom ? (customValue ?? "Custom") : label
     }
 }

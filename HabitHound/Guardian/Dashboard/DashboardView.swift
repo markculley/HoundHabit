@@ -90,6 +90,7 @@ struct DashboardView: View {
             }
             .navigationTitle("Home")
             .task { await viewModel.load() }
+            .refreshable { await viewModel.load() }
             .sheet(isPresented: $showAchievements) {
                 AchievementsView(earnedBadges: viewModel.badges)
             }

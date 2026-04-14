@@ -50,6 +50,64 @@ struct TrainingPlanService {
             .execute()
     }
 
+    // MARK: - Trainer: Behaviors
+
+    func fetchBehaviors(planId: UUID) async throws -> [Behavior] {
+        return try await supabase
+            .from("behaviors")
+            .select()
+            .eq("plan_id", value: planId)
+            .order("sort_order", ascending: true)
+            .execute()
+            .value
+    }
+
+    func createBehavior(planId: UUID, name: String, sortOrder: Int) async throws -> Behavior {
+        let insert = BehaviorInsert(planId: planId, name: name, sortOrder: sortOrder)
+        return try await supabase
+            .from("behaviors")
+            .insert(insert)
+            .select()
+            .single()
+            .execute()
+            .value
+    }
+
+    func updateBehavior(_ behavior: Behavior) async throws -> Behavior {
+        let update = BehaviorUpdate(name: behavior.name, sortOrder: behavior.sortOrder)
+        return try await supabase
+            .from("behaviors")
+            .update(update)
+            .eq("id", value: behavior.id)
+            .select()
+            .single()
+            .execute()
+            .value
+    }
+
+    func deleteBehavior(id: UUID) async throws {
+        try await supabase
+            .from("behaviors")
+            .delete()
+            .eq("id", value: id)
+            .execute()
+    }
+
+    /// Persists new sort_order values for behaviors after a drag-reorder.
+    func reorderBehaviors(_ behaviors: [Behavior]) async throws {
+        guard !behaviors.isEmpty else { return }
+        let updates = behaviors.enumerated().map { idx, b in
+            BehaviorReorderUpdate(id: b.id, sortOrder: idx)
+        }
+        for u in updates {
+            try await supabase
+                .from("behaviors")
+                .update(BehaviorUpdate(name: behaviors.first { $0.id == u.id }!.name, sortOrder: u.sortOrder))
+                .eq("id", value: u.id)
+                .execute()
+        }
+    }
+
     // MARK: - Trainer: Items
 
     func fetchItems(planId: UUID) async throws -> [TrainingPlanItem] {
@@ -62,16 +120,40 @@ struct TrainingPlanService {
             .value
     }
 
+    func fetchItems(behaviorId: UUID) async throws -> [TrainingPlanItem] {
+        return try await supabase
+            .from("training_plan_items")
+            .select()
+            .eq("behavior_id", value: behaviorId)
+            .order("sort_order", ascending: true)
+            .execute()
+            .value
+    }
+
     func createItem(
         planId: UUID,
+        behaviorId: UUID?,
         title: String,
         distance: Distance,
         duration: TrainingDuration,
         distraction: Distraction,
+        distanceCustomValue: String? = nil,
+        durationCustomValue: String? = nil,
+        distractionCustomValue: String? = nil,
         sortOrder: Int
     ) async throws -> TrainingPlanItem {
-        let insert = ItemInsert(planId: planId, sortOrder: sortOrder, title: title,
-                                distance: distance, duration: duration, distraction: distraction)
+        let insert = ItemInsert(
+            planId: planId,
+            behaviorId: behaviorId,
+            sortOrder: sortOrder,
+            title: title,
+            distance: distance,
+            duration: duration,
+            distraction: distraction,
+            distanceCustomValue: distanceCustomValue,
+            durationCustomValue: durationCustomValue,
+            distractionCustomValue: distractionCustomValue
+        )
         return try await supabase
             .from("training_plan_items")
             .insert(insert)
@@ -82,8 +164,17 @@ struct TrainingPlanService {
     }
 
     func updateItem(_ item: TrainingPlanItem) async throws -> TrainingPlanItem {
-        let update = ItemUpdate(sortOrder: item.sortOrder, title: item.title,
-                                distance: item.distance, duration: item.duration, distraction: item.distraction)
+        let update = ItemUpdate(
+            behaviorId: item.behaviorId,
+            sortOrder: item.sortOrder,
+            title: item.title,
+            distance: item.distance,
+            duration: item.duration,
+            distraction: item.distraction,
+            distanceCustomValue: item.distanceCustomValue,
+            durationCustomValue: item.durationCustomValue,
+            distractionCustomValue: item.distractionCustomValue
+        )
         return try await supabase
             .from("training_plan_items")
             .update(update)
@@ -112,8 +203,18 @@ struct TrainingPlanService {
             .eq("plan_id", value: planId)
             .execute()
         let inserts = items.enumerated().map { idx, item in
-            ItemInsert(planId: item.planId, sortOrder: idx, title: item.title,
-                       distance: item.distance, duration: item.duration, distraction: item.distraction)
+            ItemInsert(
+                planId: item.planId,
+                behaviorId: item.behaviorId,
+                sortOrder: idx,
+                title: item.title,
+                distance: item.distance,
+                duration: item.duration,
+                distraction: item.distraction,
+                distanceCustomValue: item.distanceCustomValue,
+                durationCustomValue: item.durationCustomValue,
+                distractionCustomValue: item.distractionCustomValue
+            )
         }
         try await supabase
             .from("training_plan_items")
@@ -241,37 +342,80 @@ private struct PlanUpdate: Encodable {
     let description: String?
 }
 
+private struct BehaviorInsert: Encodable {
+    let planId: UUID
+    let name: String
+    let sortOrder: Int
+
+    enum CodingKeys: String, CodingKey {
+        case planId    = "plan_id"
+        case name
+        case sortOrder = "sort_order"
+    }
+}
+
+private struct BehaviorUpdate: Encodable {
+    let name: String
+    let sortOrder: Int
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case sortOrder = "sort_order"
+    }
+}
+
+private struct BehaviorReorderUpdate {
+    let id: UUID
+    let sortOrder: Int
+}
+
 private struct ItemInsert: Encodable {
     let planId: UUID
+    let behaviorId: UUID?
     let sortOrder: Int
     let title: String
     let distance: Distance
     let duration: TrainingDuration
     let distraction: Distraction
+    let distanceCustomValue: String?
+    let durationCustomValue: String?
+    let distractionCustomValue: String?
 
     enum CodingKeys: String, CodingKey {
-        case planId      = "plan_id"
-        case sortOrder   = "sort_order"
+        case planId                 = "plan_id"
+        case behaviorId             = "behavior_id"
+        case sortOrder              = "sort_order"
         case title
         case distance
         case duration
         case distraction
+        case distanceCustomValue    = "distance_custom"
+        case durationCustomValue    = "duration_custom"
+        case distractionCustomValue = "distraction_custom"
     }
 }
 
 private struct ItemUpdate: Encodable {
+    let behaviorId: UUID?
     let sortOrder: Int
     let title: String
     let distance: Distance
     let duration: TrainingDuration
     let distraction: Distraction
+    let distanceCustomValue: String?
+    let durationCustomValue: String?
+    let distractionCustomValue: String?
 
     enum CodingKeys: String, CodingKey {
-        case sortOrder   = "sort_order"
+        case behaviorId             = "behavior_id"
+        case sortOrder              = "sort_order"
         case title
         case distance
         case duration
         case distraction
+        case distanceCustomValue    = "distance_custom"
+        case durationCustomValue    = "duration_custom"
+        case distractionCustomValue = "distraction_custom"
     }
 }
 

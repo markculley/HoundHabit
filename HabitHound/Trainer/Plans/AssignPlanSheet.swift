@@ -13,7 +13,7 @@ struct AssignPlanSheet: View {
             Form {
                 Section("Guardian") {
                     if viewModel.guardians.isEmpty {
-                        Text("No linked guardians yet.")
+                        Text("No guardians available to assign.")
                             .foregroundStyle(.secondary)
                     } else {
                         Picker("Select Guardian", selection: $viewModel.selectedGuardian) {

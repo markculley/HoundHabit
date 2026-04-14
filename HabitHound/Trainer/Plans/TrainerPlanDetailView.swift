@@ -5,109 +5,126 @@ struct TrainerPlanDetailView: View {
     let viewModel: TrainerPlanViewModel
 
     @State private var showEditSheet = false
-    @State private var showAddItemSheet = false
+    @State private var showAddBehaviorSheet = false
     @State private var showAssignSheet = false
-    @State private var itemToEdit: TrainingPlanItem? = nil
 
-    private var items: [TrainingPlanItem] {
-        viewModel.items[plan.id] ?? []
+    private var behaviors: [Behavior] {
+        viewModel.behaviors[plan.id] ?? []
+    }
+
+    private var assignments: [PlanAssignment] {
+        viewModel.assignments[plan.id] ?? []
+    }
+
+    /// Nil means ready; non-nil is the reason the plan can't be assigned yet.
+    private var assignBlockReason: String? {
+        if behaviors.isEmpty {
+            return "Add at least one behavior before assigning."
+        }
+        let allItems = viewModel.items[plan.id] ?? []
+        let emptyBehaviors = behaviors.filter { b in !allItems.contains { $0.behaviorId == b.id } }
+        if emptyBehaviors.count == 1 {
+            return "\"\(emptyBehaviors[0].name)\" has no steps. Each behavior needs at least one step."
+        } else if emptyBehaviors.count > 1 {
+            return "\(emptyBehaviors.count) behaviors have no steps. Each behavior needs at least one step."
+        }
+        return nil
     }
 
     var body: some View {
         List {
-            // Plan type label + description
+            // Plan header — description + assignment
             Section {
                 Label("Training Plan", systemImage: "list.bullet.clipboard")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+
                 if let description = plan.description, !description.isEmpty {
                     Text(description)
                         .foregroundStyle(.secondary)
                 }
+
+                if !assignments.isEmpty {
+                    ForEach(assignments) { assignment in
+                        VStack(alignment: .leading, spacing: 4) {
+                            LabeledContent("Guardian") {
+                                Text(viewModel.guardianName(for: assignment.guardianId))
+                            }
+                            LabeledContent("Pet") {
+                                Text(viewModel.petName(for: assignment.petId))
+                            }
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                Task { await viewModel.deleteAssignment(assignment) }
+                            } label: {
+                                Label("Remove", systemImage: "trash")
+                            }
+                        }
+                    }
+                }
+                if let reason = assignBlockReason {
+                    Label(reason, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Button("Assign to Guardian…") { showAssignSheet = true }
+                }
             }
 
-            // Steps
+            // Behaviors list
             Section {
-                if items.isEmpty {
-                    Text("No steps yet. Tap Add Step to begin.")
+                if behaviors.isEmpty {
+                    Text("No behaviors yet. Tap Add Behavior to begin.")
                         .foregroundStyle(.secondary)
                         .font(.subheadline)
                 } else {
-                    ForEach(items) { item in
-                        PlanItemRow(item: item)
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteItem(item) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                                Button {
-                                    itemToEdit = item
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(.blue)
+                    ForEach(behaviors) { behavior in
+                        NavigationLink(value: behavior) {
+                            BehaviorRow(
+                                behavior: behavior,
+                                stepCount: (viewModel.items[plan.id] ?? [])
+                                    .filter { $0.behaviorId == behavior.id }.count
+                            )
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                Task { await viewModel.deleteBehavior(behavior) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
+                        }
                     }
                     .onMove { source, destination in
-                        Task { await viewModel.moveItems(in: plan.id, from: source, to: destination) }
+                        Task { await viewModel.moveBehaviors(in: plan.id, from: source, to: destination) }
                     }
                 }
             } header: {
-                HStack {
-                    Text("Steps")
-                    Spacer()
-                    Button("Add Step") { showAddItemSheet = true }
-                        .font(.caption)
-                }
-            }
-
-            // Assigned To
-            Section("Assigned To") {
-                let planAssignments = viewModel.assignments[plan.id] ?? []
-                if planAssignments.isEmpty {
-                    Text("Not assigned to anyone yet.")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
-                } else {
-                    ForEach(planAssignments) { assignment in
-                        HStack {
-                            Text(viewModel.guardianName(for: assignment.guardianId))
-                            Spacer()
-                            Text(assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .onDelete { offsets in
-                        let list = viewModel.assignments[plan.id] ?? []
-                        Task {
-                            for i in offsets {
-                                await viewModel.deleteAssignment(list[i])
-                            }
-                        }
-                    }
-                }
+                Text("Behaviors")
             }
         }
         .navigationTitle(plan.title)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Assign") { showAssignSheet = true }
+                Button("Add Behavior") { showAddBehaviorSheet = true }
             }
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .secondaryAction) {
                 Button {
                     showEditSheet = true
                 } label: {
-                    Image(systemName: "pencil")
+                    Label("Edit Plan", systemImage: "pencil")
                 }
             }
         }
+        .navigationDestination(for: Behavior.self) { behavior in
+            TrainerBehaviorDetailView(behavior: behavior, viewModel: viewModel)
+        }
         .task {
-            async let items = viewModel.loadItems(for: plan.id)
-            async let assignments = viewModel.loadAssignments(for: plan.id)
-            _ = await (items, assignments)
+            async let b = viewModel.loadBehaviors(for: plan.id)
+            async let a = viewModel.loadAssignments(for: plan.id)
+            async let i = viewModel.loadItems(for: plan.id)
+            _ = await (b, a, i)
         }
         .sheet(isPresented: $showEditSheet) {
             TrainerPlanFormView(mode: .edit(plan)) { updated in
@@ -116,25 +133,15 @@ struct TrainerPlanDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showAddItemSheet) {
-            TrainerPlanItemFormView(mode: .add) { title, distance, duration, distraction in
-                Task { await viewModel.addItem(to: plan.id, title: title, distance: distance, duration: duration, distraction: distraction) }
-            }
-        }
-        .sheet(item: $itemToEdit) { item in
-            TrainerPlanItemFormView(mode: .edit(item)) { title, distance, duration, distraction in
-                var updated = item
-                updated.title       = title
-                updated.distance    = distance
-                updated.duration    = duration
-                updated.distraction = distraction
-                Task { await viewModel.updateItem(updated) }
+        .sheet(isPresented: $showAddBehaviorSheet) {
+            TrainerBehaviorFormView(mode: .add) { name in
+                Task { await viewModel.addBehavior(to: plan.id, name: name) }
             }
         }
         .sheet(isPresented: $showAssignSheet) {
             AssignPlanSheet(
                 plan: plan,
-                existingAssignments: viewModel.assignments[plan.id] ?? []
+                existingAssignments: assignments
             ) {
                 Task { await viewModel.loadAssignments(for: plan.id) }
             }
@@ -150,46 +157,22 @@ struct TrainerPlanDetailView: View {
     }
 }
 
-// MARK: - Row
+// MARK: - BehaviorRow
 
-private struct PlanItemRow: View {
-    let item: TrainingPlanItem
+private struct BehaviorRow: View {
+    let behavior: Behavior
+    let stepCount: Int
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "line.3.horizontal")
-                .foregroundStyle(.tertiary)
-                .frame(width: 20)
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text("\(item.sortOrder + 1).")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(item.title)
-                        .font(.body)
-                }
-                HStack(spacing: 8) {
-                    ThreeDTag(item.distance.label)
-                    ThreeDTag(item.duration.label)
-                    ThreeDTag(item.distraction.label)
-                }
-                .padding(.leading, 16)
-            }
+        HStack {
+            Text(behavior.name)
+                .font(.body)
+            Spacer()
+            Text(stepCount == 1 ? "1 step" : "\(stepCount) steps")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 2)
-    }
-}
-
-private struct ThreeDTag: View {
-    let label: String
-    init(_ label: String) { self.label = label }
-    var body: some View {
-        Text(label)
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(.secondary.opacity(0.12), in: Capsule())
     }
 }
 

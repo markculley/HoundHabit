@@ -17,12 +17,6 @@ struct TrainingRecordListView: View {
             if viewModel.isLoading && viewModel.records.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.records.isEmpty {
-                ContentUnavailableView(
-                    "No Sessions Yet",
-                    systemImage: "list.bullet.clipboard",
-                    description: Text("Tap Log to record your first training session.")
-                )
             } else {
                 List {
                     ForEach(viewModel.records) { record in
@@ -49,6 +43,16 @@ struct TrainingRecordListView: View {
                         }
                     }
                 }
+                .overlay {
+                    if viewModel.records.isEmpty {
+                        ContentUnavailableView(
+                            "No Sessions Yet",
+                            systemImage: "list.bullet.clipboard",
+                            description: Text("Tap + to record your first training session.")
+                        )
+                    }
+                }
+                .refreshable { await viewModel.loadRecords(petId: petId) }
                 .navigationDestination(for: TrainingRecord.self) { record in
                     TrainingRecordDetailView(
                         record: record,

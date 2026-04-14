@@ -8,12 +8,6 @@ struct GuardianPlanListView: View {
             if viewModel.isLoading && viewModel.assignedPlans.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.assignedPlans.isEmpty {
-                ContentUnavailableView(
-                    "No Plans Yet",
-                    systemImage: "list.bullet.clipboard",
-                    description: Text("Your trainer will assign plans here.")
-                )
             } else {
                 List {
                     ForEach(viewModel.assignedPlans) { assignedPlan in
@@ -23,6 +17,15 @@ struct GuardianPlanListView: View {
                                 progress: viewModel.planProgress(for: assignedPlan)
                             )
                         }
+                    }
+                }
+                .overlay {
+                    if viewModel.assignedPlans.isEmpty {
+                        ContentUnavailableView(
+                            "No Plans Yet",
+                            systemImage: "list.bullet.clipboard",
+                            description: Text("Your trainer will assign plans here.")
+                        )
                     }
                 }
                 .refreshable { await viewModel.load() }

@@ -78,6 +78,9 @@
 		AA000000000000000000007A /* Badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000079 /* Badge.swift */; };
 		AA000000000000000000007C /* BadgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007B /* BadgeService.swift */; };
 		AA000000000000000000007E /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007D /* AchievementsView.swift */; };
+		AA0000000000000000000080 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007F /* Behavior.swift */; };
+		AA0000000000000000000082 /* TrainerBehaviorFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000081 /* TrainerBehaviorFormView.swift */; };
+		AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -166,6 +169,9 @@
 		AA0000000000000000000079 /* Badge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badge.swift; sourceTree = "<group>"; };
 		AA000000000000000000007B /* BadgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeService.swift; sourceTree = "<group>"; };
 		AA000000000000000000007D /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		AA000000000000000000007F /* Behavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
+		AA0000000000000000000081 /* TrainerBehaviorFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorFormView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -333,6 +339,7 @@
 				4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */,
 				4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */,
 				4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */,
+				AA000000000000000000007F /* Behavior.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -434,6 +441,8 @@
 				4D349EC82F870FC200CEC1E3 /* TrainerPlanItemFormView.swift */,
 				4D349EC92F870FC200CEC1E3 /* TrainerPlanListView.swift */,
 				4D349ECA2F870FC200CEC1E3 /* TrainerPlanViewModel.swift */,
+				AA0000000000000000000081 /* TrainerBehaviorFormView.swift */,
+				AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */,
 			);
 			path = Plans;
 			sourceTree = "<group>";
@@ -659,6 +668,9 @@
 				4D349EE22F88182B00CEC1E3 /* NotificationSettingsView.swift in Sources */,
 				4D2171012F6E0221000CD4D8 /* PhotoPickerView.swift in Sources */,
 				4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */,
+				AA0000000000000000000080 /* Behavior.swift in Sources */,
+				AA0000000000000000000082 /* TrainerBehaviorFormView.swift in Sources */,
+				AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

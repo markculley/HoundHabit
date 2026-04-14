@@ -25,6 +25,9 @@ struct TrainingRecordService {
         distance: Distance,
         distraction: Distraction,
         duration: TrainingDuration,
+        distanceCustomValue: String? = nil,
+        durationCustomValue: String? = nil,
+        distractionCustomValue: String? = nil,
         notes: String?,
         isShared: Bool,
         planItemId: UUID? = nil
@@ -37,6 +40,9 @@ struct TrainingRecordService {
             distance: distance,
             distraction: distraction,
             duration: duration,
+            distanceCustomValue: distanceCustomValue,
+            durationCustomValue: durationCustomValue,
+            distractionCustomValue: distractionCustomValue,
             notes: notes,
             isShared: isShared,
             score: score,
@@ -58,6 +64,9 @@ struct TrainingRecordService {
             distance: record.distance,
             distraction: record.distraction,
             duration: record.duration,
+            distanceCustomValue: record.distanceCustomValue,
+            durationCustomValue: record.durationCustomValue,
+            distractionCustomValue: record.distractionCustomValue,
             notes: record.notes,
             isShared: record.isShared,
             score: record.score,
@@ -92,19 +101,25 @@ private struct TrainingRecordInsert: Encodable {
     let distance: Distance
     let distraction: Distraction
     let duration: TrainingDuration
+    let distanceCustomValue: String?
+    let durationCustomValue: String?
+    let distractionCustomValue: String?
     let notes: String?
     let isShared: Bool
     let score: Int
     let planItemId: UUID?
 
     enum CodingKeys: String, CodingKey {
-        case petId = "pet_id"
-        case guardianId = "guardian_id"
-        case recordedAt = "recorded_at"
+        case petId          = "pet_id"
+        case guardianId     = "guardian_id"
+        case recordedAt     = "recorded_at"
         case status, distance, distraction, duration, notes
-        case isShared = "is_shared"
+        case distanceCustomValue    = "distance_custom"
+        case durationCustomValue    = "duration_custom"
+        case distractionCustomValue = "distraction_custom"
+        case isShared       = "is_shared"
         case score
-        case planItemId = "plan_item_id"
+        case planItemId     = "plan_item_id"
     }
 }
 
@@ -114,16 +129,22 @@ private struct TrainingRecordUpdate: Encodable {
     let distance: Distance
     let distraction: Distraction
     let duration: TrainingDuration
+    let distanceCustomValue: String?
+    let durationCustomValue: String?
+    let distractionCustomValue: String?
     let notes: String?
     let isShared: Bool
     let score: Int
     let planItemId: UUID?
 
     enum CodingKeys: String, CodingKey {
-        case recordedAt = "recorded_at"
+        case recordedAt     = "recorded_at"
         case status, distance, distraction, duration, notes
-        case isShared = "is_shared"
+        case distanceCustomValue    = "distance_custom"
+        case durationCustomValue    = "duration_custom"
+        case distractionCustomValue = "distraction_custom"
+        case isShared       = "is_shared"
         case score
-        case planItemId = "plan_item_id"
+        case planItemId     = "plan_item_id"
     }
 }

@@ -24,6 +24,9 @@ struct TrainingRecordFormView: View {
     @State private var distance: Distance = .armsLength
     @State private var distraction: Distraction = .none
     @State private var duration: TrainingDuration = .instant
+    @State private var distanceCustomValue: String? = nil
+    @State private var durationCustomValue: String? = nil
+    @State private var distractionCustomValue: String? = nil
     @State private var notes = ""
     @State private var isShared = false
 
@@ -97,9 +100,9 @@ struct TrainingRecordFormView: View {
                 Section("Three D's") {
                     if isPlanSession {
                         // Read-only display
-                        LabeledContent("Distance",    value: distance.label)
-                        LabeledContent("Duration",    value: duration.label)
-                        LabeledContent("Distraction", value: distraction.label)
+                        LabeledContent("Distance",    value: distance.displayLabel(customValue: distanceCustomValue))
+                        LabeledContent("Duration",    value: duration.displayLabel(customValue: durationCustomValue))
+                        LabeledContent("Distraction", value: distraction.displayLabel(customValue: distractionCustomValue))
                     } else {
                         VStack(alignment: .leading, spacing: 12) {
                             LabeledPicker(label: "Distance", selection: $distance) {
@@ -211,20 +214,26 @@ struct TrainingRecordFormView: View {
 
     private func populateIfEditing() {
         if let item = planItem {
-            // Lock Three D's to the plan step
-            distance    = item.distance
-            duration    = item.duration
-            distraction = item.distraction
+            // Lock Three D's to the plan step (including any custom values)
+            distance             = item.distance
+            duration             = item.duration
+            distraction          = item.distraction
+            distanceCustomValue  = item.distanceCustomValue
+            durationCustomValue  = item.durationCustomValue
+            distractionCustomValue = item.distractionCustomValue
         }
         guard let r = existingRecord else { return }
-        selectedPetId  = r.petId
-        recordedAt     = r.recordedAt
-        score          = r.score
-        distance       = r.distance
-        distraction    = r.distraction
-        duration       = r.duration
-        notes          = r.notes ?? ""
-        isShared       = r.isShared
+        selectedPetId        = r.petId
+        recordedAt           = r.recordedAt
+        score                = r.score
+        distance             = r.distance
+        distraction          = r.distraction
+        duration             = r.duration
+        distanceCustomValue  = r.distanceCustomValue
+        durationCustomValue  = r.durationCustomValue
+        distractionCustomValue = r.distractionCustomValue
+        notes                = r.notes ?? ""
+        isShared             = r.isShared
     }
 
     /// Normalise to noon local time so the UTC date always matches the user's
@@ -242,15 +251,18 @@ struct TrainingRecordFormView: View {
             let record: TrainingRecord
             if let existing = existingRecord {
                 var updated = existing
-                updated.petId       = petId
-                updated.recordedAt  = normalizedDate
-                updated.score       = score
-                updated.status      = derivedStatus
-                updated.distance    = distance
-                updated.distraction = distraction
-                updated.duration    = duration
-                updated.notes       = notes.isEmpty ? nil : notes
-                updated.isShared    = isShared
+                updated.petId                = petId
+                updated.recordedAt           = normalizedDate
+                updated.score                = score
+                updated.status               = derivedStatus
+                updated.distance             = distance
+                updated.distraction          = distraction
+                updated.duration             = duration
+                updated.distanceCustomValue  = distanceCustomValue
+                updated.durationCustomValue  = durationCustomValue
+                updated.distractionCustomValue = distractionCustomValue
+                updated.notes                = notes.isEmpty ? nil : notes
+                updated.isShared             = isShared
                 record = try await recordService.updateRecord(updated)
             } else {
                 record = try await recordService.createRecord(
@@ -261,6 +273,9 @@ struct TrainingRecordFormView: View {
                     distance: distance,
                     distraction: distraction,
                     duration: duration,
+                    distanceCustomValue: distanceCustomValue,
+                    durationCustomValue: durationCustomValue,
+                    distractionCustomValue: distractionCustomValue,
                     notes: notes.isEmpty ? nil : notes,
                     isShared: isShared,
                     planItemId: planItem?.id
