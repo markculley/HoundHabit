@@ -269,3 +269,12 @@ A Behavior is a child of a Training Plan and a parent of Steps.
         - Custom (free text)
 - **Notes**
 
+# v2 Backlog
+
+## Guardian → Trainer Resource Sharing
+
+Guardians can currently only receive resources from their trainer. In v2, a guardian should be able to share a resource (photo, note, URL) back to their trainer — for example, a progress photo or a video of a session.
+
+**Suggested approach:** Add `is_shared_with_trainer boolean NOT NULL DEFAULT false` to the `resources` table. Guardians can toggle sharing per resource. The trainer's guardian detail view shows shared resources alongside shared session records.
+
+For text messages, the existing comment thread on a training session already covers the immediate need in v1.
