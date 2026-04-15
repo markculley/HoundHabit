@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuardianPlanListView: View {
     @State private var viewModel = GuardianPlanViewModel()
+    @State private var petViewModel = PetViewModel()
     @State private var showCreateSheet = false
 
     var body: some View {
@@ -63,10 +64,13 @@ struct GuardianPlanListView: View {
                 }
             }
         }
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            await petViewModel.loadPets()
+        }
         .sheet(isPresented: $showCreateSheet) {
-            TrainerPlanFormView(mode: .create) { saved in
-                Task { await viewModel.adoptCreatedPlan(saved) }
+            TrainerPlanFormView(mode: .create, pets: petViewModel.pets) { saved, petId in
+                Task { await viewModel.adoptCreatedPlan(saved, petId: petId) }
             }
         }
         .alert("Error", isPresented: Binding(
@@ -84,12 +88,12 @@ struct GuardianPlanListView: View {
 
 /// Hosts a TrainerPlanDetailView with its own ViewModel so the guardian can
 /// build out a plan they created themselves.
-private struct OwnedPlanDetailView: View {
+struct OwnedPlanDetailView: View {
     let plan: TrainingPlan
     @State private var trainerVM = TrainerPlanViewModel()
 
     var body: some View {
-        TrainerPlanDetailView(plan: plan, viewModel: trainerVM)
+        TrainerPlanDetailView(plan: plan, viewModel: trainerVM, showAssignments: false)
     }
 }
 
@@ -151,6 +155,7 @@ struct PlanProgressBadge: View {
         }
     }
 }
+
 
 #Preview {
     NavigationStack {

@@ -56,7 +56,31 @@ sequenceDiagram
 
 ---
 
-## UC-4.3 Edit a Training Session
+## UC-4.3 View a Training Session Detail
+
+Guardian taps a session row. For plan-linked sessions (`planItemId` non-nil), the detail view self-loads the behavior name and shows it in the Three D's section.
+
+```mermaid
+sequenceDiagram
+    actor G as Guardian
+    participant DV as TrainingRecordDetailView
+    participant PlanSVC as TrainingPlanService
+    participant DB as Supabase
+
+    G->>DV: Tap session row (NavigationLink)
+    DV->>G: Show detail (score, status, date, 3 D's, notes, shared)
+    DV->>PlanSVC: fetchBehaviorName(for: planItemId) [if non-nil, .task]
+    PlanSVC->>DB: SELECT training_plan_items WHERE id=?
+    PlanSVC->>DB: SELECT behaviors WHERE id=behaviorId
+    DB-->>DV: behaviorName (String?)
+    DV->>G: Three D's section: Behavior · Distance · Duration · Distraction
+```
+
+Standalone sessions (`planItemId` nil) show no Behavior row.
+
+---
+
+## UC-4.3b Edit a Training Session
 
 Guardian taps a session row → detail view → taps **Edit**.
 
@@ -135,6 +159,12 @@ sequenceDiagram
 1. Add a second pet with no sessions.
 2. Go to **Pets** → tap that pet → **Training Sessions**.
 3. Confirm the "No Sessions Yet" empty state appears.
+
+### T-4.3 View a plan-linked session detail
+1. Complete a plan step (UC-9.6) to create a plan-linked session.
+2. Go to **Pets** tab → tap the pet → **Training Sessions** → tap the session row.
+3. Confirm the **Three D's** section shows a **Behavior** row at the top (e.g. "Behavior: Leave It") above Distance, Duration, Distraction.
+4. Open a standalone session (no plan context) — confirm no Behavior row is shown.
 
 ### T-4.4 Edit a session
 1. Tap a session row to open the detail view.

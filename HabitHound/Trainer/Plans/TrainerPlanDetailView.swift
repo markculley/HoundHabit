@@ -3,6 +3,7 @@ import SwiftUI
 struct TrainerPlanDetailView: View {
     let plan: TrainingPlan
     let viewModel: TrainerPlanViewModel
+    var showAssignments: Bool = true
 
     @State private var showEditSheet = false
     @State private var showAddBehaviorSheet = false
@@ -44,36 +45,38 @@ struct TrainerPlanDetailView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                if !assignments.isEmpty {
-                    ForEach(assignments) { assignment in
-                        HStack(alignment: .top) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                LabeledContent("Guardian") {
-                                    Text(viewModel.guardianName(for: assignment.guardianId))
+                if showAssignments {
+                    if !assignments.isEmpty {
+                        ForEach(assignments) { assignment in
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    LabeledContent("Guardian") {
+                                        Text(viewModel.guardianName(for: assignment.guardianId))
+                                    }
+                                    LabeledContent("Pet") {
+                                        Text(viewModel.petName(for: assignment.petId))
+                                    }
                                 }
-                                LabeledContent("Pet") {
-                                    Text(viewModel.petName(for: assignment.petId))
-                                }
+                                Spacer()
+                                PlanProgressBadge(progress: viewModel.planProgress(for: assignment))
+                                    .padding(.top, 2)
                             }
-                            Spacer()
-                            PlanProgressBadge(progress: viewModel.planProgress(for: assignment))
-                                .padding(.top, 2)
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                Task { await viewModel.deleteAssignment(assignment) }
-                            } label: {
-                                Label("Remove", systemImage: "trash")
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.deleteAssignment(assignment) }
+                                } label: {
+                                    Label("Remove", systemImage: "trash")
+                                }
                             }
                         }
                     }
-                }
-                if let reason = assignBlockReason {
-                    Label(reason, systemImage: "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Button("Assign to Guardian…") { showAssignSheet = true }
+                    if let reason = assignBlockReason {
+                        Label(reason, systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Button("Assign to Guardian…") { showAssignSheet = true }
+                    }
                 }
             }
 
@@ -132,7 +135,7 @@ struct TrainerPlanDetailView: View {
             _ = await (b, a, i)
         }
         .sheet(isPresented: $showEditSheet) {
-            TrainerPlanFormView(mode: .edit(plan)) { updated in
+            TrainerPlanFormView(mode: .edit(plan)) { updated, _ in
                 if let idx = viewModel.plans.firstIndex(where: { $0.id == updated.id }) {
                     viewModel.plans[idx] = updated
                 }

@@ -44,7 +44,7 @@ struct TrainerPlanListView: View {
             }
         }
         .sheet(isPresented: $showCreateSheet) {
-            TrainerPlanFormView(mode: .create) { plan in
+            TrainerPlanFormView(mode: .create) { plan, _ in
                 viewModel.plans.insert(plan, at: 0)
             }
         }

@@ -12,10 +12,9 @@ A training tracker that is needed by pet owners to bridge the gap between the la
 
 ## What it Doesn’t Do
 
-- Create a Training Plan
-- No prescribed Training Plan
+- Auto-generate or prescribe a Training Plan (all plans are user-created)
 - No promises. No Guarantees
-- Doesn’t teach the Guardian how to train. That’s the Trainers job.
+- Doesn’t teach the Guardian how to train. That’s the Trainer’s job.
 
 ## What it Does Do
 
@@ -26,6 +25,7 @@ A training tracker that is needed by pet owners to bridge the gap between the la
 - Enables guardians to store video recording or photos of their or a pet
 - Enables guardians to read Trainer-delivered notes
 - Enables Trainers to deliver training plans to guardians
+- Enables Guardians to create and manage their own training plans (no Trainer required)
 
 
 ## build artifacts
@@ -76,6 +76,12 @@ For any back office services required assume that AWS will be used.
 ### Create a Pet
 
 - Create a *Pet Record*
+
+### Create a Training Plan (self-directed)
+
+- Guardian can create their own Training Plan without a Trainer
+- Full Behavior → Step authoring tools available
+- Guardian is both owner and practitioner of the plan
 
 ### Remind Me
 

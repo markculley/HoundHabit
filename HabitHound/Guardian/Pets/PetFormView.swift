@@ -18,6 +18,7 @@ struct PetFormView: View {
     @State private var photoData: Data?
     @State private var previewImage: Image?
     @State private var isSaving = false
+    @State private var showDeleteConfirmation = false
 
     private var isEditing: Bool {
         if case .edit = mode { return true }
@@ -62,6 +63,15 @@ struct PetFormView: View {
                     TextField("Name", text: $name)
                     TextField("Breed (optional)", text: $breed)
                 }
+
+                if isEditing {
+                    Section {
+                        Button("Delete Pet", role: .destructive) {
+                            showDeleteConfirmation = true
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
             }
             .navigationTitle(isEditing ? "Edit Pet" : "Add Pet")
             .navigationBarTitleDisplayMode(.inline)
@@ -88,6 +98,22 @@ struct PetFormView: View {
             .disabled(isSaving)
             .overlay {
                 if isSaving { ProgressView() }
+            }
+            .confirmationDialog(
+                "Delete this pet?",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    if case .edit(let pet) = mode {
+                        Task {
+                            await viewModel.deletePet(pet)
+                            dismiss()
+                        }
+                    }
+                }
+            } message: {
+                Text("This cannot be undone.")
             }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },

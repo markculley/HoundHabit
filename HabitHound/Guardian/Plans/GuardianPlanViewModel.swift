@@ -85,9 +85,9 @@ class GuardianPlanViewModel {
 
     /// Self-assigns a just-created plan so it appears in the guardian's plan list.
     /// Called after `TrainerPlanFormView` has already persisted the plan to Supabase.
-    func adoptCreatedPlan(_ plan: TrainingPlan) async {
+    func adoptCreatedPlan(_ plan: TrainingPlan, petId: UUID? = nil) async {
         do {
-            let assignment = try await service.selfAssignPlan(planId: plan.id)
+            let assignment = try await service.selfAssignPlan(planId: plan.id, petId: petId)
             let ap = AssignedPlan(assignment: assignment, plan: plan)
             assignedPlans.insert(ap, at: 0)
             items[plan.id] = []

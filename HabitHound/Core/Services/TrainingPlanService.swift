@@ -321,12 +321,25 @@ struct TrainingPlanService {
             .execute()
     }
 
+    /// Updates the pet linked to an existing self-assignment.
+    func updateAssignmentPet(assignmentId: UUID, petId: UUID?) async throws {
+        struct PetUpdate: Encodable {
+            let petId: UUID?
+            enum CodingKeys: String, CodingKey { case petId = "pet_id" }
+        }
+        try await supabase
+            .from("plan_assignments")
+            .update(PetUpdate(petId: petId))
+            .eq("id", value: assignmentId)
+            .execute()
+    }
+
     /// Creates a self-assignment so a guardian-owned plan appears in their assigned-plans list.
-    func selfAssignPlan(planId: UUID) async throws -> PlanAssignment {
+    func selfAssignPlan(planId: UUID, petId: UUID? = nil) async throws -> PlanAssignment {
         guard let userId = supabase.auth.currentUser?.id else {
             throw PlanError.notAuthenticated
         }
-        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: nil)
+        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: petId)
         return try await supabase
             .from("plan_assignments")
             .insert(insert)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Trainers create reusable training plans composed of **Behaviors**, where each Behavior contains an ordered list of **Steps**. Each step defines specific values for the Three D's (Distance, Duration, Distraction) — with optional free-text custom values for each D. Plans are assigned to linked guardians. Guardians practice the current step of each plan, enter a 0–5 rep score, and the app automatically advances, holds, or drops back their position in the plan based on the Traffic Light system. The guardian's position is persisted so they always resume exactly where they left off.
+Training plans can be created by **Trainers** (who assign them to linked guardians) or by **Guardians** (who create and self-assign plans when working independently). Plans are composed of **Behaviors**, where each Behavior contains an ordered list of **Steps**. Each step defines specific values for the Three D's (Distance, Duration, Distraction) — with optional free-text custom values for each D. Guardians practice steps, enter a 0–5 rep score, and the app automatically advances, holds, or drops back their position based on the Traffic Light system. The guardian's position is persisted so they always resume exactly where they left off.
 
 ### Object Hierarchy
 
@@ -45,6 +45,68 @@ Trainer                   App                        Supabase
 ### Key Code
 
 **`TrainerPlanFormView`** uses `PlanFormMode` (`.create` / `.edit(TrainingPlan)`) to handle both create and edit in one view. The description field is a high-level overview — Behaviors and their Three D's steps are added after creation.
+
+---
+
+## UC-9.1b: Guardian Creates Their Own Plan
+
+**Actor:** Guardian  
+**Precondition:** Guardian is authenticated. No trainer is required.
+
+Guardians can create and manage training plans independently. When a guardian creates a plan they become the `trainer_id` owner and a self-assignment is created automatically so the plan appears in their Plans list alongside any trainer-assigned plans.
+
+### Flow
+
+```
+Guardian                  App                        Supabase
+  │                         │                            │
+  │  Tap "+" on Plans tab   │                            │
+  │────────────────────────▶│                            │
+  │  TrainerPlanFormView     │                            │
+  │  (same form as trainer) │                            │
+  │                         │                            │
+  │  Enter title +          │                            │
+  │  description, tap Create│                            │
+  │────────────────────────▶│                            │
+  │                         │  createPlan(title, desc)   │
+  │                         │───────────────────────────▶│
+  │                         │  INSERT training_plans     │
+  │                         │  (trainer_id = guardian's  │
+  │                         │   own uid)                 │
+  │                         │◀───────────────────────────│
+  │                         │  selfAssignPlan(planId)    │
+  │                         │───────────────────────────▶│
+  │                         │  INSERT plan_assignments   │
+  │                         │  (trainer_id = guardian_id │
+  │                         │   = auth.uid())            │
+  │                         │◀───────────────────────────│
+  │  Plan appears in Plans  │                            │
+  │  list (own plans can be │                            │
+  │  deleted via swipe)     │                            │
+  │◀────────────────────────│                            │
+```
+
+### Navigation for Own Plans
+
+From `GuardianPlanListView`, own plans (where `plan.trainerId == currentUserId`) navigate to `OwnedPlanDetailView` — a private wrapper that hosts `TrainerPlanDetailView` with `showAssignments: false`. This gives the guardian full plan editing capability (add behaviors, steps, reorder) without the guardian-assignment UI that's irrelevant to a self-managed plan.
+
+Trainer-assigned plans navigate to the read-only `GuardianPlanDetailView` as before.
+
+### RLS
+
+A dedicated `plan_assignments` INSERT policy ("Guardian self-assigns own plans") permits the insert when `trainer_id = guardian_id = auth.uid()` and the plan is owned by that user:
+
+```sql
+WITH CHECK (
+    trainer_id = auth.uid()
+    AND guardian_id = auth.uid()
+    AND EXISTS (
+        SELECT 1 FROM training_plans
+        WHERE id = plan_assignments.plan_id
+          AND trainer_id = auth.uid()
+    )
+)
+```
 
 ---
 
@@ -269,10 +331,10 @@ The `UNIQUE(plan_id, guardian_id)` constraint prevents assigning the same plan t
 
 ---
 
-## UC-9.5: Guardian Views Assigned Plans
+## UC-9.5: Guardian Views Plans
 
 **Actor:** Guardian  
-**Precondition:** At least one plan has been assigned to the guardian.
+**Precondition:** Guardian is authenticated. Plans may be trainer-assigned or guardian-created.
 
 ### Flow
 
@@ -285,42 +347,59 @@ Guardian                  App                        Supabase
   │                         │───────────────────────────▶│
   │                         │  SELECT plan_assignments   │
   │                         │  WHERE guardian_id=?       │
+  │                         │  (includes self-assignments│
+  │                         │  for own plans)            │
   │                         │  + SELECT training_plans   │
   │                         │  WHERE id IN (planIds)     │
   │                         │◀───────────────────────────│
   │  Plan list shown        │                            │
+  │  (progress badge per    │                            │
+  │  plan: To Do / In       │                            │
+  │  Progress / Done)       │                            │
   │◀────────────────────────│                            │
   │                         │                            │
   │  Tap a plan             │                            │
   │────────────────────────▶│                            │
+  │  [own plan] → OwnedPlan │                            │
+  │  DetailView (editable)  │                            │
+  │  [assigned] → Guardian  │                            │
+  │  PlanDetailView         │                            │
   │                         │  fetchAssignedPlanItems    │
   │                         │    (planId) [parallel]     │
   │                         │  fetchBehaviors(planId)    │
   │                         │    [parallel]              │
   │                         │───────────────────────────▶│
-  │                         │  SELECT training_plan_items│
-  │                         │  WHERE plan_id=?           │
-  │                         │  SELECT behaviors          │
-  │                         │  WHERE plan_id=?           │
   │                         │◀───────────────────────────│
   │  Steps shown, grouped   │                            │
-  │  by Behavior sections;  │                            │
-  │  current step           │                            │
-  │  highlighted green      │                            │
+  │  by Behavior sections   │                            │
   │◀────────────────────────│                            │
 ```
 
+### Plan List Differentiation
+
+`GuardianPlanListView` identifies own plans via `plan.trainerId == currentUserId`:
+
+| Plan type | Navigation destination | Delete available? |
+|-----------|----------------------|-------------------|
+| Own (guardian-created) | `OwnedPlanDetailView` → `TrainerPlanDetailView(showAssignments: false)` | Yes — swipe to delete |
+| Trainer-assigned | `GuardianPlanDetailView` (practice mode) | No |
+
+Empty state message: *"Tap + to create your own plan, or ask your trainer to assign one."*
+
 ### Behavior-Grouped Layout
 
-`GuardianPlanDetailView` renders one `List` section per Behavior. Steps within each section are shown in their `sortOrder` sequence. The current step (green dot + play icon) may appear in any behavior's section.
+`GuardianPlanDetailView` renders one `List` section per Behavior. Steps within each section are shown in their `sortOrder` sequence. The current step (green dot + green play icon) may appear in any behavior's section.
 
 ```
-┌─ Basic Recall ──────────────────────────────────┐
-│ ●  1. Sit at arm's length  Arm's length · Instant · None   ▶│
-│ ○  2. Sit at 6 feet        6 ft · Instant · None           ℹ│
+┌─ Leave It ──────────────────────────────────────┐
+│ ○  1. Step 1   Arm's length · Instant · None   ▶│  ← completed, replayable
+│ ○  2. Step 2   Arm's length · Instant · None   ▶│  ← completed, replayable
 └─────────────────────────────────────────────────┘
-┌─ Down ──────────────────────────────────────────┐
-│ ○  1. Down at arm's length  Arm's length · 5 sec · None    ℹ│
+┌─ Touch ─────────────────────────────────────────┐
+│ ●  1. Touch Step 1  Arm's length · Instant · None  ▶│  ← current (green)
+└─────────────────────────────────────────────────┘
+┌─ Back ──────────────────────────────────────────┐
+│ ○  1. Back Step 1   Arm's length · 5 sec · None  ℹ│  ← locked (future)
 └─────────────────────────────────────────────────┘
 ```
 
@@ -332,10 +411,41 @@ Guardian                  App                        Supabase
 - If `currentItemId` is set → show that step as current
 - If `currentItemId` is `nil` (first visit) → default to the first step by `sort_order` across all behaviors
 
+### Step Accessibility (Replayability)
+
+Steps are divided into three accessibility states based on global plan order:
+
+| State | Visual | Tap action |
+|-------|--------|-----------|
+| **Current** | Green circle, green play icon, bold title | Opens practice form → advancement logic fires on save |
+| **Completed** (before current in plan order) | Grey circle, grey play icon, normal title | Opens practice form → record logged, position unchanged |
+| **Locked** (after current in plan order) | Grey circle, info icon, dimmed title | Opens read-only info sheet |
+
+Guardians can **replay any previously completed step** in any order — the app doesn't care which completed steps are repeated or in what sequence. Advancement only happens when the **current** step is practiced.
+
+**Global ordering** is computed in `GuardianPlanDetailView.orderedItems` — behaviors sorted by `behavior.sortOrder`, then items within each behavior sorted by `item.sortOrder`. This correctly handles the fact that `item.sortOrder` is scoped per-behavior (each behavior's steps start at 0), so a raw `item.sortOrder` comparison across behaviors would give wrong results.
+
+```swift
+private var orderedItems: [TrainingPlanItem] {
+    var result: [TrainingPlanItem] = []
+    for behavior in behaviors {
+        result.append(contentsOf: items(for: behavior))
+    }
+    result.append(contentsOf: unboundItems)
+    return result
+}
+
+private func isLocked(_ item: TrainingPlanItem) -> Bool {
+    let currentIdx = orderedItems.firstIndex(where: { $0.id == currentItem?.id }) ?? 0
+    let itemIdx    = orderedItems.firstIndex(where: { $0.id == item.id }) ?? 0
+    return itemIdx > currentIdx
+}
+```
+
 ### Dashboard Integration
 
 `DashboardViewModel.load()` fetches `fetchAssignedPlans().count` alongside badges and trainer info. The dashboard "Training Plans" section shows:
-- A tappable `"X plans assigned"` button that switches to the Plans tab (tag 3) via a `switchToPlansTab` closure passed from `GuardianTabView`
+- A tappable `"X plans assigned"` button that switches to the Plans tab (tag 2) via a `switchToPlansTab` closure passed from `GuardianTabView`
 - `"No plans assigned yet."` when count is zero
 
 ---
@@ -343,17 +453,18 @@ Guardian                  App                        Supabase
 ## UC-9.6: Guardian Practises a Step (Traffic Light Flow)
 
 **Actor:** Guardian  
-**Precondition:** Guardian is viewing a plan detail with a current step.
+**Precondition:** Guardian is viewing a plan detail. Any step at or before the current step can be practiced.
 
-This is the core loop described in the Training Prototype. The guardian performs 5 repetitions, enters how many succeeded (0–5), and the app computes the Traffic Light status and automatically advances their position in the plan.
+This is the core loop described in the Training Prototype. The guardian performs 5 repetitions, enters how many succeeded (0–5), and the app computes the Traffic Light status. Advancement only applies when the **current** step is practiced; replaying a completed step just logs the record.
 
 ### Flow
 
 ```
 Guardian                  App                        Supabase
   │                         │                            │
-  │  Tap current step       │                            │
-  │  (green ▶ button)       │                            │
+  │  Tap a reachable step   │                            │
+  │  (▶ button — current    │                            │
+  │  or any completed step) │                            │
   │────────────────────────▶│                            │
   │  TrainingRecordFormView  │                            │
   │  (sheet, plan context)  │                            │
@@ -381,6 +492,8 @@ Guardian                  App                        Supabase
   │                         │  INSERT training_records   │
   │                         │◀───────────────────────────│
   │                         │                            │
+  │  [if practiced item     │                            │
+  │   IS the current step]  │                            │
   │                         │  advanceCurrentStep(       │
   │                         │    assignment, score,      │
   │                         │    items)                  │
@@ -394,8 +507,11 @@ Guardian                  App                        Supabase
   │  Advancement alert      │                            │
   │  shown with message     │                            │
   │◀────────────────────────│                            │
-  │  Plan detail refreshed  │                            │
-  │  with new current step  │                            │
+  │                         │                            │
+  │  [if practiced item is  │                            │
+  │   a COMPLETED step]     │                            │
+  │  Record logged,         │                            │
+  │  no position change     │                            │
   │◀────────────────────────│                            │
 ```
 
@@ -549,10 +665,15 @@ enum Distance: String, Codable, CaseIterable {
 | Concern | Decision |
 |---------|----------|
 | Trainer vs Guardian ViewModels | Separate — `TrainerPlanViewModel` and `GuardianPlanViewModel`. Different mutation surface, different fetch logic. |
+| Guardian-created plans | Guardian becomes `trainer_id` on the plan. `selfAssignPlan` creates a `plan_assignment` with `trainer_id = guardian_id = auth.uid()`. The plan then appears in `fetchAssignedPlans()` just like any trainer-assigned plan. |
+| Guardian plan detail routing | `GuardianPlanListView` checks `plan.trainerId == currentUserId`. Own plans → `OwnedPlanDetailView` (wraps `TrainerPlanDetailView(showAssignments: false)`). Trainer-assigned → `GuardianPlanDetailView`. Two distinct `navigationDestination` types: `TrainingPlan` for own, `AssignedPlan` for assigned. |
+| `showAssignments` flag | `TrainerPlanDetailView` accepts `showAssignments: Bool = true`. Guardians viewing their own plan pass `false` — the "Assign to Guardian" button and assignment rows are hidden entirely. |
 | Behavior as intermediate layer | `Behavior` lives in `Core/Models/Behavior.swift`. Items carry a nullable `behaviorId` so old data without behaviors still works. |
 | `AssignedPlan` placement | Lives in `TrainingPlanService.swift`, not `Core/Models/` — it's a join result, not a direct DB row. Follows `LinkedGuardian` pattern in `InviteService.swift`. |
-| Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior; guardian detail resolves current step from a flat sorted union of all steps. |
-| Guardian step advancement | Global across all behaviors: the flat sorted list spans all behaviors in plan order. A guardian naturally progresses from Behavior A's last step into Behavior B's first step without special casing. |
+| Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior. Guardian detail computes global order via `orderedItems` (behaviors by behavior sortOrder, then items by item sortOrder within each behavior). A raw cross-behavior `sortOrder` comparison would be wrong because each behavior resets at 0. |
+| Step replayability | Guardians can replay any completed step (at or before current in global order). Advancement only fires when practicing the **current** step. `isLocked(_:)` uses global index comparison via `orderedItems`. |
+| Trainer assignment progress | `TrainerPlanViewModel.planProgress(for: PlanAssignment)` computes `.todo / .inProgress / .done` and is displayed as a `PlanProgressBadge` per assignment row in `TrainerPlanDetailView`. |
+| Behavior name in session detail | `TrainingRecordDetailView` self-loads the behavior name via `TrainingPlanService.fetchBehaviorName(for: planItemId)` when `planItemId` is non-nil. Two fetches: item → behaviorId → behavior name. Shown in the Three D's section alongside Distance, Duration, Distraction. |
 | Custom Three D values | Stored as dedicated nullable columns; the enum column stores `"custom"` as the raw value. Display resolves at read time via `displayLabel(customValue:)`. Never stored on non-custom rows. |
 | Assignment block | Computed in `TrainerPlanDetailView.assignBlockReason` — no network call, uses already-loaded `behaviors` and `items` dictionaries. |
 | Assign sheet navigation | Presented as `.sheet` with own `NavigationStack` — avoids mixing `navigationDestination` styles in the trainer's nav stack. |
@@ -576,6 +697,7 @@ enum Distance: String, Codable, CaseIterable {
 | `training_plan_items` | Guardian reads assigned | Assignment row exists for guardian |
 | `plan_assignments` | Trainer reads/deletes | `trainer_id = auth.uid()` (direct — no subquery) |
 | `plan_assignments` | Trainer inserts | `trainer_id = auth.uid()` + active link to guardian |
+| `plan_assignments` | **Guardian self-assigns own plans** | `trainer_id = guardian_id = auth.uid()` + plan owned by uid |
 | `plan_assignments` | Guardian reads own | `guardian_id = auth.uid()` |
 | `plan_assignments` | Guardian updates `current_item_id` | `guardian_id = auth.uid()` |
 
@@ -591,7 +713,11 @@ enum Distance: String, Codable, CaseIterable {
 | Guardian unlinked after assignment | Plan remains visible (assignment row persists); trainer can delete assignment manually |
 | Plan deleted by trainer | `ON DELETE CASCADE` removes all behaviors, items, and assignments |
 | Behavior deleted by trainer | `ON DELETE CASCADE` removes all steps in that behavior; guardian's `currentItemId` may be orphaned → `ON DELETE SET NULL` on `plan_assignments.current_item_id` resets to nil, falling back to first step |
-| Guardian has no plans | "No plans assigned yet." in both Plans tab and dashboard |
+| Guardian has no plans | "Tap + to create your own plan, or ask your trainer to assign one." in Plans tab |
+| Guardian-created plan self-assignment RLS | Blocked by the existing trainer-insert policy (which requires `trainer_guardian_links`); allowed by the dedicated "Guardian self-assigns own plans" policy. |
+| Guardian replays a completed step | Record is logged with `plan_item_id` set; `advanceCurrentStep` is NOT called; guardian's position (`currentItemId`) is unchanged. |
+| Locked step tapped | Opens read-only `StepInfoSheet` — shows Three D's and a note that the step is not yet reachable. |
+| `.sheet(item:)` for step sheets | Both practice and info sheets use `.sheet(item:)` to avoid the SwiftUI timing race where content can be nil if `isPresented` fires before the item binding updates. |
 | Reorder network failure | In-memory state reverted by reloading items from Supabase |
 | Guardian at last step scores green | `min(currentIdx + 1, sorted.count - 1)` clamps — stays at last step, shows "mastered all steps" message |
 | Guardian at first step scores red | `max(currentIdx - 1, 0)` clamps — stays at first step, shows encouragement message |
@@ -599,29 +725,39 @@ enum Distance: String, Codable, CaseIterable {
 | Standalone session (no plan context) | `planItemId` is nil, Three D's are editable including `.custom`, no advancement logic runs |
 | Step with `.custom` distance but empty string in DB | `displayLabel(customValue:)` falls back to `"Custom"` — shown to guardian but never occurs when form validation is respected |
 | Legacy plan with no behaviors | Guardian detail shows a flat "Steps" section; no "Other Steps" header if there are also no unbound items |
+| Behavior name in session detail | `TrainingRecordDetailView` calls `fetchBehaviorName(for: planItemId)` on appear; nil is returned for standalone sessions or steps with no behavior — row is simply hidden. |
 
 ---
 
 ## Test Flows
 
-1. **Create plan**: Sign in as trainer → Plans → "+" → enter title and description → Create → plan appears in list.
-2. **Add behavior**: Tap plan → "Add Behavior" → tap "Recall" from suggestions → Add → "Recall" appears in Behaviors section with "0 steps".
-3. **Add behavior — custom name**: "Add Behavior" → type "Spin" → Add → appears in list.
-4. **Reorder behaviors**: Long-press `≡` handle → drag to new position → navigate away and back → order persists.
-5. **Add steps to a behavior**: Tap "Recall" → "Add Step" → enter "Sit at arm's length" → Distance: Arm's length, Duration: Instant, Distraction: None → Add → step appears with capsule tags.
-6. **Add step with custom D**: "Add Step" → Distance: pick "Custom" → text field appears → type "20 feet in hallway" → Add → capsule shows "20 feet in hallway".
-7. **Edit step**: Swipe left on a step → Edit → change Duration to Custom → type "hold for 3 seconds" → Save → capsule updates.
-8. **Reorder steps**: Long-press handle in behavior detail → drag to new position → persists in Supabase.
-9. **Assignment block — no behaviors**: Plan with no behaviors → "Assign to Guardian…" is absent; warning label shown instead.
-10. **Assignment block — empty behavior**: Plan with "Recall" (0 steps) → warning shows `"Recall" has no steps…`.
-11. **Assign plan**: All behaviors have steps → tap "Assign to Guardian…" → select guardian → optionally select pet → Assign → "Assigned To" section shows guardian name.
-12. **Duplicate assignment**: Assign same plan to same guardian again → "already assigned" error shown.
-13. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap plan → steps shown grouped by behavior section; first step in first behavior highlighted green as current.
-14. **Practice step — green**: Tap current step → score 5/5 → footer reads "Green — ready to advance" → Log → alert: "Moving to step 2" → next step highlighted.
-15. **Practice step — stay**: Score 3/5 → "Yellow — keep practicing" → same step still current.
-16. **Practice step — red**: Score 1/5 → "Red — we'll drop back" → previous step becomes current.
-17. **Cross-behavior advancement**: Advance to last step of first behavior → score 5 → moves into first step of second behavior.
-18. **Clamp at last step**: Score 5 on final step → "Amazing — you've mastered all the steps!" → step unchanged.
-19. **Memory bank**: Log a session, close the app, reopen → same step still highlighted.
-20. **Standalone session**: Pets tab → tap a pet → Training Sessions → "+" → Three D's editable (all pickers including `.custom`) → `plan_item_id` is null in Supabase.
-21. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
+1. **Create plan (trainer)**: Sign in as trainer → Plans → "+" → enter title and description → Create → plan appears in list.
+2. **Create plan (guardian, no trainer)**: Sign in as guardian → Plans tab → "+" → enter title and description → Create → plan appears in list with "To Do" badge; no "Assign to Guardian" UI shown in detail.
+3. **Guardian own plan — add behavior**: Tap own plan → "Add Behavior" → type "Spin" → Add → behavior appears.
+4. **Guardian own plan — add step**: Tap behavior → "Add Step" → enter step details → Add → step appears.
+5. **Guardian own plan — delete**: Swipe left on own plan in list → Delete → plan removed from list and Supabase.
+6. **Trainer-assigned plan — no delete**: Swipe left on a trainer-assigned plan → no delete action available.
+7. **Add behavior (trainer)**: Tap plan → "Add Behavior" → tap "Recall" from suggestions → Add → "Recall" appears with "0 steps".
+8. **Add behavior — custom name**: "Add Behavior" → type "Spin" → Add → appears in list.
+9. **Reorder behaviors**: Long-press `≡` handle → drag to new position → navigate away and back → order persists.
+10. **Add steps to a behavior**: Tap "Recall" → "Add Step" → enter "Sit at arm's length" → Distance: Arm's length, Duration: Instant, Distraction: None → Add → step appears with capsule tags.
+11. **Add step with custom D**: "Add Step" → Distance: pick "Custom" → text field appears → type "20 feet in hallway" → Add → capsule shows "20 feet in hallway".
+12. **Edit step**: Swipe left on a step → Edit → change Duration to Custom → type "hold for 3 seconds" → Save → capsule updates.
+13. **Reorder steps**: Long-press handle in behavior detail → drag to new position → persists in Supabase.
+14. **Assignment block — no behaviors**: Plan with no behaviors → "Assign to Guardian…" is absent; warning label shown instead.
+15. **Assignment block — empty behavior**: Plan with "Recall" (0 steps) → warning shows `"Recall" has no steps…`.
+16. **Assign plan**: All behaviors have steps → tap "Assign to Guardian…" → select guardian → optionally select pet → Assign → assignment row shows guardian name + "To Do" badge.
+17. **Trainer sees progress**: Guardian practices a step → trainer opens same plan detail → assignment row shows "In Progress" badge.
+18. **Duplicate assignment**: Assign same plan to same guardian again → "already assigned" error shown.
+19. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap trainer-assigned plan → steps shown grouped by behavior; first step highlighted green (current); completed steps show grey play icon; future steps show info icon.
+20. **Replay completed step**: Tap a grey-play step (completed) → practice form opens with Three D's locked → log score → no advancement alert → current step unchanged.
+21. **Locked step tapped**: Tap an info-icon step (future) → read-only info sheet shown; no practice form.
+22. **Practice step — green**: Tap current step → score 5/5 → footer reads "Green — ready to advance" → Log → alert: "Moving to step 2" → next step highlighted.
+23. **Practice step — stay**: Score 3/5 → "Yellow — keep practicing" → same step still current.
+24. **Practice step — red**: Score 1/5 → "Red — we'll drop back" → previous step becomes current.
+25. **Cross-behavior advancement**: Advance to last step of first behavior → score 5 → moves into first step of second behavior.
+26. **Clamp at last step**: Score 5 on final step → "Amazing — you've mastered all the steps!" → step unchanged.
+27. **Memory bank**: Log a session, close the app, reopen → same step still highlighted.
+28. **Behavior name in record detail**: After a plan-linked session → open the record in Training Sessions list → Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
+29. **Standalone session**: Pets tab → tap a pet → Training Sessions → "+" → Three D's editable (all pickers including `.custom`) → `plan_item_id` is null in Supabase; no Behavior row in detail.
+30. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
