@@ -31,6 +31,8 @@ class GuardianViewModel {
             async let fetchedRecords = recordService.fetchRecords(guardianId: guardian.guardianId)
             pets    = try await fetchedPets
             records = try await fetchedRecords
+        } catch is CancellationError {
+            // Pull-to-refresh cancelled the previous load; suppress — a new load is already in flight
         } catch {
             errorMessage = error.localizedDescription
         }
