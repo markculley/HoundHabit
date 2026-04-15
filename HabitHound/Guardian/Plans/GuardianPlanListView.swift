@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GuardianPlanListView: View {
     @State private var viewModel = GuardianPlanViewModel()
+    @State private var showCreateSheet = false
 
     var body: some View {
         Group {
@@ -11,11 +12,28 @@ struct GuardianPlanListView: View {
             } else {
                 List {
                     ForEach(viewModel.assignedPlans) { assignedPlan in
-                        NavigationLink(value: assignedPlan) {
-                            AssignedPlanRow(
-                                assignedPlan: assignedPlan,
-                                progress: viewModel.planProgress(for: assignedPlan)
-                            )
+                        let isOwn = viewModel.isOwnPlan(assignedPlan)
+                        if isOwn {
+                            NavigationLink(value: assignedPlan.plan) {
+                                AssignedPlanRow(
+                                    assignedPlan: assignedPlan,
+                                    progress: viewModel.planProgress(for: assignedPlan)
+                                )
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.deleteOwnPlan(assignedPlan.plan) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        } else {
+                            NavigationLink(value: assignedPlan) {
+                                AssignedPlanRow(
+                                    assignedPlan: assignedPlan,
+                                    progress: viewModel.planProgress(for: assignedPlan)
+                                )
+                            }
                         }
                     }
                 }
@@ -24,7 +42,7 @@ struct GuardianPlanListView: View {
                         ContentUnavailableView(
                             "No Plans Yet",
                             systemImage: "list.bullet.clipboard",
-                            description: Text("Your trainer will assign plans here.")
+                            description: Text("Tap + to create your own plan, or ask your trainer to assign one.")
                         )
                     }
                 }
@@ -32,10 +50,25 @@ struct GuardianPlanListView: View {
                 .navigationDestination(for: AssignedPlan.self) { assignedPlan in
                     GuardianPlanDetailView(assignedPlan: assignedPlan, viewModel: viewModel)
                 }
+                .navigationDestination(for: TrainingPlan.self) { plan in
+                    OwnedPlanDetailView(plan: plan)
+                }
             }
         }
         .navigationTitle("Plans")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { showCreateSheet = true } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
         .task { await viewModel.load() }
+        .sheet(isPresented: $showCreateSheet) {
+            TrainerPlanFormView(mode: .create) { saved in
+                Task { await viewModel.adoptCreatedPlan(saved) }
+            }
+        }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
@@ -44,6 +77,19 @@ struct GuardianPlanListView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+}
+
+// MARK: - OwnedPlanDetailView wrapper
+
+/// Hosts a TrainerPlanDetailView with its own ViewModel so the guardian can
+/// build out a plan they created themselves.
+private struct OwnedPlanDetailView: View {
+    let plan: TrainingPlan
+    @State private var trainerVM = TrainerPlanViewModel()
+
+    var body: some View {
+        TrainerPlanDetailView(plan: plan, viewModel: trainerVM)
     }
 }
 
@@ -77,7 +123,7 @@ private struct AssignedPlanRow: View {
 
 // MARK: - Badge
 
-private struct PlanProgressBadge: View {
+struct PlanProgressBadge: View {
     let progress: PlanProgress
 
     var body: some View {

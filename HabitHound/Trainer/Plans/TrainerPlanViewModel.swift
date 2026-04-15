@@ -222,6 +222,15 @@ class TrainerPlanViewModel {
         }
     }
 
+    // MARK: - Assignment Progress
+
+    func planProgress(for assignment: PlanAssignment) -> PlanProgress {
+        guard let currentId = assignment.currentItemId else { return .todo }
+        let sorted = (items[assignment.planId] ?? []).sorted { $0.sortOrder < $1.sortOrder }
+        guard let lastItem = sorted.last else { return .inProgress }
+        return currentId == lastItem.id ? .done : .inProgress
+    }
+
     // MARK: - Assignments
 
     func loadAssignments(for planId: UUID) async {

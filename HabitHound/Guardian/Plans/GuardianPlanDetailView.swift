@@ -4,8 +4,7 @@ struct GuardianPlanDetailView: View {
     let assignedPlan: AssignedPlan
     let viewModel: GuardianPlanViewModel
 
-    @State private var showPracticeSheet = false
-    @State private var showStepInfoSheet = false
+    @State private var selectedPracticeItem: TrainingPlanItem? = nil
     @State private var selectedInfoItem: TrainingPlanItem? = nil
     @State private var showAdvancementAlert = false
 
@@ -31,6 +30,24 @@ struct GuardianPlanDetailView: View {
     /// Items with no behavior assignment (legacy data).
     private var unboundItems: [TrainingPlanItem] {
         allItems.filter { $0.behaviorId == nil }
+    }
+
+    /// Items in true plan order: behaviors by their sortOrder, then items within
+    /// each behavior by their sortOrder. This is the sequence the guardian progresses through.
+    private var orderedItems: [TrainingPlanItem] {
+        var result: [TrainingPlanItem] = []
+        for behavior in behaviors {
+            result.append(contentsOf: items(for: behavior))
+        }
+        result.append(contentsOf: unboundItems)
+        return result
+    }
+
+    /// Whether a step is ahead of the guardian's current position (not yet reachable).
+    private func isLocked(_ item: TrainingPlanItem) -> Bool {
+        let currentIdx = orderedItems.firstIndex(where: { $0.id == currentItem?.id }) ?? 0
+        let itemIdx    = orderedItems.firstIndex(where: { $0.id == item.id }) ?? 0
+        return itemIdx > currentIdx
     }
 
     var body: some View {
@@ -86,15 +103,17 @@ struct GuardianPlanDetailView: View {
         .navigationTitle(assignedPlan.plan.title)
         .navigationBarTitleDisplayMode(.large)
         .task { await viewModel.loadItems(for: planId) }
-        // Practice sheet — current step
-        .sheet(isPresented: $showPracticeSheet) {
-            if let current = currentItem {
-                let behaviorName = behaviors.first { $0.id == current.behaviorId }?.name
-                TrainingRecordFormView(
-                    lockedPetId: assignedPlan.assignment.petId,
-                    planItem: current,
-                    behaviorName: behaviorName
-                ) { savedRecord in
+        // Practice sheet — any reachable step
+        .sheet(item: $selectedPracticeItem) { item in
+            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
+            let isCurrentStep = item.id == currentItem?.id
+            TrainingRecordFormView(
+                lockedPetId: assignedPlan.assignment.petId,
+                planItem: item,
+                behaviorName: behaviorName
+            ) { savedRecord in
+                // Only advance/regress position when practicing the current step
+                if isCurrentStep {
                     Task {
                         await viewModel.advanceCurrentStep(
                             assignedPlan: assignedPlan,
@@ -107,11 +126,9 @@ struct GuardianPlanDetailView: View {
             }
         }
         // Info sheet — non-current steps
-        .sheet(isPresented: $showStepInfoSheet) {
-            if let item = selectedInfoItem {
-                let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
-                StepInfoSheet(item: item, behaviorName: behaviorName)
-            }
+        .sheet(item: $selectedInfoItem) { item in
+            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
+            StepInfoSheet(item: item, behaviorName: behaviorName)
         }
         .alert("Session Logged", isPresented: $showAdvancementAlert) {
             Button("OK", role: .cancel) {}
@@ -126,15 +143,15 @@ struct GuardianPlanDetailView: View {
     private func stepRows(for stepItems: [TrainingPlanItem]) -> some View {
         ForEach(stepItems) { item in
             let isCurrent = item.id == currentItem?.id
+            let locked = isLocked(item)
             Button {
-                if isCurrent {
-                    showPracticeSheet = true
-                } else {
+                if locked {
                     selectedInfoItem = item
-                    showStepInfoSheet = true
+                } else {
+                    selectedPracticeItem = item
                 }
             } label: {
-                StepRow(item: item, isCurrent: isCurrent)
+                StepRow(item: item, isCurrent: isCurrent, isLocked: locked)
             }
             .buttonStyle(.plain)
         }
@@ -146,6 +163,7 @@ struct GuardianPlanDetailView: View {
 private struct StepRow: View {
     let item: TrainingPlanItem
     let isCurrent: Bool
+    let isLocked: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -160,7 +178,7 @@ private struct StepRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .font(.body)
-                    .foregroundStyle(isCurrent ? .primary : .secondary)
+                    .foregroundStyle(isLocked ? .secondary : .primary)
                 HStack(spacing: 6) {
                     StepTag(item.distanceLabel)
                     StepTag(item.durationLabel)
@@ -168,8 +186,13 @@ private struct StepRow: View {
                 }
             }
             Spacer()
-            Image(systemName: isCurrent ? "play.circle.fill" : "info.circle")
-                .foregroundStyle(isCurrent ? .green : .secondary.opacity(0.5))
+            if isLocked {
+                Image(systemName: "info.circle")
+                    .foregroundStyle(.secondary.opacity(0.5))
+            } else {
+                Image(systemName: "play.circle.fill")
+                    .foregroundStyle(isCurrent ? .green : .secondary)
+            }
         }
         .padding(.vertical, 2)
     }

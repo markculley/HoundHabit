@@ -282,6 +282,26 @@ struct TrainingPlanService {
         }
     }
 
+    /// Returns the behavior name for a given plan item, or nil for items with no behavior or standalone sessions.
+    func fetchBehaviorName(for planItemId: UUID) async throws -> String? {
+        let item: TrainingPlanItem = try await supabase
+            .from("training_plan_items")
+            .select()
+            .eq("id", value: planItemId)
+            .single()
+            .execute()
+            .value
+        guard let behaviorId = item.behaviorId else { return nil }
+        let behavior: Behavior = try await supabase
+            .from("behaviors")
+            .select()
+            .eq("id", value: behaviorId)
+            .single()
+            .execute()
+            .value
+        return behavior.name
+    }
+
     func fetchAssignedPlanItems(planId: UUID) async throws -> [TrainingPlanItem] {
         return try await supabase
             .from("training_plan_items")
@@ -299,6 +319,21 @@ struct TrainingPlanService {
             .update(update)
             .eq("id", value: assignmentId)
             .execute()
+    }
+
+    /// Creates a self-assignment so a guardian-owned plan appears in their assigned-plans list.
+    func selfAssignPlan(planId: UUID) async throws -> PlanAssignment {
+        guard let userId = supabase.auth.currentUser?.id else {
+            throw PlanError.notAuthenticated
+        }
+        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: nil)
+        return try await supabase
+            .from("plan_assignments")
+            .insert(insert)
+            .select()
+            .single()
+            .execute()
+            .value
     }
 }
 

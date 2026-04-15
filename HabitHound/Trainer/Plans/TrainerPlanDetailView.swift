@@ -46,13 +46,18 @@ struct TrainerPlanDetailView: View {
 
                 if !assignments.isEmpty {
                     ForEach(assignments) { assignment in
-                        VStack(alignment: .leading, spacing: 4) {
-                            LabeledContent("Guardian") {
-                                Text(viewModel.guardianName(for: assignment.guardianId))
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                LabeledContent("Guardian") {
+                                    Text(viewModel.guardianName(for: assignment.guardianId))
+                                }
+                                LabeledContent("Pet") {
+                                    Text(viewModel.petName(for: assignment.petId))
+                                }
                             }
-                            LabeledContent("Pet") {
-                                Text(viewModel.petName(for: assignment.petId))
-                            }
+                            Spacer()
+                            PlanProgressBadge(progress: viewModel.planProgress(for: assignment))
+                                .padding(.top, 2)
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {

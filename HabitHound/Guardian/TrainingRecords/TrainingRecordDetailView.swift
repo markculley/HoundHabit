@@ -20,9 +20,11 @@ struct TrainingRecordDetailView: View {
     @State private var newCommentBody = ""
     @State private var isSendingComment = false
     @State private var selfLoadedComments: [Comment] = []
+    @State private var behaviorName: String? = nil
     @Environment(\.dismiss) private var dismiss
 
     private let commentService = CommentService()
+    private let planService = TrainingPlanService()
 
     private var current: TrainingRecord? {
         viewModel.records.first { $0.id == record.id }
@@ -68,8 +70,15 @@ struct TrainingRecordDetailView: View {
             }
         }
         .task(id: r.id) {
-            guard selfLoadComments else { return }
-            selfLoadedComments = (try? await commentService.fetchComments(recordId: r.id)) ?? []
+            async let comments: () = {
+                guard selfLoadComments else { return }
+                selfLoadedComments = (try? await commentService.fetchComments(recordId: r.id)) ?? []
+            }()
+            async let behavior: () = {
+                guard let itemId = r.planItemId else { return }
+                behaviorName = try? await planService.fetchBehaviorName(for: itemId)
+            }()
+            _ = await (comments, behavior)
         }
         .sheet(isPresented: $showEditSheet) {
             TrainingRecordFormView(existingRecord: r, petName: petName) { updated in
@@ -112,6 +121,9 @@ struct TrainingRecordDetailView: View {
         }
 
         Section("Three D's") {
+            if let behaviorName {
+                LabeledContent("Behavior", value: behaviorName)
+            }
             LabeledContent("Distance",    value: r.distance.label)
             LabeledContent("Distraction", value: r.distraction.label)
             LabeledContent("Duration",    value: r.duration.label)
