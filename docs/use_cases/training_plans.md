@@ -64,9 +64,13 @@ Guardian                  App                        Supabase
   │────────────────────────▶│                            │
   │  TrainerPlanFormView     │                            │
   │  (same form as trainer) │                            │
+  │  + "Assign to Pet"      │                            │
+  │  picker (if pets exist) │                            │
+  │◀────────────────────────│                            │
   │                         │                            │
   │  Enter title +          │                            │
-  │  description, tap Create│                            │
+  │  description, optionally│                            │
+  │  select a pet, tap Create│                           │
   │────────────────────────▶│                            │
   │                         │  createPlan(title, desc)   │
   │                         │───────────────────────────▶│
@@ -74,17 +78,28 @@ Guardian                  App                        Supabase
   │                         │  (trainer_id = guardian's  │
   │                         │   own uid)                 │
   │                         │◀───────────────────────────│
-  │                         │  selfAssignPlan(planId)    │
+  │                         │  selfAssignPlan(planId,    │
+  │                         │    petId?, isShared: false)│
   │                         │───────────────────────────▶│
   │                         │  INSERT plan_assignments   │
   │                         │  (trainer_id = guardian_id │
-  │                         │   = auth.uid())            │
+  │                         │   = auth.uid(),            │
+  │                         │   pet_id = selected pet,   │
+  │                         │   is_shared = false)       │
   │                         │◀───────────────────────────│
   │  Plan appears in Plans  │                            │
   │  list (own plans can be │                            │
   │  deleted via swipe)     │                            │
   │◀────────────────────────│                            │
 ```
+
+### Pet Picker in Form
+
+`TrainerPlanFormView` accepts an optional `pets: [Pet]` parameter. When the guardian opens the form from `GuardianPlanListView`, the view passes its loaded `PetViewModel.pets`. If pets are present and mode is `.create`, an "Assign to Pet" picker section appears with a "None" option at the top. The selected `petId` is returned alongside the saved plan via `onSave: (TrainingPlan, UUID?) -> Void`.
+
+Trainer-facing call sites pass no pets and use `{ plan, _ in }` — the picker is hidden and the second parameter ignored.
+
+A plan can also be created from a pet's detail view (see UC-9.7), in which case the pet is pre-determined and no picker is needed.
 
 ### Navigation for Own Plans
 
@@ -386,6 +401,15 @@ Guardian                  App                        Supabase
 
 Empty state message: *"Tap + to create your own plan, or ask your trainer to assign one."*
 
+### Trainer-Assigned Plan Sharing Toggle
+
+`GuardianPlanDetailView` shows a **"Share sessions with trainer"** toggle in the plan header section for trainer-assigned plans (`assignment.trainerId != assignment.guardianId`). The toggle is hidden for self-assigned (own) plans.
+
+- **Default: on** — all sessions logged under the plan are shared with the trainer.
+- Toggling calls `GuardianPlanViewModel.updateSharing(for:isShared:)` → `TrainingPlanService.updateAssignmentSharing(assignmentId:isShared:)` → `UPDATE plan_assignments SET is_shared = ?`.
+- The updated value is written to `assignedPlans[idx].assignment.isShared` in-memory immediately.
+- When the guardian opens a step's practice form, `isSharedDefault: isSharedWithTrainer` is passed into `TrainingRecordFormView`. The record is created with that `isShared` value — no per-session toggle is shown for plan-linked sessions.
+
 ### Behavior-Grouped Layout
 
 `GuardianPlanDetailView` renders one `List` section per Behavior. Steps within each section are shown in their `sortOrder` sequence. The current step (green dot + green play icon) may appear in any behavior's section.
@@ -576,6 +600,48 @@ For standalone sessions (`planItem` is nil):
 
 ---
 
+## UC-9.7: Guardian Views and Manages Plans from Pet Detail
+
+**Actor:** Guardian
+**Precondition:** Guardian is viewing a pet's detail screen (`PetDetailView`).
+
+The pet detail screen is a second entry point for plans — a guardian can see all plans linked to a specific pet, create a new plan for that pet, or assign an existing own plan to the pet.
+
+### Plans Section Layout
+
+`PetDetailView` shows a **Plans** section below the hero photo with two subsections:
+
+| Subsection | Condition | Action on tap |
+|---|---|---|
+| **My Plans** | Plans where `plan.trainerId == currentUserId` | Opens `OwnedPlanDetailView` in a sheet |
+| **From My Trainer** | Plans where `plan.trainerId != currentUserId` | Opens `GuardianPlanDetailView` in a sheet |
+
+Both lists only show plans whose `assignment.petId == petId` (i.e. linked to this specific pet).
+
+### Adding Plans to a Pet
+
+The `+` button in the Plans header opens a `Menu` with two options:
+
+1. **New Plan** — opens `TrainerPlanFormView`. On save, `guardianPlanVM.adoptCreatedPlan(saved, petId: pet.id)` creates the plan and self-assignment with the pet pre-linked. No pet picker is shown since the pet is already determined by context.
+2. **Assign Existing Plan** — only visible when the guardian has own plans not yet linked to this pet. Opens `AssignExistingPlanSheet` listing those plans. On selection, `TrainingPlanService.updateAssignmentPet(assignmentId:petId:)` links the existing assignment to the pet.
+
+### Data Loading
+
+`PetDetailView` loads independently from `GuardianPlanListView` — it fetches all assigned plans via `TrainingPlanService.fetchAssignedPlans()`, filters for `petId` match, and primes `guardianPlanVM.assignedPlans` so `GuardianPlanDetailView` can load items on demand.
+
+```swift
+private func loadPetPlans() async {
+    let all = (try? await planService.fetchAssignedPlans()) ?? []
+    petPlans = all.filter { $0.assignment.petId == petId }
+    allOwnPlans = all.filter { $0.plan.trainerId == currentUserId }
+    for ap in petPlans where !guardianPlanVM.assignedPlans.contains(...) {
+        guardianPlanVM.assignedPlans.append(ap)
+    }
+}
+```
+
+---
+
 ## Data Model
 
 ```swift
@@ -665,9 +731,11 @@ enum Distance: String, Codable, CaseIterable {
 | Concern | Decision |
 |---------|----------|
 | Trainer vs Guardian ViewModels | Separate — `TrainerPlanViewModel` and `GuardianPlanViewModel`. Different mutation surface, different fetch logic. |
-| Guardian-created plans | Guardian becomes `trainer_id` on the plan. `selfAssignPlan` creates a `plan_assignment` with `trainer_id = guardian_id = auth.uid()`. The plan then appears in `fetchAssignedPlans()` just like any trainer-assigned plan. |
+| Guardian-created plans | Guardian becomes `trainer_id` on the plan. `selfAssignPlan` creates a `plan_assignment` with `trainer_id = guardian_id = auth.uid()` and `is_shared = false`. The plan then appears in `fetchAssignedPlans()` just like any trainer-assigned plan. |
 | Guardian plan detail routing | `GuardianPlanListView` checks `plan.trainerId == currentUserId`. Own plans → `OwnedPlanDetailView` (wraps `TrainerPlanDetailView(showAssignments: false)`). Trainer-assigned → `GuardianPlanDetailView`. Two distinct `navigationDestination` types: `TrainingPlan` for own, `AssignedPlan` for assigned. |
 | `showAssignments` flag | `TrainerPlanDetailView` accepts `showAssignments: Bool = true`. Guardians viewing their own plan pass `false` — the "Assign to Guardian" button and assignment rows are hidden entirely. |
+| `is_shared` on `plan_assignments` | Controls whether sessions logged under a plan are visible to the trainer. Trainer-assigned plans default to `true` (`assignPlan` sets `isShared: true`). Self-assigned plans default to `false` (`selfAssignPlan` sets `isShared: false`). Guardian can toggle per-plan in `GuardianPlanDetailView`. The value is passed as `isSharedDefault` into `TrainingRecordFormView`; no per-session toggle is shown for plan-linked sessions. |
+| `TrainerPlanFormView` pet picker | `var pets: [Pet] = []` parameter. When non-empty and mode is `.create`, an "Assign to Pet" picker section appears. `onSave` carries `(TrainingPlan, UUID?)` — the second argument is the selected petId (nil if "None" selected). Trainer call sites pass no pets and ignore the second argument. |
 | Behavior as intermediate layer | `Behavior` lives in `Core/Models/Behavior.swift`. Items carry a nullable `behaviorId` so old data without behaviors still works. |
 | `AssignedPlan` placement | Lives in `TrainingPlanService.swift`, not `Core/Models/` — it's a join result, not a direct DB row. Follows `LinkedGuardian` pattern in `InviteService.swift`. |
 | Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior. Guardian detail computes global order via `orderedItems` (behaviors by behavior sortOrder, then items by item sortOrder within each behavior). A raw cross-behavior `sortOrder` comparison would be wrong because each behavior resets at 0. |
@@ -700,6 +768,7 @@ enum Distance: String, Codable, CaseIterable {
 | `plan_assignments` | **Guardian self-assigns own plans** | `trainer_id = guardian_id = auth.uid()` + plan owned by uid |
 | `plan_assignments` | Guardian reads own | `guardian_id = auth.uid()` |
 | `plan_assignments` | Guardian updates `current_item_id` | `guardian_id = auth.uid()` |
+| `plan_assignments` | Guardian updates `is_shared` | `guardian_id = auth.uid()` |
 
 ---
 
@@ -723,6 +792,9 @@ enum Distance: String, Codable, CaseIterable {
 | Guardian at first step scores red | `max(currentIdx - 1, 0)` clamps — stays at first step, shows encouragement message |
 | `currentItemId` references a deleted item | `ON DELETE SET NULL` resets pointer to nil; `currentItem(for:in:)` falls back to the first step |
 | Standalone session (no plan context) | `planItemId` is nil, Three D's are editable including `.custom`, no advancement logic runs |
+| Plan-linked session sharing | `isShared` on the record is set from `assignment.isShared` at creation time — no per-session override. Toggling the plan-level sharing toggle forward only affects new sessions. |
+| Guardian toggles sharing off mid-plan | Existing session records retain their original `is_shared` value — only future sessions pick up the new setting. |
+| Self-assigned plan — sharing toggle hidden | `isTrainerAssigned` (`trainerId != guardianId`) is false; toggle not rendered in `GuardianPlanDetailView`. |
 | Step with `.custom` distance but empty string in DB | `displayLabel(customValue:)` falls back to `"Custom"` — shown to guardian but never occurs when form validation is respected |
 | Legacy plan with no behaviors | Guardian detail shows a flat "Steps" section; no "Other Steps" header if there are also no unbound items |
 | Behavior name in session detail | `TrainingRecordDetailView` calls `fetchBehaviorName(for: planItemId)` on appear; nil is returned for standalone sessions or steps with no behavior — row is simply hidden. |
@@ -761,3 +833,11 @@ enum Distance: String, Codable, CaseIterable {
 28. **Behavior name in record detail**: After a plan-linked session → open the record in Training Sessions list → Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
 29. **Standalone session**: Pets tab → tap a pet → Training Sessions → "+" → Three D's editable (all pickers including `.custom`) → `plan_item_id` is null in Supabase; no Behavior row in detail.
 30. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
+31. **Create plan with pet (Plans tab)**: Guardian → Plans tab → "+" → form shows "Assign to Pet" section → select a pet → Create → plan appears in Plans list; open Pet Detail for that pet → plan appears under "My Plans".
+32. **Create plan without pet (Plans tab)**: Guardian → Plans tab → "+" → leave pet as "None" → Create → plan appears in Plans list with no pet link; does not appear in any Pet Detail's plans section.
+33. **Assign existing plan to pet**: Guardian has a plan not linked to any pet → Pet Detail → Plans "+" → "Assign Existing Plan" → plan appears in list → select it → plan now appears in Pet Detail plans section.
+34. **Pet Detail plans — My Plans vs From My Trainer**: Pet with both self-created and trainer-assigned plans → Pet Detail shows "My Plans" and "From My Trainer" subsections correctly separated.
+35. **Trainer sharing default on**: Guardian linked to a trainer → trainer assigns a plan → Guardian views plan detail → "Share sessions with trainer" toggle is ON.
+36. **Toggle sharing off**: Guardian opens trainer-assigned plan detail → toggles "Share sessions with trainer" off → logs a session → in Supabase `training_records` the new row has `is_shared = false`; trainer's guardian detail no longer shows new sessions for this plan.
+37. **Sharing toggle hidden for own plans**: Guardian views a self-created plan detail → no "Share sessions with trainer" toggle shown.
+38. **No per-session toggle for plan sessions**: Guardian logs a step from a plan → `TrainingRecordFormView` does not show "Share with Trainer" toggle.

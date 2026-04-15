@@ -78,6 +78,8 @@ sequenceDiagram
 
 Standalone sessions (`planItemId` nil) show no Behavior row.
 
+The sharing section (Share with Trainer toggle / "Shared with Trainer" label) is hidden entirely for plan-linked sessions — sharing is controlled once at the plan level via `GuardianPlanDetailView` and inherited by all sessions logged under that plan.
+
 ---
 
 ## UC-4.3b Edit a Training Session
@@ -146,7 +148,7 @@ sequenceDiagram
 4. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status (coloured circle + label) should update live as you adjust the score.
 5. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
 6. Set distance / distraction / duration.
-7. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form.
+7. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form. (The toggle is hidden for plan-linked sessions — sharing is controlled at the plan level.)
 8. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of this pet's sessions list.
 9. In Supabase → Table Editor → `training_records`: confirm a new row appears with the correct `pet_id`, `guardian_id`, `score`, and `status` (derived) field values. `plan_item_id` should be `null` for a standalone session.
 
