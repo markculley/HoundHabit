@@ -70,15 +70,17 @@ struct TrainingRecordDetailView: View {
             }
         }
         .task(id: r.id) {
-            async let comments: () = {
-                guard selfLoadComments else { return }
-                selfLoadedComments = (try? await commentService.fetchComments(recordId: r.id)) ?? []
+            async let fetchedComments: [Comment] = {
+                guard selfLoadComments else { return [] }
+                return (try? await commentService.fetchComments(recordId: r.id)) ?? []
             }()
-            async let behavior: () = {
-                guard let itemId = r.planItemId else { return }
-                behaviorName = try? await planService.fetchBehaviorName(for: itemId)
+            async let fetchedBehavior: String? = {
+                guard let itemId = r.planItemId else { return nil }
+                return try? await planService.fetchBehaviorName(for: itemId)
             }()
-            _ = await (comments, behavior)
+            // Await both concurrently, then assign on the main actor (.task inherits main actor isolation)
+            selfLoadedComments = await fetchedComments
+            behaviorName = await fetchedBehavior
         }
         .sheet(isPresented: $showEditSheet) {
             TrainingRecordFormView(existingRecord: r, petName: petName) { updated in
@@ -135,14 +137,18 @@ struct TrainingRecordDetailView: View {
             }
         }
 
-        Section {
-            if isReadOnly {
-                LabeledContent("Shared with Trainer", value: r.isShared ? "Yes" : "No")
-            } else {
-                Toggle("Share with Trainer", isOn: Binding(
-                    get: { r.isShared },
-                    set: { _ in Task { await viewModel.toggleSharing(r) } }
-                ))
+        // Sharing is controlled at the plan level for plan-linked sessions.
+        // Only show the toggle for standalone sessions.
+        if r.planItemId == nil {
+            Section {
+                if isReadOnly {
+                    LabeledContent("Shared with Trainer", value: r.isShared ? "Yes" : "No")
+                } else {
+                    Toggle("Share with Trainer", isOn: Binding(
+                        get: { r.isShared },
+                        set: { _ in Task { await viewModel.toggleSharing(r) } }
+                    ))
+                }
             }
         }
     }

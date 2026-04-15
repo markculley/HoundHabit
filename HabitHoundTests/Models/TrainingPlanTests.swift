@@ -180,7 +180,8 @@ struct TrainingPlanTests {
             "trainer_id": "99999999-9999-9999-9999-999999999999",
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": "88888888-8888-8888-8888-888888888888",
-            "assigned_at": "2025-03-01T09:00:00Z"
+            "assigned_at": "2025-03-01T09:00:00Z",
+            "is_shared": true
         }
         """.data(using: .utf8)!
 
@@ -190,6 +191,7 @@ struct TrainingPlanTests {
         #expect(assignment.trainerId == UUID(uuidString: "99999999-9999-9999-9999-999999999999"))
         #expect(assignment.guardianId == UUID(uuidString: "77777777-7777-7777-7777-777777777777"))
         #expect(assignment.petId == UUID(uuidString: "88888888-8888-8888-8888-888888888888"))
+        #expect(assignment.isShared == true)
     }
 
     @Test("PlanAssignment decodes null pet_id as nil")
@@ -201,12 +203,14 @@ struct TrainingPlanTests {
             "trainer_id": "99999999-9999-9999-9999-999999999999",
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": null,
-            "assigned_at": "2025-03-01T09:00:00Z"
+            "assigned_at": "2025-03-01T09:00:00Z",
+            "is_shared": false
         }
         """.data(using: .utf8)!
 
         let assignment = try decoder.decode(PlanAssignment.self, from: json)
         #expect(assignment.petId == nil)
+        #expect(assignment.isShared == false)
     }
 
     @Test("PlanAssignment decodes current_item_id")
@@ -219,7 +223,8 @@ struct TrainingPlanTests {
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": null,
             "assigned_at": "2025-03-01T09:00:00Z",
-            "current_item_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            "current_item_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "is_shared": true
         }
         """.data(using: .utf8)!
 
@@ -237,7 +242,8 @@ struct TrainingPlanTests {
             "guardian_id": "77777777-7777-7777-7777-777777777777",
             "pet_id": null,
             "assigned_at": "2025-03-01T09:00:00Z",
-            "current_item_id": null
+            "current_item_id": null,
+            "is_shared": true
         }
         """.data(using: .utf8)!
 

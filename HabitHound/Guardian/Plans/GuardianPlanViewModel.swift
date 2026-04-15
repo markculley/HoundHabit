@@ -108,6 +108,17 @@ class GuardianPlanViewModel {
         }
     }
 
+    func updateSharing(for assignedPlan: AssignedPlan, isShared: Bool) async {
+        do {
+            try await service.updateAssignmentSharing(assignmentId: assignedPlan.assignment.id, isShared: isShared)
+            if let idx = assignedPlans.firstIndex(where: { $0.assignment.id == assignedPlan.assignment.id }) {
+                assignedPlans[idx].assignment.isShared = isShared
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func isOwnPlan(_ assignedPlan: AssignedPlan) -> Bool {
         guard let userId = currentUserId else { return false }
         return assignedPlan.plan.trainerId == userId

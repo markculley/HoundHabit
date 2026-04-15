@@ -229,7 +229,7 @@ struct TrainingPlanService {
         guard let trainerId = supabase.auth.currentUser?.id else {
             throw PlanError.notAuthenticated
         }
-        let insert = AssignmentInsert(planId: planId, trainerId: trainerId, guardianId: guardianId, petId: petId)
+        let insert = AssignmentInsert(planId: planId, trainerId: trainerId, guardianId: guardianId, petId: petId, isShared: true)
         return try await supabase
             .from("plan_assignments")
             .insert(insert)
@@ -334,12 +334,21 @@ struct TrainingPlanService {
             .execute()
     }
 
+    /// Toggles whether a guardian shares their session records with the trainer for this plan.
+    func updateAssignmentSharing(assignmentId: UUID, isShared: Bool) async throws {
+        try await supabase
+            .from("plan_assignments")
+            .update(SharingUpdate(isShared: isShared))
+            .eq("id", value: assignmentId)
+            .execute()
+    }
+
     /// Creates a self-assignment so a guardian-owned plan appears in their assigned-plans list.
     func selfAssignPlan(planId: UUID, petId: UUID? = nil) async throws -> PlanAssignment {
         guard let userId = supabase.auth.currentUser?.id else {
             throw PlanError.notAuthenticated
         }
-        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: petId)
+        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: petId, isShared: false)
         return try await supabase
             .from("plan_assignments")
             .insert(insert)
@@ -481,11 +490,18 @@ private struct AssignmentInsert: Encodable {
     let trainerId: UUID
     let guardianId: UUID
     let petId: UUID?
+    let isShared: Bool
 
     enum CodingKeys: String, CodingKey {
         case planId      = "plan_id"
         case trainerId   = "trainer_id"
         case guardianId  = "guardian_id"
         case petId       = "pet_id"
+        case isShared    = "is_shared"
     }
+}
+
+private struct SharingUpdate: Encodable {
+    let isShared: Bool
+    enum CodingKeys: String, CodingKey { case isShared = "is_shared" }
 }

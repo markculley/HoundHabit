@@ -7,6 +7,18 @@ struct GuardianPlanDetailView: View {
     @State private var selectedPracticeItem: TrainingPlanItem? = nil
     @State private var selectedInfoItem: TrainingPlanItem? = nil
     @State private var showAdvancementAlert = false
+    @State private var isSharedWithTrainer: Bool
+
+    init(assignedPlan: AssignedPlan, viewModel: GuardianPlanViewModel) {
+        self.assignedPlan = assignedPlan
+        self.viewModel = viewModel
+        _isSharedWithTrainer = State(initialValue: assignedPlan.assignment.isShared)
+    }
+
+    /// True when the plan was assigned by a different user (a real trainer).
+    private var isTrainerAssigned: Bool {
+        assignedPlan.assignment.trainerId != assignedPlan.assignment.guardianId
+    }
 
     private var planId: UUID { assignedPlan.plan.id }
 
@@ -64,6 +76,12 @@ struct GuardianPlanDetailView: View {
                 Text("Assigned \(assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+                if isTrainerAssigned {
+                    Toggle("Share sessions with trainer", isOn: $isSharedWithTrainer)
+                        .onChange(of: isSharedWithTrainer) { _, newValue in
+                            Task { await viewModel.updateSharing(for: assignedPlan, isShared: newValue) }
+                        }
+                }
             }
 
             if viewModel.items[planId] == nil {
@@ -110,7 +128,8 @@ struct GuardianPlanDetailView: View {
             TrainingRecordFormView(
                 lockedPetId: assignedPlan.assignment.petId,
                 planItem: item,
-                behaviorName: behaviorName
+                behaviorName: behaviorName,
+                isSharedDefault: isSharedWithTrainer
             ) { savedRecord in
                 // Only advance/regress position when practicing the current step
                 if isCurrentStep {
@@ -262,7 +281,7 @@ private struct StepTag: View {
     )
     let assignment = PlanAssignment(
         id: UUID(), planId: plan.id, trainerId: UUID(),
-        guardianId: UUID(), petId: nil, assignedAt: Date(), currentItemId: nil
+        guardianId: UUID(), petId: nil, assignedAt: Date(), currentItemId: nil, isShared: true
     )
     NavigationStack {
         GuardianPlanDetailView(

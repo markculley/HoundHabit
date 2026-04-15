@@ -13,6 +13,9 @@ struct TrainingRecordFormView: View {
     var planItem: TrainingPlanItem? = nil
     /// The behavior this step belongs to, shown in the Three D's section.
     var behaviorName: String? = nil
+    /// Initial value for isShared. For plan-linked sessions this comes from the assignment;
+    /// for standalone sessions it defaults to false.
+    var isSharedDefault: Bool = false
     /// Called with the saved record so the caller can refresh / trigger advancement.
     var onSave: ((TrainingRecord) -> Void)? = nil
 
@@ -158,9 +161,11 @@ struct TrainingRecordFormView: View {
                         .lineLimit(3...6)
                 }
 
-                // Share
-                Section {
-                    Toggle("Share with Trainer", isOn: $isShared)
+                // Share — hidden for plan sessions (sharing is controlled at the plan level)
+                if !isPlanSession {
+                    Section {
+                        Toggle("Share with Trainer", isOn: $isShared)
+                    }
                 }
             }
             .navigationTitle(navTitle)
@@ -227,7 +232,10 @@ struct TrainingRecordFormView: View {
             durationCustomValue  = item.durationCustomValue
             distractionCustomValue = item.distractionCustomValue
         }
-        guard let r = existingRecord else { return }
+        guard let r = existingRecord else {
+            isShared = isSharedDefault
+            return
+        }
         selectedPetId        = r.petId
         recordedAt           = r.recordedAt
         score                = r.score

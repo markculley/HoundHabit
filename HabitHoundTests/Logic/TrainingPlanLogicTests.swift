@@ -62,7 +62,7 @@ struct StepAdvancementTests {
         PlanAssignment(
             id: UUID(), planId: planId, trainerId: UUID(),
             guardianId: UUID(), petId: nil,
-            assignedAt: Date(), currentItemId: currentItemId
+            assignedAt: Date(), currentItemId: currentItemId, isShared: true
         )
     }
 
