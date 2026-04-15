@@ -2,7 +2,9 @@
 
 ## UC-4.1 Log a Training Session
 
-Guardian taps the **Log** tab (centre tab) or the **+** button inside a pet's sessions list, fills in the form, and saves. The record is persisted to Supabase and appears in the list immediately.
+Guardian taps the **+** button inside a pet's training sessions list, fills in the form, and saves. The record is persisted to Supabase and appears in the list immediately. Sessions can also be logged via the Plans flow (see UC-9.6).
+
+There is no standalone Log tab — all standalone session logging is accessed from the Pets tab (Pet Detail → Training Sessions → +).
 
 ```mermaid
 sequenceDiagram
@@ -12,7 +14,7 @@ sequenceDiagram
     participant SVC as TrainingRecordService
     participant DB as Supabase (training_records)
 
-    G->>UI: Tap Log tab / + button
+    G->>UI: Tap + in pet's Training Sessions list
     UI->>UI: sheet presented
     UI->>SVC: fetchPets(guardianId) [.task]
     SVC-->>UI: [Pet] list
@@ -33,29 +35,23 @@ sequenceDiagram
 
 ## UC-4.2 View Training Sessions List
 
-Guardian views sessions in two contexts:
-- **Home tab (all pets)** — `DashboardView` loads all records via `DashboardViewModel`, showing pet name + date + Three D's per row.
-- **Pet Detail (filtered)** — `TrainingRecordListView` loads records for a single pet.
+Guardian views sessions from the **Pet Detail** view — `TrainingRecordListView` loads records filtered to that pet.
 
 ```mermaid
 sequenceDiagram
     actor G as Guardian
-    participant DV as DashboardView
-    participant DVM as DashboardViewModel
+    participant PD as PetDetailView
     participant RVM as TrainingRecordViewModel
-    participant SVC as TrainingRecordService / PetService
+    participant SVC as TrainingRecordService
     participant DB as Supabase
 
-    G->>DV: Open Home tab
-    DV->>DVM: load() [.task]
-    DVM->>SVC: fetchRecords(guardianId) + fetchPets(guardianId) [async let]
-    SVC->>DB: SELECT * FROM training_records WHERE guardian_id = ? ORDER BY recorded_at DESC
-    SVC->>DB: SELECT * FROM pets WHERE guardian_id = ?
-    DB-->>DVM: [TrainingRecord], [Pet]
-    DVM-->>DV: records + petName(for:) helper
-    DV->>G: Feed rows: status badge (derived from score) · pet name · date · Three D's
-
-    note over DV,DB: Per-pet view uses TrainingRecordListView with petId filter (unchanged)
+    G->>PD: Pets tab → tap a pet → Training Sessions
+    PD->>RVM: loadRecords(petId:) [.task]
+    RVM->>SVC: fetchRecords(petId: petId)
+    SVC->>DB: SELECT * FROM training_records WHERE pet_id = ? ORDER BY recorded_at DESC
+    DB-->>RVM: [TrainingRecord]
+    RVM-->>PD: records list
+    PD->>G: Rows: status badge · date · Three D's
 ```
 
 ---
@@ -121,22 +117,16 @@ sequenceDiagram
 
 ### T-4.1 Log a new session
 1. Build and run the app.
-2. Tap the **Log** tab (centre, plus icon) — the Log Session sheet should appear.
-3. Confirm the pet picker is populated with your existing pets.
-4. Select a pet, leave the date as now. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status (coloured circle + label) should update live as you adjust the score.
+2. Go to **Pets** tab → tap a pet → tap **Training Sessions** → tap **+** in the toolbar.
+3. Confirm the pet is pre-selected in the picker.
+4. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status (coloured circle + label) should update live as you adjust the score.
 5. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
 6. Set distance / distraction / duration.
 7. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form.
-8. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of the **Home** tab feed (no tab-switching required).
+8. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of this pet's sessions list.
 9. In Supabase → Table Editor → `training_records`: confirm a new row appears with the correct `pet_id`, `guardian_id`, `score`, and `status` (derived) field values. `plan_item_id` should be `null` for a standalone session.
 
-### T-4.2 View sessions — Home tab (all pets)
-1. Go to the **Home** tab.
-2. Confirm the session logged in T-4.1 appears at the top of the feed.
-3. Confirm each row shows: status badge, pet name, date, distance · distraction · duration.
-4. Tap a row — confirm it navigates to the detail view.
-
-### T-4.3 View sessions — per pet
+### T-4.2 View sessions — per pet
 1. Go to **Pets** tab → tap a pet → tap **Training Sessions**.
 2. Confirm only sessions for that pet are shown (no other pets' sessions visible).
 3. Confirm the row shows: status badge, date/time, distance · distraction · duration.

@@ -194,4 +194,4 @@ Pets and badges are fetched concurrently.  Badge failure is swallowed (`try?`) s
 | From Your Trainer | Trainer comments on sessions | Phase 8 |
 | Your Trainer | Linked trainer name + contact | Phase 7 |
 
-**Log tab** is a real tab (not a FAB) hosting `TrainingRecordListView` with all sessions and a "+" toolbar button to add a new session. Future phases will add search and filter by pet, date, and status.
+**Guardian tabs**: Home · Pets · Plans · Settings. There is no standalone Log tab — sessions are logged from the Pets tab (Pet Detail → Training Sessions → +) or via the Plans tab (Practice This Step flow).

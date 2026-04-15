@@ -9,6 +9,12 @@ struct DashboardView: View {
     var body: some View {
         NavigationStack {
             List {
+                if viewModel.isLoading && viewModel.badges.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .listRowSeparator(.hidden)
+                }
+
                 // MARK: Streak
                 Section {
                     HStack(spacing: 14) {

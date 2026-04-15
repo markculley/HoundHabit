@@ -89,9 +89,11 @@ struct GuardianPlanDetailView: View {
         // Practice sheet — current step
         .sheet(isPresented: $showPracticeSheet) {
             if let current = currentItem {
+                let behaviorName = behaviors.first { $0.id == current.behaviorId }?.name
                 TrainingRecordFormView(
                     lockedPetId: assignedPlan.assignment.petId,
-                    planItem: current
+                    planItem: current,
+                    behaviorName: behaviorName
                 ) { savedRecord in
                     Task {
                         await viewModel.advanceCurrentStep(
@@ -107,7 +109,8 @@ struct GuardianPlanDetailView: View {
         // Info sheet — non-current steps
         .sheet(isPresented: $showStepInfoSheet) {
             if let item = selectedInfoItem {
-                StepInfoSheet(item: item)
+                let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
+                StepInfoSheet(item: item, behaviorName: behaviorName)
             }
         }
         .alert("Session Logged", isPresented: $showAdvancementAlert) {
@@ -176,11 +179,18 @@ private struct StepRow: View {
 
 private struct StepInfoSheet: View {
     let item: TrainingPlanItem
+    let behaviorName: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             List {
+                if let behaviorName {
+                    Section {
+                        LabeledContent("Behavior", value: behaviorName)
+                    }
+                }
+
                 Section {
                     LabeledContent("Distance",    value: item.distanceLabel)
                     LabeledContent("Duration",    value: item.durationLabel)

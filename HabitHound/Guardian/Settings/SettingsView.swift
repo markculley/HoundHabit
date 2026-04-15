@@ -18,12 +18,6 @@ struct SettingsView: View {
                 NavigationLink("Notifications") {
                     NotificationSettingsView()
                 }
-                if !isTrainer {
-                    NavigationLink("Resources") {
-                        ResourceListView()
-                            .navigationTitle("Resources")
-                    }
-                }
             }
 
             if !isTrainer {

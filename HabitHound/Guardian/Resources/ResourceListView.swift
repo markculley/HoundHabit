@@ -67,7 +67,7 @@ struct ResourceListView: View {
                             description: Text(
                                 viewModel.selectedKind == nil
                                     ? "Tap + to add your first resource."
-                                    : "No \(viewModel.selectedKind!.label.lowercased()) resources yet."
+                                    : "No \(viewModel.selectedKind?.label.lowercased() ?? "") resources yet."
                             )
                         )
                         .frame(maxHeight: .infinity)

@@ -11,6 +11,8 @@ struct TrainingRecordFormView: View {
     var petName: String? = nil
     /// When set, this is a plan-linked session: Three D's are locked to the step's values.
     var planItem: TrainingPlanItem? = nil
+    /// The behavior this step belongs to, shown in the Three D's section.
+    var behaviorName: String? = nil
     /// Called with the saved record so the caller can refresh / trigger advancement.
     var onSave: ((TrainingRecord) -> Void)? = nil
 
@@ -100,6 +102,9 @@ struct TrainingRecordFormView: View {
                 Section("Three D's") {
                     if isPlanSession {
                         // Read-only display
+                        if let behaviorName {
+                            LabeledContent("Behavior", value: behaviorName)
+                        }
                         LabeledContent("Distance",    value: distance.displayLabel(customValue: distanceCustomValue))
                         LabeledContent("Duration",    value: duration.displayLabel(customValue: durationCustomValue))
                         LabeledContent("Distraction", value: distraction.displayLabel(customValue: distractionCustomValue))

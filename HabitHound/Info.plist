@@ -22,7 +22,9 @@
     <string>$(SUPABASE_URL)</string>
     <key>SupabaseAnonKey</key>
     <string>$(SUPABASE_ANON_KEY)</string>
-    <key>NSUserNotificationUsageDescription</key>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>HabitHound uses your photo library to add a photo to your pet's profile and to save training resources.</string>
+    <key>NSUserNotificationsUsageDescription</key>
     <string>HabitHound uses notifications to remind you to train your pet each day.</string>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>

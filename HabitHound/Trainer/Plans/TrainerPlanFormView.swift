@@ -30,7 +30,7 @@ struct TrainerPlanFormView: View {
         NavigationStack {
             Form {
                 Section("Plan Title") {
-                    TextField("e.g. Basic Recall", text: $title)
+                    TextField("e.g. First Steps", text: $title)
                 }
                 Section("Plan Description") {
                     TextField("Optional overview of the plan (steps are added after)…", text: $description, axis: .vertical)

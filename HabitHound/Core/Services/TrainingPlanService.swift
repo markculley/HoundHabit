@@ -100,9 +100,10 @@ struct TrainingPlanService {
             BehaviorReorderUpdate(id: b.id, sortOrder: idx)
         }
         for u in updates {
+            guard let name = behaviors.first(where: { $0.id == u.id })?.name else { continue }
             try await supabase
                 .from("behaviors")
-                .update(BehaviorUpdate(name: behaviors.first { $0.id == u.id }!.name, sortOrder: u.sortOrder))
+                .update(BehaviorUpdate(name: name, sortOrder: u.sortOrder))
                 .eq("id", value: u.id)
                 .execute()
         }

@@ -81,6 +81,8 @@
 		AA0000000000000000000080 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007F /* Behavior.swift */; };
 		AA0000000000000000000082 /* TrainerBehaviorFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000081 /* TrainerBehaviorFormView.swift */; };
 		AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */; };
+		AA0000000000000000000086 /* ErrorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000085 /* ErrorStore.swift */; };
+		AA0000000000000000000088 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000087 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -172,6 +174,8 @@
 		AA000000000000000000007F /* Behavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
 		AA0000000000000000000081 /* TrainerBehaviorFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorFormView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000085 /* ErrorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000087 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -222,6 +226,8 @@
 				AA0000000000000000000005 /* HabitHoundApp.swift */,
 				AA0000000000000000000006 /* ContentView.swift */,
 				AA0000000000000000000050 /* AppRouter.swift */,
+				AA0000000000000000000085 /* ErrorStore.swift */,
+				AA0000000000000000000087 /* PrivacyInfo.xcprivacy */,
 				AA0000000000000000000024 /* Info.plist */,
 				AA0000000000000000000052 /* HabitHound.entitlements */,
 				AA0000000000000000000007 /* Assets.xcassets */,
@@ -583,6 +589,7 @@
 			files = (
 				AA000000000000000000000D /* Preview Assets.xcassets in Resources */,
 				AA000000000000000000000C /* Assets.xcassets in Resources */,
+				AA0000000000000000000088 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +609,7 @@
 			files = (
 				AA000000000000000000000B /* ContentView.swift in Sources */,
 				AA000000000000000000000A /* HabitHoundApp.swift in Sources */,
+				AA0000000000000000000086 /* ErrorStore.swift in Sources */,
 				AA000000000000000000002A /* SupabaseClient.swift in Sources */,
 				AA000000000000000000002E /* GuardianTabView.swift in Sources */,
 				4D21711C2F705139000CD4D8 /* InviteView.swift in Sources */,
