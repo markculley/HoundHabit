@@ -3,16 +3,20 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppRouter.self) var router
     @Environment(ErrorStore.self) var errorStore
+    @State private var showSplash = true
 
     var body: some View {
-        Group {
-            switch router.route {
-            case .unauthenticated:
-                LoginView()
-            case .guardian:
-                GuardianTabView()
-            case .trainer:
-                TrainerTabView()
+        ZStack {
+            mainContent
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
+            }
+        }
+        .task {
+            try? await Task.sleep(for: .seconds(1.2))
+            withAnimation(.easeOut(duration: 0.35)) {
+                showSplash = false
             }
         }
         .alert("Something Went Wrong", isPresented: Binding(
@@ -22,6 +26,18 @@ struct ContentView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorStore.message ?? "")
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
+        switch router.route {
+        case .unauthenticated:
+            LoginView()
+        case .guardian:
+            GuardianTabView()
+        case .trainer:
+            TrainerTabView()
         }
     }
 }

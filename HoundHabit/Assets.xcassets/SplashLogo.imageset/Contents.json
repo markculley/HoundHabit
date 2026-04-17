@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "cnc_app_icon_transparentbg.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
