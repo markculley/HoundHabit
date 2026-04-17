@@ -4,6 +4,7 @@ struct SignUpView: View {
     @State private var viewModel = AuthViewModel()
     @State private var showRoleSelection = false
     @State private var passwordVisible = false
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 24) {
@@ -75,7 +76,7 @@ struct SignUpView: View {
                 .frame(maxWidth: .infinity)
                 .onTapGesture {
                     if let url = URL(string: "https://www.cometncloud.com/houndhabitprivacypolicy") {
-                        UIApplication.shared.open(url)
+                        openURL(url)
                     }
                 }
 
