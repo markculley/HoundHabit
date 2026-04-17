@@ -1,17 +1,17 @@
-# GoodPup Privacy Policy
+# Hound Habit Privacy Policy
 
-Last updated: April 15, 2026
+Last updated: April 17, 2026
 
 ## Who We Are
 
-GoodPup is a dog training tracker developed by Comet 'n' Cloud.
+Hound Habit is a dog training tracker developed by Comet 'n' Cloud.
 Contact: [cometncloud@fastmail.com](mailto:cometncloud@fastmail.com)
 
 ## What We Collect
 
 When you create an account and use Hound Habit, we collect:
 
-- **Email address and name** — used to create and identify your account
+- **Email address and name** — used to create and identify your account. If you sign in with Apple, we receive only the email and name Apple chooses to share (including Apple's private relay address if you opt for that)
 - **Pet information** — names, breeds, and photos you choose to add
 - **Training session data** — scores, dates, notes, and session details you log
 - **Photos** — pet profile photos and training resources you upload
@@ -38,11 +38,11 @@ Your data is stored securely in Supabase (a managed PostgreSQL service) hosted o
 
 ## Your Rights
 
-You can delete your account and all associated data at any time from **Settings → Account → Delete Account**. Photo uploads can be removed individually from the Resources tab.
+You can delete your account and all associated data at any time from **Settings → Account → Delete Account**. Photo uploads can be removed individually from the Resources tab. We retain your data only for as long as your account exists; deletion is permanent and immediate. If you would like a copy of your data before deleting, email us and we will send you an export.
 
 ## Children
 
-GoodPup is not directed at children under 13 and we do not knowingly collect data from children.
+Hound Habit is not directed at children under 13 and we do not knowingly collect data from children.
 
 ## Changes
 
