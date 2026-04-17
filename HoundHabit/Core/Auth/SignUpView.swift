@@ -65,6 +65,20 @@ struct SignUpView: View {
             }
             .disabled(viewModel.fullName.isEmpty || viewModel.email.isEmpty || viewModel.password.count < 6)
 
+            (Text("By creating an account you agree to our ")
+                + Text("Privacy Policy")
+                    .underline()
+                    .foregroundColor(.accentColor))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .onTapGesture {
+                    if let url = URL(string: "https://www.cometncloud.com/houndhabitprivacypolicy") {
+                        UIApplication.shared.open(url)
+                    }
+                }
+
             Spacer()
         }
         .padding(.horizontal, 24)

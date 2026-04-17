@@ -37,6 +37,17 @@ struct SettingsView: View {
             }
 
             Section {
+                Link(destination: URL(string: "https://www.cometncloud.com/houndhabitprivacypolicy")!) {
+                    HStack {
+                        Text("Privacy Policy")
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.square")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Section {
                 Button("Sign Out", role: .destructive) {
                     Task {
                         do {
