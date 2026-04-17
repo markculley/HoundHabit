@@ -138,7 +138,7 @@ For any back office services required assume that AWS will be used.
 - Note
 - etc.
 
-## Habit Hound App
+## Hound Habit App
 
 - Analyze Training Records and suggest what?
 

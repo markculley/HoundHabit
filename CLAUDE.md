@@ -1,4 +1,4 @@
-# HabitHound — Claude Instructions
+# Hound Habit — Claude Instructions
 
 ## Project Documentation
 
@@ -8,7 +8,7 @@
 - **`docs/use_cases/`** — One markdown file per use case with Mermaid sequence diagrams, test flows, and conceptual explanations. Create or update a file here whenever a new use case is implemented or changed.
 
 ### Notion Kanban board
-The project is tracked on a Notion board named **"Habit Hound"**. The 12 columns map to the 12 phases:
+The project is tracked on a Notion board named **"Hound Habit"**. The 12 columns map to the 12 phases:
 
 | # | Phase |
 |---|-------|
@@ -42,11 +42,11 @@ Every SwiftUI view file must include a `#Preview` block at the bottom. Use reali
 
 ### Testing
 
-Tests live in `HabitHoundTests/` and use **Swift Testing** (`import Testing`, `@testable import HabitHound`). Run with `make test`.
+Tests live in `HoundHabitTests/` and use **Swift Testing** (`import Testing`, `@testable import HoundHabit`). Run with `make test`.
 
 When adding new code, also add tests for:
-- **New `Codable` models** — one test per enum, verifying the exact raw string Supabase sends decodes to the correct Swift case. Put in `HabitHoundTests/Models/`.
-- **Pure logic on ViewModels** — any method that computes derived state (streaks, filters, aggregations) without hitting the network. Extract to a `static func` if needed and put tests in `HabitHoundTests/Logic/`.
+- **New `Codable` models** — one test per enum, verifying the exact raw string Supabase sends decodes to the correct Swift case. Put in `HoundHabitTests/Models/`.
+- **Pure logic on ViewModels** — any method that computes derived state (streaks, filters, aggregations) without hitting the network. Extract to a `static func` if needed and put tests in `HoundHabitTests/Logic/`.
 
 Skip tests for:
 - SwiftUI views (use `#Preview` instead)

@@ -1,0 +1,965 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4D2170FC2F6E01FC000CD4D8 /* ResourceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */; };
+		4D2170FD2F6E01FC000CD4D8 /* ResourceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */; };
+		4D2170FE2F6E01FC000CD4D8 /* ResourceFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */; };
+		4D2171012F6E0221000CD4D8 /* PhotoPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */; };
+		4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171002F6E0221000CD4D8 /* SafariView.swift */; };
+		4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171032F6E0654000CD4D8 /* Resource.swift */; };
+		4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171052F6E067B000CD4D8 /* ResourceService.swift */; };
+		4D2171172F705115000CD4D8 /* TrainerGuardianLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */; };
+		4D2171182F705115000CD4D8 /* Invite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171152F705115000CD4D8 /* Invite.swift */; };
+		4D21711A2F705126000CD4D8 /* InviteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171192F705126000CD4D8 /* InviteService.swift */; };
+		4D21711C2F705139000CD4D8 /* InviteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711B2F705139000CD4D8 /* InviteView.swift */; };
+		4D21711E2F705157000CD4D8 /* EnterInviteCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */; };
+		4D2171202F7051A9000CD4D8 /* GuardianListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */; };
+		4D2171212F800001000CD4D8 /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171222F800001000CD4D8 /* Comment.swift */; };
+		4D2171232F800002000CD4D8 /* CommentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171242F800002000CD4D8 /* CommentService.swift */; };
+		4D2171252F800003000CD4D8 /* GuardianDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2171262F800003000CD4D8 /* GuardianDetailView.swift */; };
+		4D349EB02F870ADB00CEC1E3 /* TrainingPlanItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */; };
+		4D349EB12F870ADB00CEC1E3 /* PlanAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */; };
+		4D349EB22F870ADB00CEC1E3 /* TrainingPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */; };
+		4D349EC42F870F1D00CEC1E3 /* TrainingPlanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC32F870F1D00CEC1E3 /* TrainingPlanService.swift */; };
+		4D349ECB2F870FC200CEC1E3 /* TrainerPlanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ECA2F870FC200CEC1E3 /* TrainerPlanViewModel.swift */; };
+		4D349ECC2F870FC200CEC1E3 /* TrainerPlanItemFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC82F870FC200CEC1E3 /* TrainerPlanItemFormView.swift */; };
+		4D349ECD2F870FC200CEC1E3 /* TrainerPlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC92F870FC200CEC1E3 /* TrainerPlanListView.swift */; };
+		4D349ECE2F870FC200CEC1E3 /* AssignPlanSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC52F870FC200CEC1E3 /* AssignPlanSheet.swift */; };
+		4D349ECF2F870FC200CEC1E3 /* TrainerPlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC62F870FC200CEC1E3 /* TrainerPlanDetailView.swift */; };
+		4D349ED02F870FC200CEC1E3 /* TrainerPlanFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EC72F870FC200CEC1E3 /* TrainerPlanFormView.swift */; };
+		4D349ED42F87F78600CEC1E3 /* GuardianPlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */; };
+		4D349ED52F87F78600CEC1E3 /* GuardianPlanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */; };
+		4D349ED62F87F78600CEC1E3 /* GuardianPlanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */; };
+		4D349EDB2F88132500CEC1E3 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349ED92F88132500CEC1E3 /* HapticManager.swift */; };
+		4D349EDC2F88132500CEC1E3 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EDA2F88132500CEC1E3 /* NotificationManager.swift */; };
+		4D349EE02F8814D900CEC1E3 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EDF2F8814D900CEC1E3 /* TimerView.swift */; };
+		4D349EE22F88182B00CEC1E3 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EE12F88182B00CEC1E3 /* NotificationSettingsView.swift */; };
+		4D349EE42F88C88D00CEC1E3 /* TrainerAddResourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */; };
+		AA000000000000000000000A /* HoundHabitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HoundHabitApp.swift */; };
+		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
+		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
+		AA000000000000000000000D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Preview Assets.xcassets */; };
+		AA0000000000000000000025 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000026 /* Supabase */; };
+		AA000000000000000000002A /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000029 /* SupabaseClient.swift */; };
+		AA000000000000000000002E /* GuardianTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000002D /* GuardianTabView.swift */; };
+		AA0000000000000000000031 /* TrainerTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000030 /* TrainerTabView.swift */; };
+		AA0000000000000000000045 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000044 /* Profile.swift */; };
+		AA0000000000000000000047 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000046 /* AuthService.swift */; };
+		AA0000000000000000000049 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000048 /* AuthViewModel.swift */; };
+		AA000000000000000000004B /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000004A /* LoginView.swift */; };
+		AA000000000000000000004D /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000004C /* SignUpView.swift */; };
+		AA000000000000000000004F /* RoleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000004E /* RoleSelectionView.swift */; };
+		AA0000000000000000000051 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000050 /* AppRouter.swift */; };
+		AA0000000000000000000054 /* Pet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000053 /* Pet.swift */; };
+		AA0000000000000000000056 /* PetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000055 /* PetService.swift */; };
+		AA0000000000000000000058 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000057 /* StorageService.swift */; };
+		AA000000000000000000005A /* PetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000059 /* PetViewModel.swift */; };
+		AA000000000000000000005C /* PetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005B /* PetListView.swift */; };
+		AA000000000000000000005E /* PetFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005D /* PetFormView.swift */; };
+		AA0000000000000000000060 /* PetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000005F /* PetDetailView.swift */; };
+		AA0000000000000000000062 /* PetAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000061 /* PetAvatarView.swift */; };
+		AA0000000000000000000064 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000063 /* DashboardView.swift */; };
+		AA0000000000000000000066 /* TrainingRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000065 /* TrainingRecord.swift */; };
+		AA0000000000000000000068 /* TrainingRecordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000067 /* TrainingRecordService.swift */; };
+		AA000000000000000000006A /* StatusBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000069 /* StatusBadgeView.swift */; };
+		AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006B /* TrainingRecordViewModel.swift */; };
+		AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006D /* TrainingRecordFormView.swift */; };
+		AA0000000000000000000070 /* TrainingRecordListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006F /* TrainingRecordListView.swift */; };
+		AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000071 /* TrainingRecordDetailView.swift */; };
+		AA0000000000000000000074 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000073 /* DashboardViewModel.swift */; };
+		AA0000000000000000000076 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000075 /* SettingsView.swift */; };
+		AA0000000000000000000078 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000077 /* AccountView.swift */; };
+		AA000000000000000000007A /* Badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000079 /* Badge.swift */; };
+		AA000000000000000000007C /* BadgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007B /* BadgeService.swift */; };
+		AA000000000000000000007E /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007D /* AchievementsView.swift */; };
+		AA0000000000000000000080 /* Behavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000007F /* Behavior.swift */; };
+		AA0000000000000000000082 /* TrainerBehaviorFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000081 /* TrainerBehaviorFormView.swift */; };
+		AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */; };
+		AA0000000000000000000086 /* ErrorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000085 /* ErrorStore.swift */; };
+		AA0000000000000000000088 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000087 /* PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4D2170EA2F6DBBEC000CD4D8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000011;
+			remoteInfo = HoundHabit;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4D2170E62F6DBBEC000CD4D8 /* HoundHabitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HoundHabitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceDetailView.swift; sourceTree = "<group>"; };
+		4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceFormView.swift; sourceTree = "<group>"; };
+		4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceListView.swift; sourceTree = "<group>"; };
+		4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerView.swift; sourceTree = "<group>"; };
+		4D2171002F6E0221000CD4D8 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		4D2171032F6E0654000CD4D8 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
+		4D2171052F6E067B000CD4D8 /* ResourceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceService.swift; sourceTree = "<group>"; };
+		4D2171152F705115000CD4D8 /* Invite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invite.swift; sourceTree = "<group>"; };
+		4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerGuardianLink.swift; sourceTree = "<group>"; };
+		4D2171192F705126000CD4D8 /* InviteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteService.swift; sourceTree = "<group>"; };
+		4D21711B2F705139000CD4D8 /* InviteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteView.swift; sourceTree = "<group>"; };
+		4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterInviteCodeView.swift; sourceTree = "<group>"; };
+		4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianListView.swift; sourceTree = "<group>"; };
+		4D2171222F800001000CD4D8 /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
+		4D2171242F800002000CD4D8 /* CommentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentService.swift; sourceTree = "<group>"; };
+		4D2171262F800003000CD4D8 /* GuardianDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianDetailView.swift; sourceTree = "<group>"; };
+		4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanAssignment.swift; sourceTree = "<group>"; };
+		4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlan.swift; sourceTree = "<group>"; };
+		4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlanItem.swift; sourceTree = "<group>"; };
+		4D349EC32F870F1D00CEC1E3 /* TrainingPlanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingPlanService.swift; sourceTree = "<group>"; };
+		4D349EC52F870FC200CEC1E3 /* AssignPlanSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignPlanSheet.swift; sourceTree = "<group>"; };
+		4D349EC62F870FC200CEC1E3 /* TrainerPlanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanDetailView.swift; sourceTree = "<group>"; };
+		4D349EC72F870FC200CEC1E3 /* TrainerPlanFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanFormView.swift; sourceTree = "<group>"; };
+		4D349EC82F870FC200CEC1E3 /* TrainerPlanItemFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanItemFormView.swift; sourceTree = "<group>"; };
+		4D349EC92F870FC200CEC1E3 /* TrainerPlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanListView.swift; sourceTree = "<group>"; };
+		4D349ECA2F870FC200CEC1E3 /* TrainerPlanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerPlanViewModel.swift; sourceTree = "<group>"; };
+		4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanDetailView.swift; sourceTree = "<group>"; };
+		4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanListView.swift; sourceTree = "<group>"; };
+		4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianPlanViewModel.swift; sourceTree = "<group>"; };
+		4D349ED92F88132500CEC1E3 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		4D349EDA2F88132500CEC1E3 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		4D349EDF2F8814D900CEC1E3 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
+		4D349EE12F88182B00CEC1E3 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerAddResourceView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000004 /* HoundHabit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HoundHabit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000005 /* HoundHabitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoundHabitApp.swift; sourceTree = "<group>"; };
+		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000009 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA0000000000000000000023 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = SOURCE_ROOT; };
+		AA0000000000000000000024 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA0000000000000000000029 /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
+		AA000000000000000000002D /* GuardianTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianTabView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000030 /* TrainerTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerTabView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000044 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		AA0000000000000000000046 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000048 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000004A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AA000000000000000000004C /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		AA000000000000000000004E /* RoleSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleSelectionView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000050 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
+		AA0000000000000000000052 /* HoundHabit.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HoundHabit.entitlements; sourceTree = "<group>"; };
+		AA0000000000000000000053 /* Pet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pet.swift; sourceTree = "<group>"; };
+		AA0000000000000000000055 /* PetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000057 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000059 /* PetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000005B /* PetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetListView.swift; sourceTree = "<group>"; };
+		AA000000000000000000005D /* PetFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetFormView.swift; sourceTree = "<group>"; };
+		AA000000000000000000005F /* PetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000061 /* PetAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetAvatarView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000063 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000065 /* TrainingRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecord.swift; sourceTree = "<group>"; };
+		AA0000000000000000000067 /* TrainingRecordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordService.swift; sourceTree = "<group>"; };
+		AA0000000000000000000069 /* StatusBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadgeView.swift; sourceTree = "<group>"; };
+		AA000000000000000000006B /* TrainingRecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordViewModel.swift; sourceTree = "<group>"; };
+		AA000000000000000000006D /* TrainingRecordFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordFormView.swift; sourceTree = "<group>"; };
+		AA000000000000000000006F /* TrainingRecordListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordListView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000071 /* TrainingRecordDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000073 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		AA0000000000000000000075 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000077 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000079 /* Badge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badge.swift; sourceTree = "<group>"; };
+		AA000000000000000000007B /* BadgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeService.swift; sourceTree = "<group>"; };
+		AA000000000000000000007D /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		AA000000000000000000007F /* Behavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Behavior.swift; sourceTree = "<group>"; };
+		AA0000000000000000000081 /* TrainerBehaviorFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorFormView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorDetailView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000085 /* ErrorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStore.swift; sourceTree = "<group>"; };
+		AA0000000000000000000087 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4D2170E72F6DBBEC000CD4D8 /* HoundHabitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = HoundHabitTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4D2170E32F6DBBEC000CD4D8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000000000000000000000F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000025 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA0000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000018 /* HoundHabit */,
+				4D2170E72F6DBBEC000CD4D8 /* HoundHabitTests */,
+				AA0000000000000000000003 /* Products */,
+				AA000000000000000000002C /* Configuration */,
+			);
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000004 /* HoundHabit.app */,
+				4D2170E62F6DBBEC000CD4D8 /* HoundHabitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000018 /* HoundHabit */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000005 /* HoundHabitApp.swift */,
+				AA0000000000000000000006 /* ContentView.swift */,
+				AA0000000000000000000050 /* AppRouter.swift */,
+				AA0000000000000000000085 /* ErrorStore.swift */,
+				AA0000000000000000000087 /* PrivacyInfo.xcprivacy */,
+				AA0000000000000000000024 /* Info.plist */,
+				AA0000000000000000000052 /* HoundHabit.entitlements */,
+				AA0000000000000000000007 /* Assets.xcassets */,
+				AA000000000000000000001A /* Preview Content */,
+				AA000000000000000000002B /* Core */,
+				AA000000000000000000002F /* Guardian */,
+				AA0000000000000000000032 /* Trainer */,
+				AA0000000000000000000033 /* Shared */,
+			);
+			path = HoundHabit;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000001A /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000009 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000028 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4D349EC32F870F1D00CEC1E3 /* TrainingPlanService.swift */,
+				4D2171192F705126000CD4D8 /* InviteService.swift */,
+				4D2171242F800002000CD4D8 /* CommentService.swift */,
+				4D2171052F6E067B000CD4D8 /* ResourceService.swift */,
+				AA0000000000000000000029 /* SupabaseClient.swift */,
+				AA0000000000000000000046 /* AuthService.swift */,
+				AA0000000000000000000055 /* PetService.swift */,
+				AA0000000000000000000057 /* StorageService.swift */,
+				AA0000000000000000000067 /* TrainingRecordService.swift */,
+				AA000000000000000000007B /* BadgeService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002B /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000028 /* Services */,
+				AA0000000000000000000034 /* Auth */,
+				AA0000000000000000000035 /* Models */,
+				AA0000000000000000000036 /* Extensions */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002C /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000023 /* Secrets.xcconfig */,
+			);
+			name = Configuration;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000002F /* Guardian */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000002D /* GuardianTabView.swift */,
+				AA0000000000000000000037 /* Dashboard */,
+				AA0000000000000000000038 /* Pets */,
+				AA0000000000000000000039 /* TrainingRecords */,
+				AA000000000000000000003A /* Resources */,
+				AA000000000000000000003B /* Plans */,
+				AA000000000000000000003C /* Achievements */,
+				AA000000000000000000003D /* Settings */,
+			);
+			path = Guardian;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000032 /* Trainer */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000030 /* TrainerTabView.swift */,
+				AA000000000000000000003E /* Guardians */,
+				AA000000000000000000003F /* Plans */,
+				AA0000000000000000000040 /* Invites */,
+				AA0000000000000000000041 /* Settings */,
+			);
+			path = Trainer;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000033 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000042 /* Components */,
+				AA0000000000000000000043 /* Utilities */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000034 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000048 /* AuthViewModel.swift */,
+				AA000000000000000000004A /* LoginView.swift */,
+				AA000000000000000000004C /* SignUpView.swift */,
+				AA000000000000000000004E /* RoleSelectionView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000035 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4D2171152F705115000CD4D8 /* Invite.swift */,
+				4D2171162F705115000CD4D8 /* TrainerGuardianLink.swift */,
+				4D2171032F6E0654000CD4D8 /* Resource.swift */,
+				4D2171222F800001000CD4D8 /* Comment.swift */,
+				AA0000000000000000000044 /* Profile.swift */,
+				AA0000000000000000000053 /* Pet.swift */,
+				AA0000000000000000000065 /* TrainingRecord.swift */,
+				AA0000000000000000000079 /* Badge.swift */,
+				4D349EAD2F870ADB00CEC1E3 /* PlanAssignment.swift */,
+				4D349EAE2F870ADB00CEC1E3 /* TrainingPlan.swift */,
+				4D349EAF2F870ADB00CEC1E3 /* TrainingPlanItem.swift */,
+				AA000000000000000000007F /* Behavior.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000036 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000037 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000063 /* DashboardView.swift */,
+				AA0000000000000000000073 /* DashboardViewModel.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000038 /* Pets */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000059 /* PetViewModel.swift */,
+				AA000000000000000000005B /* PetListView.swift */,
+				AA000000000000000000005D /* PetFormView.swift */,
+				AA000000000000000000005F /* PetDetailView.swift */,
+				AA0000000000000000000061 /* PetAvatarView.swift */,
+			);
+			path = Pets;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000039 /* TrainingRecords */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000006B /* TrainingRecordViewModel.swift */,
+				AA000000000000000000006D /* TrainingRecordFormView.swift */,
+				AA000000000000000000006F /* TrainingRecordListView.swift */,
+				AA0000000000000000000071 /* TrainingRecordDetailView.swift */,
+			);
+			path = TrainingRecords;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4D2170F92F6E01FC000CD4D8 /* ResourceDetailView.swift */,
+				4D2170FA2F6E01FC000CD4D8 /* ResourceFormView.swift */,
+				4D2170FB2F6E01FC000CD4D8 /* ResourceListView.swift */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003B /* Plans */ = {
+			isa = PBXGroup;
+			children = (
+				4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */,
+				4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */,
+				4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */,
+			);
+			path = Plans;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003C /* Achievements */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000000000000000007D /* AchievementsView.swift */,
+			);
+			path = Achievements;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003D /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				4D349EE12F88182B00CEC1E3 /* NotificationSettingsView.swift */,
+				4D21711D2F705157000CD4D8 /* EnterInviteCodeView.swift */,
+				AA0000000000000000000075 /* SettingsView.swift */,
+				AA0000000000000000000077 /* AccountView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003E /* Guardians */ = {
+			isa = PBXGroup;
+			children = (
+				4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */,
+				4D21711F2F7051A9000CD4D8 /* GuardianListView.swift */,
+				4D2171262F800003000CD4D8 /* GuardianDetailView.swift */,
+			);
+			path = Guardians;
+			sourceTree = "<group>";
+		};
+		AA000000000000000000003F /* Plans */ = {
+			isa = PBXGroup;
+			children = (
+				4D349EC52F870FC200CEC1E3 /* AssignPlanSheet.swift */,
+				4D349EC62F870FC200CEC1E3 /* TrainerPlanDetailView.swift */,
+				4D349EC72F870FC200CEC1E3 /* TrainerPlanFormView.swift */,
+				4D349EC82F870FC200CEC1E3 /* TrainerPlanItemFormView.swift */,
+				4D349EC92F870FC200CEC1E3 /* TrainerPlanListView.swift */,
+				4D349ECA2F870FC200CEC1E3 /* TrainerPlanViewModel.swift */,
+				AA0000000000000000000081 /* TrainerBehaviorFormView.swift */,
+				AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */,
+			);
+			path = Plans;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000040 /* Invites */ = {
+			isa = PBXGroup;
+			children = (
+				4D21711B2F705139000CD4D8 /* InviteView.swift */,
+			);
+			path = Invites;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000041 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000042 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				4D349EDF2F8814D900CEC1E3 /* TimerView.swift */,
+				4D2170FF2F6E0221000CD4D8 /* PhotoPickerView.swift */,
+				4D2171002F6E0221000CD4D8 /* SafariView.swift */,
+				AA0000000000000000000069 /* StatusBadgeView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000043 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				4D349ED92F88132500CEC1E3 /* HapticManager.swift */,
+				4D349EDA2F88132500CEC1E3 /* NotificationManager.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4D2170E52F6DBBEC000CD4D8 /* HoundHabitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D2170EE2F6DBBEC000CD4D8 /* Build configuration list for PBXNativeTarget "HoundHabitTests" */;
+			buildPhases = (
+				4D2170E22F6DBBEC000CD4D8 /* Sources */,
+				4D2170E32F6DBBEC000CD4D8 /* Frameworks */,
+				4D2170E42F6DBBEC000CD4D8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4D2170EB2F6DBBEC000CD4D8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4D2170E72F6DBBEC000CD4D8 /* HoundHabitTests */,
+			);
+			name = HoundHabitTests;
+			packageProductDependencies = (
+			);
+			productName = HoundHabitTests;
+			productReference = 4D2170E62F6DBBEC000CD4D8 /* HoundHabitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AA0000000000000000000011 /* HoundHabit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000017 /* Build configuration list for PBXNativeTarget "HoundHabit" */;
+			buildPhases = (
+				AA000000000000000000000E /* Sources */,
+				AA000000000000000000000F /* Frameworks */,
+				AA0000000000000000000010 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HoundHabit;
+			packageProductDependencies = (
+				AA0000000000000000000026 /* Supabase */,
+			);
+			productName = HoundHabit;
+			productReference = AA0000000000000000000004 /* HoundHabit.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					4D2170E52F6DBBEC000CD4D8 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = AA0000000000000000000011;
+					};
+					AA0000000000000000000011 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = AA0000000000000000000016 /* Build configuration list for PBXProject "HoundHabit" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA0000000000000000000002;
+			packageReferences = (
+				AA0000000000000000000027 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			productRefGroup = AA0000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA0000000000000000000011 /* HoundHabit */,
+				4D2170E52F6DBBEC000CD4D8 /* HoundHabitTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4D2170E42F6DBBEC000CD4D8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000010 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000000000000000000000D /* Preview Assets.xcassets in Resources */,
+				AA000000000000000000000C /* Assets.xcassets in Resources */,
+				AA0000000000000000000088 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4D2170E22F6DBBEC000CD4D8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000000000000000000000E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000000000000000000000B /* ContentView.swift in Sources */,
+				AA000000000000000000000A /* HoundHabitApp.swift in Sources */,
+				AA0000000000000000000086 /* ErrorStore.swift in Sources */,
+				AA000000000000000000002A /* SupabaseClient.swift in Sources */,
+				AA000000000000000000002E /* GuardianTabView.swift in Sources */,
+				4D21711C2F705139000CD4D8 /* InviteView.swift in Sources */,
+				AA0000000000000000000031 /* TrainerTabView.swift in Sources */,
+				4D349EE02F8814D900CEC1E3 /* TimerView.swift in Sources */,
+				AA0000000000000000000045 /* Profile.swift in Sources */,
+				4D21711E2F705157000CD4D8 /* EnterInviteCodeView.swift in Sources */,
+				4D349ECB2F870FC200CEC1E3 /* TrainerPlanViewModel.swift in Sources */,
+				4D349ECC2F870FC200CEC1E3 /* TrainerPlanItemFormView.swift in Sources */,
+				4D349ECD2F870FC200CEC1E3 /* TrainerPlanListView.swift in Sources */,
+				4D349ED42F87F78600CEC1E3 /* GuardianPlanListView.swift in Sources */,
+				4D349ED52F87F78600CEC1E3 /* GuardianPlanViewModel.swift in Sources */,
+				4D349ED62F87F78600CEC1E3 /* GuardianPlanDetailView.swift in Sources */,
+				4D349ECE2F870FC200CEC1E3 /* AssignPlanSheet.swift in Sources */,
+				4D349ECF2F870FC200CEC1E3 /* TrainerPlanDetailView.swift in Sources */,
+				4D349ED02F870FC200CEC1E3 /* TrainerPlanFormView.swift in Sources */,
+				AA0000000000000000000047 /* AuthService.swift in Sources */,
+				AA0000000000000000000049 /* AuthViewModel.swift in Sources */,
+				AA000000000000000000004B /* LoginView.swift in Sources */,
+				AA000000000000000000004D /* SignUpView.swift in Sources */,
+				AA000000000000000000004F /* RoleSelectionView.swift in Sources */,
+				AA0000000000000000000051 /* AppRouter.swift in Sources */,
+				AA0000000000000000000054 /* Pet.swift in Sources */,
+				4D349EDB2F88132500CEC1E3 /* HapticManager.swift in Sources */,
+				4D349EDC2F88132500CEC1E3 /* NotificationManager.swift in Sources */,
+				AA0000000000000000000056 /* PetService.swift in Sources */,
+				AA0000000000000000000058 /* StorageService.swift in Sources */,
+				AA000000000000000000005A /* PetViewModel.swift in Sources */,
+				AA000000000000000000005C /* PetListView.swift in Sources */,
+				AA000000000000000000005E /* PetFormView.swift in Sources */,
+				AA0000000000000000000060 /* PetDetailView.swift in Sources */,
+				AA0000000000000000000062 /* PetAvatarView.swift in Sources */,
+				AA0000000000000000000064 /* DashboardView.swift in Sources */,
+				AA0000000000000000000066 /* TrainingRecord.swift in Sources */,
+				4D2170FC2F6E01FC000CD4D8 /* ResourceDetailView.swift in Sources */,
+				4D2170FD2F6E01FC000CD4D8 /* ResourceListView.swift in Sources */,
+				4D2170FE2F6E01FC000CD4D8 /* ResourceFormView.swift in Sources */,
+				AA0000000000000000000068 /* TrainingRecordService.swift in Sources */,
+				AA000000000000000000006A /* StatusBadgeView.swift in Sources */,
+				AA000000000000000000006C /* TrainingRecordViewModel.swift in Sources */,
+				AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */,
+				AA0000000000000000000070 /* TrainingRecordListView.swift in Sources */,
+				4D2171172F705115000CD4D8 /* TrainerGuardianLink.swift in Sources */,
+				4D2171182F705115000CD4D8 /* Invite.swift in Sources */,
+				4D2171202F7051A9000CD4D8 /* GuardianListView.swift in Sources */,
+				4D349EB02F870ADB00CEC1E3 /* TrainingPlanItem.swift in Sources */,
+				4D349EB12F870ADB00CEC1E3 /* PlanAssignment.swift in Sources */,
+				4D349EB22F870ADB00CEC1E3 /* TrainingPlan.swift in Sources */,
+				4D2171212F800001000CD4D8 /* Comment.swift in Sources */,
+				4D2171232F800002000CD4D8 /* CommentService.swift in Sources */,
+				4D2171252F800003000CD4D8 /* GuardianDetailView.swift in Sources */,
+				AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */,
+				AA0000000000000000000074 /* DashboardViewModel.swift in Sources */,
+				AA0000000000000000000076 /* SettingsView.swift in Sources */,
+				4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */,
+				AA0000000000000000000078 /* AccountView.swift in Sources */,
+				4D349EC42F870F1D00CEC1E3 /* TrainingPlanService.swift in Sources */,
+				AA000000000000000000007A /* Badge.swift in Sources */,
+				4D349EE42F88C88D00CEC1E3 /* TrainerAddResourceView.swift in Sources */,
+				4D21711A2F705126000CD4D8 /* InviteService.swift in Sources */,
+				AA000000000000000000007C /* BadgeService.swift in Sources */,
+				AA000000000000000000007E /* AchievementsView.swift in Sources */,
+				4D2171062F6E067B000CD4D8 /* ResourceService.swift in Sources */,
+				4D349EE22F88182B00CEC1E3 /* NotificationSettingsView.swift in Sources */,
+				4D2171012F6E0221000CD4D8 /* PhotoPickerView.swift in Sources */,
+				4D2171022F6E0221000CD4D8 /* SafariView.swift in Sources */,
+				AA0000000000000000000080 /* Behavior.swift in Sources */,
+				AA0000000000000000000082 /* TrainerBehaviorFormView.swift in Sources */,
+				AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4D2170EB2F6DBBEC000CD4D8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000011 /* HoundHabit */;
+			targetProxy = 4D2170EA2F6DBBEC000CD4D8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4D2170EC2F6DBBEC000CD4D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H2GJCHNLXM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HoundHabitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HoundHabit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HoundHabit";
+			};
+			name = Debug;
+		};
+		4D2170ED2F6DBBEC000CD4D8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H2GJCHNLXM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HoundHabitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HoundHabit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HoundHabit";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AA0000000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000023 /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HoundHabit/HoundHabit.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HoundHabit/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HoundHabit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000023 /* Secrets.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HoundHabit/HoundHabit.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HoundHabit/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.CometnCloud.HoundHabit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AA0000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4D2170EE2F6DBBEC000CD4D8 /* Build configuration list for PBXNativeTarget "HoundHabitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D2170EC2F6DBBEC000CD4D8 /* Debug */,
+				4D2170ED2F6DBBEC000CD4D8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000016 /* Build configuration list for PBXProject "HoundHabit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000014 /* Debug */,
+				AA0000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000017 /* Build configuration list for PBXNativeTarget "HoundHabit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000012 /* Debug */,
+				AA0000000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA0000000000000000000027 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA0000000000000000000026 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000027 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AA0000000000000000000001 /* Project object */;
+}

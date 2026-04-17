@@ -5,7 +5,7 @@
 ```mermaid
 sequenceDiagram
     actor G as Guardian
-    participant App as HabitHound App
+    participant App as Hound Habit App
     participant DB as Supabase (pets table)
     participant S as Supabase Storage (pet-photos)
 
@@ -33,7 +33,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor G as Guardian
-    participant App as HabitHound App
+    participant App as Hound Habit App
     participant DB as Supabase (pets table)
     participant S as Supabase Storage (pet-photos)
 
@@ -62,7 +62,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor G as Guardian
-    participant App as HabitHound App
+    participant App as Hound Habit App
     participant DB as Supabase (pets table)
 
     alt From Pet List (swipe)

@@ -2,9 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(grep -E \"\\\\.swift$\")",
-      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project HabitHound.xcodeproj -scheme HabitHound -destination 'platform=iOS Simulator,id=2921F8F6-B772-4C33-876E-E0FDBFD9E06B' build)",
+      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -destination 'platform=iOS Simulator,id=2921F8F6-B772-4C33-876E-E0FDBFD9E06B' build)",
       "Bash(grep -v \"^$\")",
-      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/swift -typecheck -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -target arm64-apple-ios17.0-simulator HabitHound/Guardian/TrainingRecords/TrainingRecordDetailView.swift HabitHound/Core/Models/Comment.swift HabitHound/Core/Models/TrainingRecord.swift HabitHound/Core/Models/Pet.swift HabitHound/Core/Services/TrainingRecordService.swift HabitHound/Guardian/TrainingRecords/TrainingRecordViewModel.swift HabitHound/Guardian/TrainingRecords/TrainingRecordFormView.swift HabitHound/Shared/Components/StatusBadgeView.swift HabitHound/Core/Services/SupabaseClient.swift)",
+      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/swift -typecheck -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.4.sdk -target arm64-apple-ios17.0-simulator HoundHabit/Guardian/TrainingRecords/TrainingRecordDetailView.swift HoundHabit/Core/Models/Comment.swift HoundHabit/Core/Models/TrainingRecord.swift HoundHabit/Core/Models/Pet.swift HoundHabit/Core/Services/TrainingRecordService.swift HoundHabit/Guardian/TrainingRecords/TrainingRecordViewModel.swift HoundHabit/Guardian/TrainingRecords/TrainingRecordFormView.swift HoundHabit/Shared/Components/StatusBadgeView.swift HoundHabit/Core/Services/SupabaseClient.swift)",
       "Bash(xcrun swift:*)",
       "Bash(xcrun swiftc:*)",
       "Bash(rerun)",

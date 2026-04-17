@@ -1,4 +1,4 @@
-# Session State in HabitHound
+# Session State in Hound Habit
 
 ## What is session state?
 
@@ -36,7 +36,7 @@ The SDK is the single source of truth. Our app reads from it but never stores th
 
 ---
 
-## How `currentUser` is used in HabitHound
+## How `currentUser` is used in Hound Habit
 
 Throughout the app, every data fetch guards on the signed-in user's ID:
 
@@ -60,7 +60,7 @@ The same pattern appears in every ViewModel and Service in the app.
 ```mermaid
 sequenceDiagram
     actor U as User
-    participant APP as HabitHoundApp
+    participant APP as HoundHabitApp
     participant AR as AppRouter
     participant SDK as supabase-swift SDK
     participant KCH as iOS Keychain

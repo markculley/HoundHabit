@@ -12,20 +12,20 @@
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:habit_hound}",
-            "name": "Debug HabitHound",
-            "target": "HabitHound",
+            "name": "Debug HoundHabit",
+            "target": "HoundHabit",
             "configuration": "debug",
-            "preLaunchTask": "swift: Build Debug HabitHound"
+            "preLaunchTask": "swift: Build Debug HoundHabit"
         },
         {
             "type": "swift",
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:habit_hound}",
-            "name": "Release HabitHound",
-            "target": "HabitHound",
+            "name": "Release HoundHabit",
+            "target": "HoundHabit",
             "configuration": "release",
-            "preLaunchTask": "swift: Build Release HabitHound"
+            "preLaunchTask": "swift: Build Release HoundHabit"
         }
     ]
 }

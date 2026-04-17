@@ -96,9 +96,9 @@ All state stored in `UserDefaults` with namespaced keys:
 
 | Key | Default | Purpose |
 |-----|---------|---------|
-| `HabitHound.reminder.enabled` | `false` | Whether reminder is active |
-| `HabitHound.reminder.hour` | `9` | Hour component |
-| `HabitHound.reminder.minute` | `0` | Minute component |
+| `HoundHabit.reminder.enabled` | `false` | Whether reminder is active |
+| `HoundHabit.reminder.hour` | `9` | Hour component |
+| `HoundHabit.reminder.minute` | `0` | Minute component |
 
 ---
 

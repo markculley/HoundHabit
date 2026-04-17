@@ -64,7 +64,7 @@ No app-level filtering is needed in `GuardianViewModel.load(guardian:)`.
 
 ### Key Code
 
-**`GuardianViewModel.load(guardian:)`** in [GuardianDetailView.swift](../../HabitHound/Trainer/Guardians/GuardianDetailView.swift):
+**`GuardianViewModel.load(guardian:)`** in [GuardianDetailView.swift](../../HoundHabit/Trainer/Guardians/GuardianDetailView.swift):
 ```swift
 async let fetchedPets    = petService.fetchPets(guardianId: guardian.guardianId)
 async let fetchedRecords = recordService.fetchRecords(guardianId: guardian.guardianId)

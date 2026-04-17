@@ -6,7 +6,7 @@
 sequenceDiagram
     actor T as Trainer
     actor G as Guardian
-    participant App as HabitHound App
+    participant App as Hound Habit App
     participant DB as Supabase
 
     %% Onboarding

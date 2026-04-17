@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/mark/dev/habit_hound/HabitHound.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/mark/Library/Developer/Xcode/DerivedData/HabitHound-cffxfaybtkicyzgjzilcljupohad",
-	"scheme": "HabitHound",
+	"workspace": "/Users/mark/dev/hound_habit/HoundHabit.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/mark/Library/Developer/Xcode/DerivedData/HoundHabit-cffxfaybtkicyzgjzilcljupohad",
+	"scheme": "HoundHabit",
 	"kind": "xcode"
 }

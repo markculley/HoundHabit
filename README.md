@@ -1,4 +1,4 @@
-# Habit Hound
+# Hound Habit
 
 A pet training tracker that bridges the gap between trainer visits. Guardians log sessions and track progress; Trainers deliver plans, review records, and leave feedback.
 

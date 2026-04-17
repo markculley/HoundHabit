@@ -9,7 +9,7 @@ Contact: [cometncloud@fastmail.com](mailto:cometncloud@fastmail.com)
 
 ## What We Collect
 
-When you create an account and use HabitHound, we collect:
+When you create an account and use Hound Habit, we collect:
 
 - **Email address and name** — used to create and identify your account
 - **Pet information** — names, breeds, and photos you choose to add

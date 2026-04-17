@@ -1,8 +1,8 @@
-# HabitHound iPhone MVP — Architecture & Execution Plan
+# Hound Habit iPhone MVP — Architecture & Execution Plan
 
 ## Context
 
-HabitHound is a pet training tracker app. It bridges the gap between trainer visits by letting pet owners (Guardians) log training sessions, view progress, and receive training plans from professional Trainers. This plan covers the iPhone MVP with both Guardian and Trainer roles, Supabase backend, online-only operation, photo support, local notifications, and a streaks/badges reward system.
+Hound Habit is a pet training tracker app. It bridges the gap between trainer visits by letting pet owners (Guardians) log training sessions, view progress, and receive training plans from professional Trainers. This plan covers the iPhone MVP with both Guardian and Trainer roles, Supabase backend, online-only operation, photo support, local notifications, and a streaks/badges reward system.
 
 ---
 
@@ -24,8 +24,8 @@ HabitHound is a pet training tracker app. It bridges the gap between trainer vis
 
 ### Folder Structure
 ```
-HabitHound/
-├── HabitHoundApp.swift
+HoundHabit/
+├── HoundHabitApp.swift
 ├── AppRouter.swift
 ├── Core/
 │   ├── Auth/          (AuthViewModel, LoginView, SignUpView, RoleSelectionView)
@@ -168,14 +168,14 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 
 ### Phase 1 — Project Scaffold & Supabase Setup
 - Create Supabase project, save URL + anon key
-- Add `supabase-swift` v2.x to `HabitHound.xcodeproj`
+- Add `supabase-swift` v2.x to `HoundHabit.xcodeproj`
 - Create `Secrets.xcconfig` (gitignored), load keys via `Info.plist`
 - Create `Core/Services/SupabaseClient.swift` with shared instance
 - Apply full SQL schema to Supabase; enable RLS on all tables
 - Create the three Storage buckets
-- Restructure `HabitHound/` folder tree (placeholder files ok)
+- Restructure `HoundHabit/` folder tree (placeholder files ok)
 
-**Files**: `HabitHound.xcodeproj/project.pbxproj`, `Core/Services/SupabaseClient.swift`, `Makefile`
+**Files**: `HoundHabit.xcodeproj/project.pbxproj`, `Core/Services/SupabaseClient.swift`, `Makefile`
 
 ### Phase 2 — Authentication Flow
 - `AuthService`: signUp (with role), signIn, signInWithApple, signOut, currentProfile
@@ -183,11 +183,11 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 - `AuthViewModel` — `@Observable`, manages session state
 - `LoginView`, `SignUpView`, `RoleSelectionView`
 - `AppRouter` — listens to `supabase.auth.onAuthStateChange`, routes by role
-- Update `HabitHoundApp.swift` to inject `AppRouter`
+- Update `HoundHabitApp.swift` to inject `AppRouter`
 - Sign in with Apple entitlement + delegate
 - Stub `GuardianTabView` and `TrainerTabView`
 
-**Files**: `HabitHoundApp.swift`, `AppRouter.swift`, `Core/Auth/`, `Core/Models/Profile.swift`, `Core/Services/AuthService.swift`
+**Files**: `HoundHabitApp.swift`, `AppRouter.swift`, `Core/Auth/`, `Core/Models/Profile.swift`, `Core/Services/AuthService.swift`
 
 ### Phase 3 — Pet Profiles (Guardian)
 - `Core/Models/Pet.swift`
@@ -308,9 +308,9 @@ Phase 12 (Polish) ← always last
 
 | File | Role |
 |------|------|
-| `HabitHound/HabitHoundApp.swift` | Entry point — inject AppRouter |
-| `HabitHound/ContentView.swift` | Replace with AppRouter + tab views |
-| `HabitHound.xcodeproj/project.pbxproj` | Package + file additions |
+| `HoundHabit/HoundHabitApp.swift` | Entry point — inject AppRouter |
+| `HoundHabit/ContentView.swift` | Replace with AppRouter + tab views |
+| `HoundHabit.xcodeproj/project.pbxproj` | Package + file additions |
 | `Makefile` | Extend with `BUNDLE_ID` update |
 | `docs/prd.md` | Authoritative source for enums (Three D's, status values) |
 
