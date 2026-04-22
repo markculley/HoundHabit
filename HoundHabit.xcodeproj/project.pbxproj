@@ -43,7 +43,6 @@
 		4D349EE42F88C88D00CEC1E3 /* TrainerAddResourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */; };
 		AA000000000000000000000A /* HoundHabitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HoundHabitApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
-		AA000000000000000000008A /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000089 /* SplashView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
 		AA000000000000000000000D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Preview Assets.xcassets */; };
 		AA0000000000000000000025 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000026 /* Supabase */; };
@@ -84,6 +83,7 @@
 		AA0000000000000000000084 /* TrainerBehaviorDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */; };
 		AA0000000000000000000086 /* ErrorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000085 /* ErrorStore.swift */; };
 		AA0000000000000000000088 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000087 /* PrivacyInfo.xcprivacy */; };
+		AA000000000000000000008A /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000089 /* SplashView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -135,7 +135,6 @@
 		AA0000000000000000000004 /* HoundHabit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HoundHabit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HoundHabitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoundHabitApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AA0000000000000000000089 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0000000000000000000009 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AA0000000000000000000023 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -178,6 +177,7 @@
 		AA0000000000000000000083 /* TrainerBehaviorDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerBehaviorDetailView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000085 /* ErrorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStore.swift; sourceTree = "<group>"; };
 		AA0000000000000000000087 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA0000000000000000000089 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -752,7 +752,7 @@
 				CODE_SIGN_ENTITLEMENTS = HoundHabit/HoundHabit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = H2GJCHNLXM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HoundHabit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -778,7 +778,7 @@
 				CODE_SIGN_ENTITLEMENTS = HoundHabit/HoundHabit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = H2GJCHNLXM;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HoundHabit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
