@@ -83,6 +83,7 @@ Suggested screens to capture:
 
 - [ ] Sign-in demo account credentials provided to Apple in the review notes (Guardian + Trainer roles)
 - [ ] Review notes explain any non-obvious flows (e.g. trainer invite codes)
+- [ ] Review notes mention the account deletion path: **Settings → Account → Delete Account** (Apple Guideline 5.1.1(v))
 - [ ] Submit for Review
 - [ ] Monitor status in App Store Connect; respond quickly to any rejections
 

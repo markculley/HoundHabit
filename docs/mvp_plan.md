@@ -162,6 +162,8 @@ RLS is a PostgreSQL feature where the database enforces access rules at the row 
 
 Badge and streak logic runs in a Postgres FUNCTION triggered on `training_records` INSERT.
 
+`public.delete_my_account()` — `SECURITY DEFINER` function that deletes the calling user's rows across every table and then removes their `auth.users` row. Required by Apple Guideline 5.1.1(v); the client cannot delete from `auth.users` directly since that requires the `service_role` key. Takes no parameters — always operates on `auth.uid()` — and is restricted with `REVOKE ALL FROM public` + `GRANT EXECUTE TO authenticated`. SQL lives in `scripts/sql/delete_my_account.sql`.
+
 ---
 
 ## Phased Execution Plan
@@ -281,6 +283,7 @@ Badge and streak logic runs in a Postgres FUNCTION triggered on `training_record
 - Loading skeletons / `ProgressView` on all list screens
 - App icon (all required sizes in `Assets.xcassets`)
 - `PrivacyInfo.xcprivacy` + `NSPhotoLibraryUsageDescription`, `NSUserNotificationsUsageDescription`
+- **Account deletion (Apple Guideline 5.1.1(v))** — `AccountView` exposes a destructive **Delete Account** button that calls `AuthService.deleteAccount()` → `supabase.rpc("delete_my_account")` → sign out. The Postgres side is `public.delete_my_account()` (SQL in `scripts/sql/delete_my_account.sql`). Reviewer notes must include the path *Settings → Account → Delete Account*.
 - TestFlight build + internal testing
 
 ---
