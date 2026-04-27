@@ -25,7 +25,6 @@ struct AuthService {
 
     func deleteAccount() async throws {
         try await supabase.rpc("delete_my_account").execute()
-        try? await supabase.auth.signOut()
     }
 
     // MARK: - Apple

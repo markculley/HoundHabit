@@ -6,6 +6,7 @@ struct AccountView: View {
     @State private var isLoading = true
     @State private var showDeleteConfirm = false
     @State private var isDeleting = false
+    @State private var showDeletedConfirmation = false
     @State private var errorMessage: String?
 
     private let authService = AuthService()
@@ -78,6 +79,13 @@ struct AccountView: View {
         } message: {
             Text(errorMessage ?? "")
         }
+        .alert("Account Deleted", isPresented: $showDeletedConfirmation) {
+            Button("OK", role: .cancel) {
+                Task { try? await authService.signOut() }
+            }
+        } message: {
+            Text("Your account has been deleted.")
+        }
     }
 
     private func deleteAccount() {
@@ -85,6 +93,8 @@ struct AccountView: View {
         Task {
             do {
                 try await authService.deleteAccount()
+                isDeleting = false
+                showDeletedConfirmation = true
             } catch {
                 errorMessage = error.localizedDescription
                 isDeleting = false
