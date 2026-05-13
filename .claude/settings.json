@@ -18,7 +18,9 @@
       "Bash(xcrun --show-sdk-version --sdk iphonesimulator)",
       "Bash(xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -destination 'platform=iOS Simulator,OS=26.4,name=iPhone 17 Pro' -allowProvisioningUpdates build)",
       "Bash(xcodebuild -downloadPlatform iOS -exportPath /tmp)",
-      "Bash(echo \"passed: $\\(make test 2>&1)"
+      "Bash(echo \"passed: $\\(make test 2>&1)",
+      "Bash(find ~/Library/Developer/Xcode/DerivedData -path \"*Supabase-swift/Sources*\" -name \"*.swift\" 2>/dev/null | head -5; echo \"---\"; find ~/Library/Developer/Xcode/DerivedData -name \"User.swift\" -path \"*supabase*\" 2>/dev/null | head -5)",
+      "Read(//Users/mark/Library/Developer/Xcode/DerivedData/**)"
     ],
     "additionalDirectories": [
       "/tmp",

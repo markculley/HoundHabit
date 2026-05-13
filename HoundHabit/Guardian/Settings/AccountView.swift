@@ -15,6 +15,23 @@ struct AccountView: View {
         supabase.auth.currentUser
     }
 
+    /// Comma-separated list of provider display labels (e.g. "Apple, Email & Password").
+    /// Falls back to "—" when Supabase hasn't populated `identities`.
+    private var signedInWithLabel: String {
+        let providers = user?.identities?.map(\.provider) ?? []
+        guard !providers.isEmpty else { return "—" }
+        return providers.map(Self.displayLabel(forProvider:)).joined(separator: ", ")
+    }
+
+    private static func displayLabel(forProvider provider: String) -> String {
+        switch provider.lowercased() {
+        case "apple":  return "Apple"
+        case "google": return "Google"
+        case "email":  return "Email & Password"
+        default:       return provider.prefix(1).uppercased() + provider.dropFirst()
+        }
+    }
+
     var body: some View {
         Group {
             if isLoading {
@@ -26,6 +43,7 @@ struct AccountView: View {
                         LabeledContent("Role", value: profile?.role.rawValue.capitalized ?? "—")
                         LabeledContent("Name", value: profile?.fullName ?? "—")
                         LabeledContent("Email", value: user?.email ?? "—")
+                        LabeledContent("Signed in with", value: signedInWithLabel)
                     }
 
                     Section("Dates") {
