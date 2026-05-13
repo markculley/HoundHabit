@@ -69,6 +69,19 @@ class TrainerPlanViewModel {
         }
     }
 
+    /// Returns the newly-copied plan, or nil on error. Adds it to `plans` so
+    /// the trainer's list reflects the copy without a refetch.
+    func copyPlan(_ source: TrainingPlan) async -> TrainingPlan? {
+        do {
+            let copy = try await service.copyPlan(planId: source.id)
+            plans.insert(copy, at: 0)
+            return copy
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
     // MARK: - Behaviors
 
     func loadBehaviors(for planId: UUID) async {

@@ -11,7 +11,13 @@
       "Bash(make test:*)",
       "mcp__plugin_supabase_supabase__list_projects",
       "Bash(python3)",
-      "mcp__plugin_supabase_supabase__list_migrations"
+      "mcp__plugin_supabase_supabase__list_migrations",
+      "Bash(xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -showdestinations)",
+      "Bash(xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -destination 'generic/platform=iOS Simulator' -sdk iphonesimulator26.5 build)",
+      "Bash(xcodebuild -version)",
+      "Bash(xcrun --show-sdk-version --sdk iphonesimulator)",
+      "Bash(xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -destination 'platform=iOS Simulator,OS=26.4,name=iPhone 17 Pro' -allowProvisioningUpdates build)",
+      "Bash(xcodebuild -downloadPlatform iOS -exportPath /tmp)"
     ],
     "additionalDirectories": [
       "/tmp"

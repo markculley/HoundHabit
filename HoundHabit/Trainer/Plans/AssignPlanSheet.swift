@@ -3,21 +3,34 @@ import SwiftUI
 struct AssignPlanSheet: View {
     let plan: TrainingPlan
     let existingAssignments: [PlanAssignment]
-    let onAssign: () -> Void
+    /// When true, the sheet exposes a "No guardian" option that lets the
+    /// trainer save without creating an assignment. Used by the post-copy flow.
+    var allowNone: Bool = false
+    /// Fires when the user explicitly completes the sheet — either by
+    /// assigning to a guardian or by saving with no guardian (when allowed).
+    /// Cancelling (toolbar Cancel or swipe-dismiss) does NOT fire this.
+    let onComplete: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = AssignSheetViewModel()
 
+    private var confirmDisabled: Bool {
+        if viewModel.isAssigning { return true }
+        if viewModel.selectedGuardian != nil { return false }
+        // In the copy flow, "None" is a real picker choice — Save is always enabled.
+        return !allowNone
+    }
+
     var body: some View {
         NavigationStack {
             Form {
-                Section("Guardian") {
+                Section(allowNone ? "Guardian (Optional)" : "Guardian") {
                     if viewModel.guardians.isEmpty {
                         Text("No guardians available to assign.")
                             .foregroundStyle(.secondary)
                     } else {
                         Picker("Select Guardian", selection: $viewModel.selectedGuardian) {
-                            Text("Select…").tag(Optional<LinkedGuardian>.none)
+                            Text(allowNone ? "None" : "Select…").tag(Optional<LinkedGuardian>.none)
                             ForEach(viewModel.guardians) { guardian in
                                 Text(guardian.profile.fullName ?? "Guardian")
                                     .tag(Optional(guardian))
@@ -56,14 +69,21 @@ struct AssignPlanSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Assign") {
                         Task {
-                            await viewModel.assign(plan: plan)
-                            if viewModel.errorMessage == nil {
-                                onAssign()
+                            if viewModel.selectedGuardian != nil {
+                                await viewModel.assign(plan: plan)
+                                if viewModel.errorMessage == nil {
+                                    onComplete()
+                                    dismiss()
+                                }
+                            } else {
+                                // allowNone + user picked "None" — confirm without
+                                // creating a plan_assignments row.
+                                onComplete()
                                 dismiss()
                             }
                         }
                     }
-                    .disabled(viewModel.selectedGuardian == nil || viewModel.isAssigning)
+                    .disabled(confirmDisabled)
                 }
             }
             .task { await viewModel.loadGuardians(excluding: existingAssignments.map(\.guardianId)) }
@@ -142,6 +162,6 @@ private class AssignSheetViewModel {
             createdAt: Date(), updatedAt: Date()
         ),
         existingAssignments: [],
-        onAssign: {}
+        onComplete: {}
     )
 }

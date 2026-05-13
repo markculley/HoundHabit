@@ -41,6 +41,7 @@
 		4D349EE02F8814D900CEC1E3 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EDF2F8814D900CEC1E3 /* TimerView.swift */; };
 		4D349EE22F88182B00CEC1E3 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EE12F88182B00CEC1E3 /* NotificationSettingsView.swift */; };
 		4D349EE42F88C88D00CEC1E3 /* TrainerAddResourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */; };
+		4D5E3F0B2FB4F6D500AAF83A /* CopyPlanPetPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5E3F0A2FB4F6D500AAF83A /* CopyPlanPetPickerSheet.swift */; };
 		AA000000000000000000000A /* HoundHabitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* HoundHabitApp.swift */; };
 		AA000000000000000000000B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000006 /* ContentView.swift */; };
 		AA000000000000000000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000007 /* Assets.xcassets */; };
@@ -132,6 +133,7 @@
 		4D349EDF2F8814D900CEC1E3 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
 		4D349EE12F88182B00CEC1E3 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 		4D349EE32F88C88D00CEC1E3 /* TrainerAddResourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerAddResourceView.swift; sourceTree = "<group>"; };
+		4D5E3F0A2FB4F6D500AAF83A /* CopyPlanPetPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyPlanPetPickerSheet.swift; sourceTree = "<group>"; };
 		AA0000000000000000000004 /* HoundHabit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HoundHabit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000005 /* HoundHabitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoundHabitApp.swift; sourceTree = "<group>"; };
 		AA0000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -405,6 +407,7 @@
 		AA000000000000000000003B /* Plans */ = {
 			isa = PBXGroup;
 			children = (
+				4D5E3F0A2FB4F6D500AAF83A /* CopyPlanPetPickerSheet.swift */,
 				4D349ED12F87F78600CEC1E3 /* GuardianPlanDetailView.swift */,
 				4D349ED22F87F78600CEC1E3 /* GuardianPlanListView.swift */,
 				4D349ED32F87F78600CEC1E3 /* GuardianPlanViewModel.swift */,
@@ -641,6 +644,7 @@
 				4D349EDC2F88132500CEC1E3 /* NotificationManager.swift in Sources */,
 				AA0000000000000000000056 /* PetService.swift in Sources */,
 				AA0000000000000000000058 /* StorageService.swift in Sources */,
+				4D5E3F0B2FB4F6D500AAF83A /* CopyPlanPetPickerSheet.swift in Sources */,
 				AA000000000000000000005A /* PetViewModel.swift in Sources */,
 				AA000000000000000000005C /* PetListView.swift in Sources */,
 				AA000000000000000000005E /* PetFormView.swift in Sources */,

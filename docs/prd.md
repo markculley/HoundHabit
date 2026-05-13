@@ -29,7 +29,11 @@ A training tracker that is needed by pet owners to bridge the gap between the la
 
 
 ## build artifacts
-At this time, it is not clear if one or more back office services are required to support both the iPhone and android apps. The goal is to have one of each. Presumably there needs to be a common database, but perhaps there is another service that could be used for data storage in synchronization. I will leave that too architecture discovery.
+Hound Habit is a multi-platform mobile app with a shared backend:
+
+- **iOS app** — native SwiftUI, this repo (`hound_habit`)
+- **Android app** — native Kotlin + Jetpack Compose, separate repo (`hound_habit_android`)
+- **Backend** — Supabase (Postgres + Auth + Storage + RLS). Both clients hit the same Supabase project; schema, RLS policies, and RPCs (e.g. `delete_my_account`) are shared. See [why_supabase.md](why_supabase.md).
 
 ## iPhone
 - assume that users have purchased their iPhone in the last three years
@@ -41,9 +45,6 @@ At this time, it is not clear if one or more back office services are required t
 
 ## IPad and Android tablets
 This is a stretch goal. Not part of MVP. It would be nice to support this.
-
-## AWS
-For any back office services required assume that AWS will be used.
 
 
 # Use Cases

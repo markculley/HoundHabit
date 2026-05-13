@@ -343,6 +343,24 @@ struct TrainingPlanService {
             .execute()
     }
 
+    /// Duplicates a plan (+ behaviors + items) into a new lineage owned by the caller.
+    /// Backed by the `copy_plan(uuid)` Postgres RPC, which performs the copy atomically.
+    func copyPlan(planId: UUID) async throws -> TrainingPlan {
+        struct Params: Encodable { let source_plan_id: UUID }
+        let newPlanId: UUID = try await supabase
+            .rpc("copy_plan", params: Params(source_plan_id: planId))
+            .execute()
+            .value
+
+        return try await supabase
+            .from("training_plans")
+            .select()
+            .eq("id", value: newPlanId)
+            .single()
+            .execute()
+            .value
+    }
+
     /// Creates a self-assignment so a guardian-owned plan appears in their assigned-plans list.
     func selfAssignPlan(planId: UUID, petId: UUID? = nil) async throws -> PlanAssignment {
         guard let userId = supabase.auth.currentUser?.id else {

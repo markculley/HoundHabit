@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 struct TrainerPlanDetailView: View {
     let plan: TrainingPlan
@@ -8,6 +9,19 @@ struct TrainerPlanDetailView: View {
     @State private var showEditSheet = false
     @State private var showAddBehaviorSheet = false
     @State private var showAssignSheet = false
+    @State private var isCopying = false
+    @State private var copyPendingTrainerAssign: TrainingPlan? = nil
+    @State private var copyPendingGuardianPetPick: TrainingPlan? = nil
+    @State private var copyDestination: TrainingPlan? = nil
+    // Held across sheet dismissal so we can push to the copy after the sheet animates away.
+    @State private var pendingCopyPushTarget: TrainingPlan? = nil
+    // Set inside the sheet when the user confirms (assigns OR explicitly picks None).
+    // Read in onDismiss to distinguish "completed" from "cancelled". A cancel deletes the copy.
+    @State private var copyConfirmed = false
+
+    private var isOwnedByCurrentUser: Bool {
+        plan.trainerId == supabase.auth.currentUser?.id
+    }
 
     private var behaviors: [Behavior] {
         viewModel.behaviors[plan.id] ?? []
@@ -41,8 +55,7 @@ struct TrainerPlanDetailView: View {
                     .foregroundStyle(.secondary)
 
                 if let description = plan.description, !description.isEmpty {
-                    Text(description)
-                        .foregroundStyle(.secondary)
+                    LabeledContent("Description", value: description)
                 }
 
                 if showAssignments {
@@ -115,18 +128,39 @@ struct TrainerPlanDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Add Behavior") { showAddBehaviorSheet = true }
-            }
-            ToolbarItem(placement: .secondaryAction) {
-                Button {
-                    showEditSheet = true
+                Menu {
+                    Button {
+                        showAddBehaviorSheet = true
+                    } label: {
+                        Label("Add Behavior", systemImage: "plus")
+                    }
+                    Button {
+                        showEditSheet = true
+                    } label: {
+                        Label("Edit Plan", systemImage: "pencil")
+                    }
+                    if isOwnedByCurrentUser {
+                        Button {
+                            Task { await performCopy() }
+                        } label: {
+                            Label("Copy Plan", systemImage: "doc.on.doc")
+                        }
+                        .disabled(isCopying)
+                    }
                 } label: {
-                    Label("Edit Plan", systemImage: "pencil")
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
         .navigationDestination(for: Behavior.self) { behavior in
             TrainerBehaviorDetailView(behavior: behavior, viewModel: viewModel)
+        }
+        .navigationDestination(item: $copyDestination) { copy in
+            TrainerPlanDetailView(
+                plan: copy,
+                viewModel: viewModel,
+                showAssignments: showAssignments
+            )
         }
         .task {
             async let b = viewModel.loadBehaviors(for: plan.id)
@@ -149,10 +183,25 @@ struct TrainerPlanDetailView: View {
         .sheet(isPresented: $showAssignSheet) {
             AssignPlanSheet(
                 plan: plan,
-                existingAssignments: assignments
-            ) {
-                Task { await viewModel.loadAssignments(for: plan.id) }
-            }
+                existingAssignments: assignments,
+                onComplete: {
+                    Task { await viewModel.loadAssignments(for: plan.id) }
+                }
+            )
+        }
+        .sheet(item: $copyPendingTrainerAssign, onDismiss: handleCopySheetDismiss) { copy in
+            AssignPlanSheet(
+                plan: copy,
+                existingAssignments: [],
+                allowNone: true,
+                onComplete: { copyConfirmed = true }
+            )
+        }
+        .sheet(item: $copyPendingGuardianPetPick, onDismiss: handleCopySheetDismiss) { copy in
+            CopyPlanPetPickerSheet(
+                plan: copy,
+                onComplete: { copyConfirmed = true }
+            )
         }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
@@ -162,6 +211,37 @@ struct TrainerPlanDetailView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+
+    // MARK: - Copy
+
+    private func performCopy() async {
+        isCopying = true
+        defer { isCopying = false }
+        guard let copy = await viewModel.copyPlan(plan) else { return }
+        pendingCopyPushTarget = copy
+        copyConfirmed = false
+        if showAssignments {
+            copyPendingTrainerAssign = copy
+        } else {
+            copyPendingGuardianPetPick = copy
+        }
+    }
+
+    /// Fires after the copy-related sheet finishes its dismiss animation.
+    /// If the user confirmed (assigned or explicitly chose None), push to the new plan's
+    /// detail view. If they cancelled, delete the copy that was made up front so the
+    /// world looks like nothing happened.
+    private func handleCopySheetDismiss() {
+        guard let copy = pendingCopyPushTarget else { return }
+        pendingCopyPushTarget = nil
+
+        if copyConfirmed {
+            copyDestination = copy
+        } else {
+            Task { await viewModel.deletePlan(copy) }
+        }
+        copyConfirmed = false
     }
 }
 
