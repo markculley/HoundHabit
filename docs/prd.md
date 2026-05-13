@@ -172,6 +172,7 @@ This is a stretch goal. Not part of MVP. It would be nice to support this.
 ## Attach Training Plan to Pet
 
 - If created separately of course
+- **Pet is required when a plan is assigned to a guardian.** A pet is only optional at plan-creation time — the trainer (or guardian) can draft a plan without any pet attached. Once that plan is being assigned to a guardian, a specific pet must be selected. If the guardian has no pets yet, the assignment is blocked until they add one.
 
 ## CRUD a Training Record
 

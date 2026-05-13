@@ -125,21 +125,25 @@ WITH CHECK (
 
 ---
 
-## UC-9.2: Trainer Adds Behaviors to a Plan
+## UC-9.2: Trainer Adds and Edits Behaviors
 
-**Actor:** Trainer  
-**Precondition:** Trainer is viewing a plan in `TrainerPlanDetailView`.
+**Actor:** Trainer (or Guardian editing their own plan via `OwnedPlanDetailView`)
+**Precondition:** Actor is viewing a plan in `TrainerPlanDetailView`.
 
 Behaviors are the top-level groupings within a plan — one per skill the guardian will train (e.g. "Sit", "Down", "Recall"). Each Behavior acts as its own progression sequence with its own ordered steps.
 
-### Flow
+### Flow — Add a Behavior
 
 ```
 Trainer                   App                        Supabase
   │                         │                            │
-  │  Tap "Add Behavior"     │                            │
+  │  Scroll to bottom of    │                            │
+  │  Behaviors section,     │                            │
+  │  tap "+ Add Behavior"   │                            │
+  │  (inline row, not a     │                            │
+  │  toolbar button)        │                            │
   │────────────────────────▶│                            │
-  │  TrainerBehaviorFormView │                            │
+  │  TrainerBehaviorFormView│                            │
   │  (sheet)                │                            │
   │  Name field + 12        │                            │
   │  suggested names shown  │                            │
@@ -154,9 +158,59 @@ Trainer                   App                        Supabase
   │                         │  INSERT behaviors          │
   │                         │◀───────────────────────────│
   │  Behavior appears in    │                            │
-  │  Behaviors list         │                            │
+  │  Behaviors list above   │                            │
+  │  the inline + row       │                            │
   │◀────────────────────────│                            │
 ```
+
+### Flow — Edit a Behavior Name (inline, auto-save)
+
+```
+Trainer                   App                        Supabase
+  │                         │                            │
+  │  Tap a behavior row     │                            │
+  │  (push)                 │                            │
+  │────────────────────────▶│                            │
+  │  TrainerBehaviorDetail  │                            │
+  │  shows Name section     │                            │
+  │  as editable TextField  │                            │
+  │  pre-filled with current│                            │
+  │  name (no Rename modal) │                            │
+  │◀────────────────────────│                            │
+  │                         │                            │
+  │  Type into Name field   │                            │
+  │────────────────────────▶│                            │
+  │                         │  scheduleNameCommit():     │
+  │                         │  cancel prior Task,        │
+  │                         │  start 500ms debounce      │
+  │                         │  ...                       │
+  │                         │  commitName() →            │
+  │                         │  updateBehavior(name:)     │
+  │                         │───────────────────────────▶│
+  │                         │  UPDATE behaviors SET name │
+  │                         │◀───────────────────────────│
+  │                         │                            │
+  │  Swipe back / tap       │                            │
+  │  another field          │                            │
+  │────────────────────────▶│                            │
+  │                         │  .onDisappear flushes      │
+  │                         │  pending debounced commit  │
+  │                         │  (covers fast back-swipe)  │
+```
+
+### Inline +Add row (IOS-21)
+
+The "Add Behavior" affordance lives as a row at the **bottom of the Behaviors section**, not in the toolbar. Style: `Label("Add Behavior", systemImage: "plus.circle")` with `.foregroundStyle(.tint)`. Empty-state copy nudges toward it: *"No behaviors yet. Tap + Add Behavior below to begin."*
+
+### Inline name edit (IOS-21)
+
+`TrainerBehaviorDetailView` shows a `Section("Name")` at the top with a TextField. Local state (`editingName`) mirrors the persisted name. Commit semantics:
+
+- **Debounce:** `.onChange(of: editingName)` schedules a 500ms `Task.sleep`; the next keystroke cancels and reschedules.
+- **Submit:** `.onSubmit` flushes immediately.
+- **Disappear:** `.onDisappear` flushes any pending commit so a swipe-back doesn't drop the latest edit.
+- **Validation:** an empty trimmed name surfaces an inline red caption ("Name can't be empty") and skips the commit. Once non-empty again, the next change triggers a commit.
+- **Redundant-commit guard:** `lastCommittedName` prevents network calls when the value hasn't changed across debounce ticks.
 
 ### Behavior Name Suggestions
 
@@ -176,34 +230,37 @@ Behaviors in `TrainerPlanDetailView` support drag-to-reorder (`.onMove`) and swi
 
 ---
 
-## UC-9.3: Trainer Adds Steps to a Behavior
+## UC-9.3: Trainer Adds and Edits Steps
 
-**Actor:** Trainer  
-**Precondition:** Trainer is viewing a behavior in `TrainerBehaviorDetailView`.
+**Actor:** Trainer (or Guardian editing their own plan via `OwnedPlanDetailView`)
+**Precondition:** Actor is viewing a behavior in `TrainerBehaviorDetailView`.
 
 Each step encodes the exact Distance, Duration, and Distraction the guardian should practise. Only one of the Three D's should differ between consecutive steps (the "One Change" rule).
 
-### Flow
+### Flow — Add a Step
 
 ```
 Trainer                   App                        Supabase
   │                         │                            │
   │  Tap behavior in list   │                            │
   │────────────────────────▶│                            │
-  │  TrainerBehaviorDetailView│                           │
+  │  TrainerBehaviorDetail  │                            │
   │  (NavigationLink push)  │                            │
   │                         │  loadItems(for: behavior)  │
   │                         │───────────────────────────▶│
   │                         │  SELECT training_plan_items│
   │                         │  WHERE behavior_id=?       │
   │                         │◀───────────────────────────│
-  │  Steps list shown       │                            │
+  │  Steps list shown,      │                            │
+  │  with "+ Add Step" row  │                            │
+  │  at bottom (inline,     │                            │
+  │  not a toolbar button)  │                            │
   │◀────────────────────────│                            │
   │                         │                            │
-  │  Tap "Add Step"         │                            │
+  │  Tap "+ Add Step"       │                            │
   │────────────────────────▶│                            │
-  │  TrainerPlanItemFormView │                            │
-  │  (sheet)                │                            │
+  │  TrainerPlanItemFormView│                            │
+  │  (sheet, mode = .add)   │                            │
   │                         │                            │
   │  Enter step name,       │                            │
   │  pick Distance /        │                            │
@@ -213,6 +270,7 @@ Trainer                   App                        Supabase
   │  free-text value)       │                            │
   │  tap Add                │                            │
   │────────────────────────▶│                            │
+  │                         │  onSave fires once →       │
   │                         │  createItem(planId,        │
   │                         │    behaviorId,             │
   │                         │    title, distance,        │
@@ -228,6 +286,54 @@ Trainer                   App                        Supabase
   │  (capsule tags show     │                            │
   │  Three D's values)      │                            │
   │◀────────────────────────│                            │
+```
+
+### Flow — Edit a Step (auto-save)
+
+```
+Trainer                   App                        Supabase
+  │                         │                            │
+  │  Tap an existing step   │                            │
+  │  row (whole row is a    │                            │
+  │  button; no swipe-Edit  │                            │
+  │  action)                │                            │
+  │────────────────────────▶│                            │
+  │  TrainerPlanItemFormView│                            │
+  │  (sheet, mode = .edit)  │                            │
+  │  populated; toolbar     │                            │
+  │  shows "Done" only —    │                            │
+  │  no Save button         │                            │
+  │◀────────────────────────│                            │
+  │                         │                            │
+  │  Change a picker        │                            │
+  │  (Distance/Duration/    │                            │
+  │  Distraction)           │                            │
+  │────────────────────────▶│                            │
+  │                         │  .onChange fires           │
+  │                         │  commitIfEditing(          │
+  │                         │    immediate: true)        │
+  │                         │  → onCommit → updateItem   │
+  │                         │───────────────────────────▶│
+  │                         │  UPDATE training_plan_items│
+  │                         │◀───────────────────────────│
+  │                         │                            │
+  │  Type into title or a   │                            │
+  │  Custom value field     │                            │
+  │────────────────────────▶│                            │
+  │                         │  scheduleDebouncedCommit() │
+  │                         │  cancel prior Task,        │
+  │                         │  start 500ms debounce      │
+  │                         │  ...                       │
+  │                         │  commitIfEditing()         │
+  │                         │  → onCommit → updateItem   │
+  │                         │───────────────────────────▶│
+  │                         │◀───────────────────────────│
+  │                         │                            │
+  │  Tap Done / swipe down  │                            │
+  │  to dismiss sheet       │                            │
+  │────────────────────────▶│                            │
+  │                         │  .onDisappear flushes any  │
+  │                         │  pending debounced commit  │
 ```
 
 ### Step Form
@@ -253,6 +359,38 @@ func displayLabel(customValue: String?) -> String {
 ```
 
 Step rows in `TrainerBehaviorDetailView` show the Three D's as small capsule tags beneath the step title. Step `sortOrder` is scoped **within its Behavior** (0, 1, 2… per behavior, not plan-global).
+
+### Tap-to-edit + auto-save (IOS-21)
+
+The step row in `TrainerBehaviorDetailView` is wrapped in a `Button { itemToEdit = item }` — tapping anywhere on the row opens the form in **edit mode**. There is no swipe-trailing "Edit" action; the trailing swipe shows only **Delete**.
+
+`TrainerPlanItemFormView` exposes two optional callbacks (callers pick the right one — beware Swift trailing-closure resolution, always label `onSave:` / `onCommit:` explicitly):
+
+```swift
+var onSave: ((ItemFormResult) -> Void)? = nil    // create — one-shot on Save tap
+var onCommit: ((ItemFormResult) -> Void)? = nil  // edit — fires per commit
+```
+
+Edit-mode commit semantics:
+
+| Field | Trigger | Cadence |
+|-------|---------|---------|
+| Title `TextField`, custom-value `TextField`s | `.onChange` | Debounced 500ms after last keystroke |
+| Title `.onSubmit` | Submit key | Immediate |
+| Distance / Duration / Distraction `Picker` | `.onChange` | Immediate (any pending text-debounce is also cancelled) |
+| Sheet dismissal (Done, swipe-down) | `.onDisappear` | Flushes any pending debounced commit |
+
+Edit-mode validation:
+
+- An empty trimmed title surfaces an inline red caption ("Title can't be empty") and **does not commit**. The form does NOT auto-revert — the user is mid-edit. Once non-empty again, the next change fires another commit cycle.
+- A `.custom` picker selection with an empty custom-value field also blocks commits (same `canSave` gate the create flow uses).
+
+Lifecycle guards prevent spurious commits:
+
+- `hasPopulated` blocks commits during the initial `populateIfEditing()` call (otherwise `.onAppear` would fire a no-op write).
+- `commitTask?.cancel()` coalesces debounced edits so only the last keystroke pause triggers a save.
+
+In **create** mode the form is unchanged: an explicit "Add" button validates and calls `onSave` once. The leading toolbar item is "Cancel" in create mode and "Done" in edit mode (Done flushes pending and dismisses).
 
 ### Reorder Implementation
 
@@ -318,7 +456,9 @@ Trainer                   App                        Supabase
   │                         │───────────────────────────▶│
   │                         │◀───────────────────────────│
   │  Pet picker shown       │                            │
-  │  (optional)             │                            │
+  │  (currently optional —  │                            │
+  │  pending: required, see │                            │
+  │  note below)            │                            │
   │◀────────────────────────│                            │
   │                         │                            │
   │  Tap "Assign"           │                            │
@@ -343,6 +483,99 @@ Trainer                   App                        Supabase
 ### Duplicate Assignment
 
 The `UNIQUE(plan_id, guardian_id)` constraint prevents assigning the same plan twice. `AssignSheetViewModel` catches the Postgres error and surfaces: *"This guardian is already assigned to this plan."*
+
+### Pending: pet required at assignment time
+
+Per the PRD (*"Attach Training Plan to Pet"*), a pet **must** be selected when a plan is assigned to a guardian. The current implementation allows "Any pet" as a fallback — tracked separately as a backlog card. Once shipped, `AssignPlanSheet` will:
+
+- Drop the "Any pet" tag and "Optional" header.
+- Disable Assign until both guardian AND pet are selected.
+- Show a clear message when the selected guardian has zero pets.
+
+A companion card adds trainer-side editing of the pet on an existing assignment so legacy "Any pet" rows can be repaired without delete + recreate.
+
+---
+
+## UC-9.4b: Trainer Copies an Existing Plan
+
+**Actor:** Trainer (or Guardian copying their own plan)
+**Precondition:** Actor owns the source plan (`plan.trainerId == currentUserId`). Copying a trainer-assigned plan is not exposed to guardians — only the trainer who owns it can copy.
+
+A copy duplicates the plan's structure (behaviors + steps + Three D's + custom values) into a **new** `training_plans` row owned by the caller. Assignments do NOT carry over: the copy starts unassigned and the caller is immediately prompted to assign or skip.
+
+### Flow
+
+```
+Trainer                   App                        Supabase
+  │                         │                            │
+  │  Plan detail …          │                            │
+  │  toolbar overflow menu  │                            │
+  │  → tap "Copy Plan"      │                            │
+  │────────────────────────▶│                            │
+  │                         │  copyPlan(plan) →          │
+  │                         │  rpc("copy_plan",          │
+  │                         │       source_plan_id: …)   │
+  │                         │───────────────────────────▶│
+  │                         │  INSERT training_plans     │
+  │                         │  (new id, trainer_id =     │
+  │                         │   auth.uid())              │
+  │                         │  + INSERT behaviors        │
+  │                         │  (cloned)                  │
+  │                         │  + INSERT                  │
+  │                         │  training_plan_items       │
+  │                         │  (cloned, new behavior_ids)│
+  │                         │◀───────────────────────────│
+  │                         │  returns new plan          │
+  │                         │                            │
+  │  AssignPlanSheet         │                            │
+  │  (allowNone: true) opens │                            │
+  │  on the new copy        │                            │
+  │  [or CopyPlanPetPicker  │                            │
+  │   if guardian-owned]    │                            │
+  │◀────────────────────────│                            │
+  │                         │                            │
+  │  Pick guardian + pet,   │                            │
+  │  OR pick "None",        │                            │
+  │  OR Cancel              │                            │
+  │────────────────────────▶│                            │
+  │                         │                            │
+  │  [confirmed] navigate   │                            │
+  │  to new plan detail     │                            │
+  │  [cancelled] deletePlan │                            │
+  │  rolls back the copy    │                            │
+  │───────────────────────▶ │                            │
+```
+
+### Atomic copy via Postgres RPC
+
+`TrainingPlanService.copyPlan(planId:)` calls a `copy_plan(source_plan_id uuid)` Postgres function. The function is `security definer` and:
+
+1. Inserts a new `training_plans` row with `trainer_id = auth.uid()`, the source plan's title prefixed (e.g. *"Sit (Copy)"*), and a fresh `id`.
+2. Selects all behaviors of the source and re-inserts them under the new plan, preserving `sort_order`. New behavior ids are generated.
+3. Selects all `training_plan_items` of the source and re-inserts them under the new plan, remapping each `behavior_id` to the corresponding new behavior.
+4. Returns the new plan id.
+
+The Swift caller then re-fetches the full `training_plans` row to return a populated model.
+
+### Post-copy assign flow
+
+The view that initiated the copy (`TrainerPlanDetailView` for trainer-owned plans, `OwnedPlanDetailView` for guardian-owned plans) immediately presents an assignment sheet on the **new** copy:
+
+| Caller | Sheet | `allowNone` |
+|---|---|---|
+| `TrainerPlanDetailView` (showAssignments = true) | `AssignPlanSheet` | `true` (lets trainer save without assigning) |
+| `OwnedPlanDetailView` (showAssignments = false) | `CopyPlanPetPickerSheet` | n/a (guardian-only pet picker) |
+
+The sheet's `onComplete` callback flips a `copyConfirmed` flag. `onDismiss` reads the flag:
+
+- **Confirmed** (assigned to a guardian, or explicitly picked "None") → `copyDestination = copy` pushes the new plan's detail onto the navigation stack.
+- **Cancelled** (toolbar Cancel / swipe-down without confirming) → `viewModel.deletePlan(copy)` rolls back the copy so the world looks like nothing happened.
+
+This is why `copyConfirmed` is a separate flag from "sheet shown" — SwiftUI's sheet lifecycle alone can't distinguish "user chose to proceed without an assignment" from "user dismissed without acting."
+
+### Why copies don't inherit assignments
+
+A copy is a fresh plan owned by the caller. Inheriting the source's `plan_assignments` rows would let a guardian-owned copy auto-assign to that guardian's pet (annoying if the user wanted a starting template), or, in the trainer case, would push a new plan into a guardian's "From My Trainer" tab without consent. Forcing an explicit assign-or-skip on every copy makes the user's intent unambiguous.
 
 ---
 
@@ -390,16 +623,24 @@ Guardian                  App                        Supabase
   │◀────────────────────────│                            │
 ```
 
-### Plan List Differentiation
+### Plan List Differentiation (IOS-14)
 
-`GuardianPlanListView` identifies own plans via `plan.trainerId == currentUserId`:
+`GuardianPlanListView` splits the guardian's plans into two sections based on `viewModel.isOwnPlan(_:)` (which checks `plan.trainerId == currentUserId`):
 
-| Plan type | Navigation destination | Delete available? |
-|-----------|----------------------|-------------------|
-| Own (guardian-created) | `OwnedPlanDetailView` → `TrainerPlanDetailView(showAssignments: false)` | Yes — swipe to delete |
-| Trainer-assigned | `GuardianPlanDetailView` (practice mode) | No |
+| Section | Plans included | Navigation destination | Delete available? |
+|---|---|---|---|
+| **My Plans** | Own (guardian-created) | `OwnedPlanDetailView` → `TrainerPlanDetailView(showAssignments: false)` | Yes — swipe to delete |
+| **From My Trainer** | Trainer-assigned | `GuardianPlanDetailView` (practice mode) | No |
 
-Empty state message: *"Tap + to create your own plan, or ask your trainer to assign one."*
+Sections only render when non-empty; if the guardian has no own plans, the **My Plans** section is hidden entirely, and likewise for **From My Trainer**. A guardian with neither sees the `ContentUnavailableView` empty state: *"Tap + to create your own plan, or ask your trainer to assign one."*
+
+Each row in either section is rendered by `AssignedPlanRow`, which shows:
+
+- **Pet avatar (left)** — `PetAvatarView(url: pet.photoUrl, size: 40)` resolved by `pet(for: assignedPlan)` (looks up `assignment.petId` against `PetViewModel.pets`). When no pet is attached (legacy "Any pet" assignments), the avatar falls back to a paw-print placeholder.
+- Plan title
+- Progress badge (To Do / In Progress / Done)
+
+The pet avatar makes it obvious-at-a-glance which pet a plan is for in households with multiple pets.
 
 ### Trainer-Assigned Plan Sharing Toggle
 
@@ -410,24 +651,35 @@ Empty state message: *"Tap + to create your own plan, or ask your trainer to ass
 - The updated value is written to `assignedPlans[idx].assignment.isShared` in-memory immediately.
 - When the guardian opens a step's practice form, `isSharedDefault: isSharedWithTrainer` is passed into `TrainingRecordFormView`. The record is created with that `isShared` value — no per-session toggle is shown for plan-linked sessions.
 
+### Plan Header (Guardian view)
+
+The header section of `GuardianPlanDetailView` shows:
+
+- `Label("Training Plan", systemImage: "list.bullet.clipboard")` — visual category
+- `LabeledContent("Description", value: …)` — only rendered when the plan has a non-empty description. Labelled to match the trainer's view of the same field.
+- "Assigned <date>" caption
+- "Share sessions with trainer" toggle (trainer-assigned plans only — see above)
+
 ### Behavior-Grouped Layout
 
-`GuardianPlanDetailView` renders one `List` section per Behavior. Steps within each section are shown in their `sortOrder` sequence. The current step (green dot + green play icon) may appear in any behavior's section.
+`GuardianPlanDetailView` renders steps inside a single `Section("Behaviors")`. Inside the section, each behavior is shown as a bold subheader row above its steps, with steps in their `sortOrder` sequence. The current step (green dot + green play icon) may appear under any behavior.
 
 ```
-┌─ Leave It ──────────────────────────────────────┐
+BEHAVIORS
+┌─────────────────────────────────────────────────┐
+│ Leave It                                        │  ← bold subheader
 │ ○  1. Step 1   Arm's length · Instant · None   ▶│  ← completed, replayable
 │ ○  2. Step 2   Arm's length · Instant · None   ▶│  ← completed, replayable
-└─────────────────────────────────────────────────┘
-┌─ Touch ─────────────────────────────────────────┐
-│ ●  1. Touch Step 1  Arm's length · Instant · None  ▶│  ← current (green)
-└─────────────────────────────────────────────────┘
-┌─ Back ──────────────────────────────────────────┐
+│                                                 │
+│ Touch                                           │  ← bold subheader
+│ ●  1. Touch Step 1  Arm's length · Instant · None ▶│  ← current (green)
+│                                                 │
+│ Back                                            │  ← bold subheader
 │ ○  1. Back Step 1   Arm's length · 5 sec · None  ℹ│  ← locked (future)
 └─────────────────────────────────────────────────┘
 ```
 
-**Legacy / unbound items** (steps with no `behavior_id`) appear in an "Other Steps" section as a backward-compatibility fallback.
+**Legacy / unbound items** (steps with no `behavior_id`) appear after all behaviors with an "Other Steps" subheader, as a backward-compatibility fallback.
 
 ### Current Step Resolution
 

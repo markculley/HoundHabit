@@ -16,9 +16,32 @@ sequenceDiagram
     SVC->>DB: SELECT * FROM profiles WHERE id = auth.uid()
     DB-->>SVC: Profile (role, full_name)
     SVC-->>UI: Profile
-    UI->>UI: supabase.auth.currentUser → email, createdAt, lastSignInAt
-    UI->>G: Show Role, Name, Email, Created, Last Login
+    UI->>UI: supabase.auth.currentUser → email, identities, createdAt, lastSignInAt
+    UI->>G: Show Role, Name, Email, Signed in with, Created, Last Login
 ```
+
+### Account section rows
+
+| Row | Source | Notes |
+|---|---|---|
+| Role | `profiles.role` | "Guardian" / "Trainer" — capitalized |
+| Name | `profiles.full_name` | "—" when null |
+| Email | `auth.currentUser.email` | |
+| Signed in with | `auth.currentUser.identities[].provider` | Comma-separated display labels — see below |
+| Created / Last Login | `auth.currentUser.createdAt` / `lastSignInAt` | Separate "Dates" section |
+
+### Signed in with — provider display (IOS-13)
+
+`supabase.auth.currentUser.identities` is a `[UserIdentity]?` where each `UserIdentity` carries a `provider: String` token. `AccountView` maps each token to a friendly label:
+
+| Provider token | Display label |
+|---|---|
+| `apple` | Apple |
+| `google` | Google |
+| `email` | Email & Password |
+| (other) | Capitalized raw token |
+
+If `identities` is nil or empty (Supabase hasn't populated it yet), the row shows `—`. Multiple linked identities render comma-separated (e.g. `Google, Email & Password`).
 
 ---
 
