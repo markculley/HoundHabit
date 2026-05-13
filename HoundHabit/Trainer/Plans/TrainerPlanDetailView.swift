@@ -96,7 +96,7 @@ struct TrainerPlanDetailView: View {
             // Behaviors list
             Section {
                 if behaviors.isEmpty {
-                    Text("No behaviors yet. Tap Add Behavior to begin.")
+                    Text("No behaviors yet. Tap + Add Behavior below to begin.")
                         .foregroundStyle(.secondary)
                         .font(.subheadline)
                 } else {
@@ -120,6 +120,13 @@ struct TrainerPlanDetailView: View {
                         Task { await viewModel.moveBehaviors(in: plan.id, from: source, to: destination) }
                     }
                 }
+                // Inline add row — replaces the toolbar Add Behavior button.
+                Button {
+                    showAddBehaviorSheet = true
+                } label: {
+                    Label("Add Behavior", systemImage: "plus.circle")
+                        .foregroundStyle(.tint)
+                }
             } header: {
                 Text("Behaviors")
             }
@@ -129,11 +136,6 @@ struct TrainerPlanDetailView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
-                    Button {
-                        showAddBehaviorSheet = true
-                    } label: {
-                        Label("Add Behavior", systemImage: "plus")
-                    }
                     Button {
                         showEditSheet = true
                     } label: {

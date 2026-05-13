@@ -20,7 +20,8 @@
       "Bash(xcodebuild -downloadPlatform iOS -exportPath /tmp)",
       "Bash(echo \"passed: $\\(make test 2>&1)",
       "Bash(find ~/Library/Developer/Xcode/DerivedData -path \"*Supabase-swift/Sources*\" -name \"*.swift\" 2>/dev/null | head -5; echo \"---\"; find ~/Library/Developer/Xcode/DerivedData -name \"User.swift\" -path \"*supabase*\" 2>/dev/null | head -5)",
-      "Read(//Users/mark/Library/Developer/Xcode/DerivedData/**)"
+      "Read(//Users/mark/Library/Developer/Xcode/DerivedData/**)",
+      "Bash(echo \"failed: $\\(make test 2>&1)"
     ],
     "additionalDirectories": [
       "/tmp",

@@ -70,8 +70,7 @@ struct GuardianPlanDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 if let description = assignedPlan.plan.description, !description.isEmpty {
-                    Text(description)
-                        .foregroundStyle(.secondary)
+                    LabeledContent("Description", value: description)
                 }
                 Text("Assigned \(assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))")
                     .font(.caption)
@@ -101,18 +100,20 @@ struct GuardianPlanDetailView: View {
                     stepRows(for: allItems)
                 }
             } else {
-                // Behaviors as sections
-                ForEach(behaviors) { behavior in
-                    let behaviorItems = items(for: behavior)
-                    if !behaviorItems.isEmpty {
-                        Section(behavior.name) {
+                Section("Behaviors") {
+                    ForEach(behaviors) { behavior in
+                        let behaviorItems = items(for: behavior)
+                        if !behaviorItems.isEmpty {
+                            Text(behavior.name)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.secondary)
                             stepRows(for: behaviorItems)
                         }
                     }
-                }
-                // Unbound items fallback
-                if !unboundItems.isEmpty {
-                    Section("Other Steps") {
+                    if !unboundItems.isEmpty {
+                        Text("Other Steps")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.secondary)
                         stepRows(for: unboundItems)
                     }
                 }

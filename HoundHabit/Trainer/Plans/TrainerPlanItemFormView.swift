@@ -21,9 +21,24 @@ enum ItemFormMode {
 
 // MARK: - View
 
+/// Form for adding or editing a step (`training_plan_items` row).
+///
+/// In **add mode** the form keeps an explicit Save button — the row doesn't
+/// exist yet and validation gates insertion.
+///
+/// In **edit mode** the form auto-saves on every change:
+/// - `TextField` commits with a ~500ms debounce after the last keystroke.
+/// - `Picker` and toggle changes commit immediately.
+/// - An empty title shows an inline error and does NOT auto-revert; the user
+///   is mid-edit. Commits resume once the title becomes non-empty again.
+/// - Swipe-to-dismiss flushes any pending debounced commit.
 struct TrainerPlanItemFormView: View {
     let mode: ItemFormMode
-    let onSave: (ItemFormResult) -> Void
+    /// Called once when the user taps Save (create flow only).
+    var onSave: ((ItemFormResult) -> Void)? = nil
+    /// Called every time a field commits (edit flow only — debounced for text,
+    /// immediate for pickers).
+    var onCommit: ((ItemFormResult) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
@@ -34,14 +49,24 @@ struct TrainerPlanItemFormView: View {
     @State private var durationCustomValue = ""
     @State private var distractionCustomValue = ""
 
+    @State private var commitTask: Task<Void, Never>? = nil
+    @State private var hasPopulated = false
+
     private var isEditing: Bool {
         if case .edit = mode { return true }
         return false
     }
 
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var titleError: String? {
+        isEditing && trimmedTitle.isEmpty ? "Title can't be empty" : nil
+    }
+
     private var canSave: Bool {
-        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
+        guard !trimmedTitle.isEmpty else { return false }
         if distance == .custom && distanceCustomValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return false }
         if duration == .custom && durationCustomValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return false }
         if distraction == .custom && distractionCustomValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return false }
@@ -53,6 +78,12 @@ struct TrainerPlanItemFormView: View {
             Form {
                 Section("Step Name") {
                     TextField("e.g. Sit at arm's length", text: $title)
+                        .onSubmit { commitIfEditing(immediate: true) }
+                    if let titleError {
+                        Text(titleError)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
 
                 Section("Three D's") {
@@ -96,26 +127,39 @@ struct TrainerPlanItemFormView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? "Save" : "Add") {
-                        let result = ItemFormResult(
-                            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
-                            distance: distance,
-                            duration: duration,
-                            distraction: distraction,
-                            distanceCustomValue: distance == .custom ? distanceCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
-                            durationCustomValue: duration == .custom ? durationCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
-                            distractionCustomValue: distraction == .custom ? distractionCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil
-                        )
-                        onSave(result)
+                    Button(isEditing ? "Done" : "Cancel") {
+                        if isEditing { commitIfEditing(immediate: true) }
                         dismiss()
                     }
-                    .disabled(!canSave)
+                }
+                if !isEditing {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Add") {
+                            onSave?(makeResult())
+                            dismiss()
+                        }
+                        .disabled(!canSave)
+                    }
                 }
             }
-            .onAppear { populateIfEditing() }
+            .onAppear {
+                if !hasPopulated {
+                    populateIfEditing()
+                    hasPopulated = true
+                }
+            }
+            .onDisappear {
+                // Flush any pending debounced commit so a swipe-down doesn't lose the latest edit.
+                if isEditing { commitIfEditing(immediate: true) }
+            }
+            // Auto-save wiring — only fires in edit mode.
+            .onChange(of: title) { _, _ in scheduleDebouncedCommit() }
+            .onChange(of: distanceCustomValue) { _, _ in scheduleDebouncedCommit() }
+            .onChange(of: durationCustomValue) { _, _ in scheduleDebouncedCommit() }
+            .onChange(of: distractionCustomValue) { _, _ in scheduleDebouncedCommit() }
+            .onChange(of: distance) { _, _ in commitIfEditing(immediate: true) }
+            .onChange(of: duration) { _, _ in commitIfEditing(immediate: true) }
+            .onChange(of: distraction) { _, _ in commitIfEditing(immediate: true) }
         }
     }
 
@@ -128,6 +172,38 @@ struct TrainerPlanItemFormView: View {
         distanceCustomValue   = item.distanceCustomValue ?? ""
         durationCustomValue   = item.durationCustomValue ?? ""
         distractionCustomValue = item.distractionCustomValue ?? ""
+    }
+
+    private func makeResult() -> ItemFormResult {
+        ItemFormResult(
+            title: trimmedTitle,
+            distance: distance,
+            duration: duration,
+            distraction: distraction,
+            distanceCustomValue: distance == .custom ? distanceCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
+            durationCustomValue: duration == .custom ? durationCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
+            distractionCustomValue: distraction == .custom ? distractionCustomValue.trimmingCharacters(in: .whitespacesAndNewlines) : nil
+        )
+    }
+
+    private func scheduleDebouncedCommit() {
+        guard isEditing, hasPopulated else { return }
+        commitTask?.cancel()
+        commitTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            commitIfEditing()
+        }
+    }
+
+    private func commitIfEditing(immediate: Bool = false) {
+        guard isEditing, hasPopulated else { return }
+        if immediate { commitTask?.cancel() }
+        // Don't commit invalid state: skip the call entirely, surface the
+        // titleError view above. Once title becomes non-empty, the next
+        // .onChange fires another commit cycle.
+        guard canSave else { return }
+        onCommit?(makeResult())
     }
 }
 
@@ -153,14 +229,17 @@ private struct DPicker<T: Hashable, Content: View>: View {
 }
 
 #Preview("Add") {
-    TrainerPlanItemFormView(mode: .add) { _ in }
+    TrainerPlanItemFormView(mode: .add, onSave: { _ in })
 }
 
 #Preview("Edit") {
-    TrainerPlanItemFormView(mode: .edit(TrainingPlanItem(
-        id: UUID(), planId: UUID(), behaviorId: nil, sortOrder: 0,
-        title: "Sit at arm's length",
-        distance: .armsLength, duration: .instant, distraction: .none,
-        distanceCustomValue: nil, durationCustomValue: nil, distractionCustomValue: nil
-    ))) { _ in }
+    TrainerPlanItemFormView(
+        mode: .edit(TrainingPlanItem(
+            id: UUID(), planId: UUID(), behaviorId: nil, sortOrder: 0,
+            title: "Sit at arm's length",
+            distance: .armsLength, duration: .instant, distraction: .none,
+            distanceCustomValue: nil, durationCustomValue: nil, distractionCustomValue: nil
+        )),
+        onCommit: { _ in }
+    )
 }
