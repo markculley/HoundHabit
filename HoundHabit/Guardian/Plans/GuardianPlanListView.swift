@@ -5,6 +5,19 @@ struct GuardianPlanListView: View {
     @State private var petViewModel = PetViewModel()
     @State private var showCreateSheet = false
 
+    private var ownPlans: [AssignedPlan] {
+        viewModel.assignedPlans.filter { viewModel.isOwnPlan($0) }
+    }
+
+    private var trainerPlans: [AssignedPlan] {
+        viewModel.assignedPlans.filter { !viewModel.isOwnPlan($0) }
+    }
+
+    private func pet(for assignedPlan: AssignedPlan) -> Pet? {
+        guard let petId = assignedPlan.assignment.petId else { return nil }
+        return petViewModel.pets.first(where: { $0.id == petId })
+    }
+
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.assignedPlans.isEmpty {
@@ -12,28 +25,37 @@ struct GuardianPlanListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(viewModel.assignedPlans) { assignedPlan in
-                        let isOwn = viewModel.isOwnPlan(assignedPlan)
-                        if isOwn {
-                            NavigationLink(value: assignedPlan.plan) {
-                                AssignedPlanRow(
-                                    assignedPlan: assignedPlan,
-                                    progress: viewModel.planProgress(for: assignedPlan)
-                                )
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteOwnPlan(assignedPlan.plan) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                    if !ownPlans.isEmpty {
+                        Section("My Plans") {
+                            ForEach(ownPlans) { assignedPlan in
+                                NavigationLink(value: assignedPlan.plan) {
+                                    AssignedPlanRow(
+                                        assignedPlan: assignedPlan,
+                                        progress: viewModel.planProgress(for: assignedPlan),
+                                        pet: pet(for: assignedPlan)
+                                    )
+                                }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        Task { await viewModel.deleteOwnPlan(assignedPlan.plan) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
-                        } else {
-                            NavigationLink(value: assignedPlan) {
-                                AssignedPlanRow(
-                                    assignedPlan: assignedPlan,
-                                    progress: viewModel.planProgress(for: assignedPlan)
-                                )
+                        }
+                    }
+
+                    if !trainerPlans.isEmpty {
+                        Section("From My Trainer") {
+                            ForEach(trainerPlans) { assignedPlan in
+                                NavigationLink(value: assignedPlan) {
+                                    AssignedPlanRow(
+                                        assignedPlan: assignedPlan,
+                                        progress: viewModel.planProgress(for: assignedPlan),
+                                        pet: pet(for: assignedPlan)
+                                    )
+                                }
                             }
                         }
                     }
@@ -102,9 +124,19 @@ struct OwnedPlanDetailView: View {
 private struct AssignedPlanRow: View {
     let assignedPlan: AssignedPlan
     let progress: PlanProgress
+    let pet: Pet?
+
+    private var captionLine: String {
+        let date = assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted)
+        if let name = pet?.name, !name.isEmpty {
+            return "Assigned \(date) • \(name)"
+        }
+        return "Assigned \(date)"
+    }
 
     var body: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 12) {
+            PetAvatarView(url: pet?.photoUrl, size: 40)
             VStack(alignment: .leading, spacing: 4) {
                 Text(assignedPlan.plan.title)
                     .font(.headline)
@@ -114,7 +146,7 @@ private struct AssignedPlanRow: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                Text("Assigned \(assignedPlan.assignment.assignedAt.formatted(date: .abbreviated, time: .omitted))")
+                Text(captionLine)
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }

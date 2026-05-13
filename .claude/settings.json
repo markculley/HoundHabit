@@ -17,10 +17,12 @@
       "Bash(xcodebuild -version)",
       "Bash(xcrun --show-sdk-version --sdk iphonesimulator)",
       "Bash(xcodebuild -project HoundHabit.xcodeproj -scheme HoundHabit -destination 'platform=iOS Simulator,OS=26.4,name=iPhone 17 Pro' -allowProvisioningUpdates build)",
-      "Bash(xcodebuild -downloadPlatform iOS -exportPath /tmp)"
+      "Bash(xcodebuild -downloadPlatform iOS -exportPath /tmp)",
+      "Bash(echo \"passed: $\\(make test 2>&1)"
     ],
     "additionalDirectories": [
-      "/tmp"
+      "/tmp",
+      "/Users/mark/dev/hound_habit_android/docs/ios-implementation-notes"
     ]
   }
 }
