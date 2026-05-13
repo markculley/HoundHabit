@@ -5,15 +5,16 @@ struct PetDetailView: View {
     let viewModel: PetViewModel
 
     @State private var showEditSheet = false
-    @State private var showTrainingSessions = false
     @State private var showAddPlanSheet = false
     @State private var showAssignExistingSheet = false
+    @State private var showLogSessionSheet = false
     @State private var petPlans: [AssignedPlan] = []
-    @State private var allOwnPlans: [AssignedPlan] = []   // own plans regardless of pet
+    @State private var allOwnPlans: [AssignedPlan] = []
     @State private var isLoadingPlans = false
     @State private var selectedAssignedPlan: AssignedPlan? = nil
     @State private var selectedOwnPlan: TrainingPlan? = nil
     @State private var guardianPlanVM = GuardianPlanViewModel()
+    @State private var trainingVM = TrainingRecordViewModel()
     @Environment(\.dismiss) private var dismiss
 
     private let planService = TrainingPlanService()
@@ -34,7 +35,6 @@ struct PetDetailView: View {
         petPlans.filter { $0.plan.trainerId != currentUserId }
     }
 
-    /// Own plans not already linked to this pet — shown in the assign-existing sheet.
     private var unlinkedOwnPlans: [AssignedPlan] {
         allOwnPlans.filter { $0.assignment.petId != petId }
     }
@@ -42,18 +42,15 @@ struct PetDetailView: View {
     var body: some View {
         Group {
             if let pet {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        heroSection(pet)
-
-                        VStack(spacing: 20) {
-                            plansSection(pet)
-                            trainingSessionsButton(pet)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        .padding(.bottom, 32)
-                    }
+                List {
+                    heroRow(pet)
+                    plansSection(pet)
+                    trainingSessionsSection(pet)
+                }
+                .listStyle(.plain)
+                .refreshable {
+                    await loadPetPlans()
+                    await trainingVM.loadRecords(petId: pet.id)
                 }
                 .navigationTitle(pet.name)
                 .navigationBarTitleDisplayMode(.inline)
@@ -62,17 +59,17 @@ struct PetDetailView: View {
                         Button("Edit") { showEditSheet = true }
                     }
                 }
+                .navigationDestination(for: TrainingRecord.self) { record in
+                    TrainingRecordDetailView(
+                        record: record,
+                        petName: pet.name,
+                        viewModel: trainingVM,
+                        selfLoadComments: true
+                    )
+                }
                 .sheet(isPresented: $showEditSheet) {
                     PetFormView(mode: .edit(pet), viewModel: viewModel)
                 }
-                // Training sessions — own NavigationStack to avoid nav conflict
-                .sheet(isPresented: $showTrainingSessions) {
-                    NavigationStack {
-                        TrainingRecordListView(petId: pet.id, preselectedPetId: pet.id, petName: pet.name)
-                            .navigationTitle("\(pet.name)'s Sessions")
-                    }
-                }
-                // Create a new plan assigned to this pet
                 .sheet(isPresented: $showAddPlanSheet) {
                     TrainerPlanFormView(mode: .create) { saved, _ in
                         Task {
@@ -81,7 +78,6 @@ struct PetDetailView: View {
                         }
                     }
                 }
-                // Assign an existing own plan to this pet
                 .sheet(isPresented: $showAssignExistingSheet) {
                     AssignExistingPlanSheet(
                         petName: pet.name,
@@ -96,13 +92,19 @@ struct PetDetailView: View {
                         }
                     }
                 }
-                // Open a trainer-assigned plan
+                .sheet(isPresented: $showLogSessionSheet) {
+                    TrainingRecordFormView(preselectedPetId: pet.id) { newRecord in
+                        trainingVM.records.insert(newRecord, at: 0)
+                    }
+                }
+                .onChange(of: showLogSessionSheet) { _, isShowing in
+                    if !isShowing { Task { await trainingVM.loadRecords(petId: pet.id) } }
+                }
                 .sheet(item: $selectedAssignedPlan) { ap in
                     NavigationStack {
                         GuardianPlanDetailView(assignedPlan: ap, viewModel: guardianPlanVM)
                     }
                 }
-                // Open a guardian-owned plan (editable)
                 .sheet(item: $selectedOwnPlan) { plan in
                     NavigationStack {
                         OwnedPlanDetailView(plan: plan)
@@ -110,6 +112,15 @@ struct PetDetailView: View {
                 }
                 .task {
                     await loadPetPlans()
+                    await trainingVM.loadRecords(petId: pet.id)
+                }
+                .alert("Error", isPresented: Binding(
+                    get: { trainingVM.errorMessage != nil },
+                    set: { if !$0 { trainingVM.errorMessage = nil } }
+                )) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(trainingVM.errorMessage ?? "")
                 }
             }
         }
@@ -121,11 +132,20 @@ struct PetDetailView: View {
     // MARK: - Hero Photo
 
     @ViewBuilder
+    private func heroRow(_ pet: Pet) -> some View {
+        Section {
+            heroSection(pet)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+        }
+    }
+
+    @ViewBuilder
     private func heroSection(_ pet: Pet) -> some View {
         let url = pet.photoUrl.map { "\($0)?t=\(Int(pet.updatedAt.timeIntervalSince1970))" }
 
         ZStack(alignment: .bottomLeading) {
-            // Sizing frame — fills scroll view width at 4:3
             Rectangle()
                 .aspectRatio(4/3, contentMode: .fit)
                 .foregroundStyle(Color(.secondarySystemFill))
@@ -145,14 +165,12 @@ struct PetDetailView: View {
                 }
                 .clipped()
 
-            // Gradient scrim so text is readable over any photo
             LinearGradient(
                 colors: [.clear, .black.opacity(0.55)],
                 startPoint: .center,
                 endPoint: .bottom
             )
 
-            // Name + breed overlay
             VStack(alignment: .leading, spacing: 2) {
                 Text(pet.name)
                     .font(.largeTitle).bold()
@@ -181,47 +199,54 @@ struct PetDetailView: View {
 
     @ViewBuilder
     private func plansSection(_ pet: Pet) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Plans")
-                    .font(.title2).bold()
-                Spacer()
-                Menu {
-                    Button {
-                        showAddPlanSheet = true
-                    } label: {
-                        Label("New Plan", systemImage: "plus")
-                    }
-                    if !unlinkedOwnPlans.isEmpty {
+        Section {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Plans")
+                        .font(.title2).bold()
+                    Spacer()
+                    Menu {
                         Button {
-                            showAssignExistingSheet = true
+                            showAddPlanSheet = true
                         } label: {
-                            Label("Assign Existing Plan", systemImage: "link")
+                            Label("New Plan", systemImage: "plus")
                         }
+                        if !unlinkedOwnPlans.isEmpty {
+                            Button {
+                                showAssignExistingSheet = true
+                            } label: {
+                                Label("Assign Existing Plan", systemImage: "link")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.accentColor)
                     }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(Color.accentColor)
                 }
-            }
 
-            if isLoadingPlans && petPlans.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-            } else if petPlans.isEmpty {
-                Text("No plans for \(pet.name) yet. Tap + to create one.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 4)
-            } else {
-                if !ownPlans.isEmpty {
-                    planGroup(title: "My Plans", plans: ownPlans, isOwn: true)
-                }
-                if !trainerPlans.isEmpty {
-                    planGroup(title: "From My Trainer", plans: trainerPlans, isOwn: false)
+                if isLoadingPlans && petPlans.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                } else if petPlans.isEmpty {
+                    Text("No plans for \(pet.name) yet. Tap + to create one.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 4)
+                } else {
+                    if !ownPlans.isEmpty {
+                        planGroup(title: "My Plans", plans: ownPlans, isOwn: true)
+                    }
+                    if !trainerPlans.isEmpty {
+                        planGroup(title: "From My Trainer", plans: trainerPlans, isOwn: false)
+                    }
                 }
             }
+            .padding(.horizontal)
+            .padding(.top, 20)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
         }
     }
 
@@ -278,17 +303,63 @@ struct PetDetailView: View {
     // MARK: - Training Sessions
 
     @ViewBuilder
-    private func trainingSessionsButton(_ pet: Pet) -> some View {
-        Button {
-            showTrainingSessions = true
-        } label: {
-            Label("Training Sessions", systemImage: "list.bullet.clipboard")
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
-                .foregroundStyle(.primary)
+    private func trainingSessionsSection(_ pet: Pet) -> some View {
+        Section {
+            HStack {
+                Text("Training Sessions")
+                    .font(.title2).bold()
+                Spacer()
+                Button {
+                    showLogSessionSheet = true
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+
+            if trainingVM.isLoading && trainingVM.records.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .listRowSeparator(.hidden)
+            } else if trainingVM.records.isEmpty {
+                Text("No sessions yet. Tap + to log one.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .listRowSeparator(.hidden)
+            } else {
+                ForEach(trainingVM.records) { record in
+                    NavigationLink(value: record) {
+                        TrainingRecordRow(record: record)
+                    }
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                        Button {
+                            Task { await trainingVM.toggleSharing(record) }
+                        } label: {
+                            Label(
+                                record.isShared ? "Unshare" : "Share",
+                                systemImage: record.isShared ? "person.2.slash" : "person.2.fill"
+                            )
+                        }
+                        .tint(record.isShared ? .gray : .blue)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            Task { await trainingVM.deleteRecord(record) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
         }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Data
@@ -299,7 +370,6 @@ struct PetDetailView: View {
         let all = (try? await planService.fetchAssignedPlans()) ?? []
         petPlans = all.filter { $0.assignment.petId == petId }
         allOwnPlans = all.filter { $0.plan.trainerId == currentUserId }
-        // Prime the plan viewmodel so GuardianPlanDetailView can load items on demand
         for ap in petPlans where !guardianPlanVM.assignedPlans.contains(where: { $0.id == ap.id }) {
             guardianPlanVM.assignedPlans.append(ap)
         }
