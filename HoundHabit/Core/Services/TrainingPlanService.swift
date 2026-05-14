@@ -249,6 +249,19 @@ struct TrainingPlanService {
             .value
     }
 
+    /// Bulk fetch of every assignment owned by the current trainer. Used by the
+    /// trainer's Plans list to badge rows with an assignment count without
+    /// running one query per plan.
+    func fetchAllAssignments() async throws -> [PlanAssignment] {
+        guard let trainerId = supabase.auth.currentUser?.id else { return [] }
+        return try await supabase
+            .from("plan_assignments")
+            .select()
+            .eq("trainer_id", value: trainerId)
+            .execute()
+            .value
+    }
+
     func deleteAssignment(id: UUID) async throws {
         try await supabase
             .from("plan_assignments")
@@ -361,20 +374,6 @@ struct TrainingPlanService {
             .value
     }
 
-    /// Creates a self-assignment so a guardian-owned plan appears in their assigned-plans list.
-    func selfAssignPlan(planId: UUID, petId: UUID? = nil) async throws -> PlanAssignment {
-        guard let userId = supabase.auth.currentUser?.id else {
-            throw PlanError.notAuthenticated
-        }
-        let insert = AssignmentInsert(planId: planId, trainerId: userId, guardianId: userId, petId: petId, isShared: false)
-        return try await supabase
-            .from("plan_assignments")
-            .insert(insert)
-            .select()
-            .single()
-            .execute()
-            .value
-    }
 }
 
 // MARK: - AssignedPlan (join result, guardian's perspective)

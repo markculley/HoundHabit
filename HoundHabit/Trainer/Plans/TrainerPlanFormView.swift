@@ -7,15 +7,11 @@ enum PlanFormMode {
 
 struct TrainerPlanFormView: View {
     let mode: PlanFormMode
-    /// Pets to show in the picker when a Guardian is creating a plan.
-    /// Leave empty (default) to hide the pet section.
-    var pets: [Pet] = []
-    let onSave: (TrainingPlan, UUID?) -> Void
+    let onSave: (TrainingPlan) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var description = ""
-    @State private var selectedPetId: UUID? = nil
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -39,17 +35,6 @@ struct TrainerPlanFormView: View {
                 Section("Plan Description") {
                     TextField("Optional overview of the plan (steps are added after)…", text: $description, axis: .vertical)
                         .lineLimit(3...6)
-                }
-                if !pets.isEmpty && !isEditing {
-                    Section("Assign to Pet") {
-                        Picker("Pet", selection: $selectedPetId) {
-                            Text("None").tag(UUID?.none)
-                            ForEach(pets) { pet in
-                                Text(pet.name).tag(UUID?.some(pet.id))
-                            }
-                        }
-                        .pickerStyle(.menu)
-                    }
                 }
             }
             .navigationTitle(isEditing ? "Edit Plan" : "New Plan")
@@ -102,7 +87,7 @@ struct TrainerPlanFormView: View {
                     description: trimmedDesc.isEmpty ? nil : trimmedDesc
                 )
             }
-            onSave(saved, selectedPetId)
+            onSave(saved)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
@@ -111,7 +96,7 @@ struct TrainerPlanFormView: View {
 }
 
 #Preview("Create") {
-    TrainerPlanFormView(mode: .create) { _, _ in }
+    TrainerPlanFormView(mode: .create) { _ in }
 }
 
 #Preview("Edit") {
@@ -119,5 +104,5 @@ struct TrainerPlanFormView: View {
         id: UUID(), trainerId: UUID(),
         title: "Basic Recall", description: "Foundation exercises",
         createdAt: Date(), updatedAt: Date()
-    ))) { _, _ in }
+    ))) { _ in }
 }

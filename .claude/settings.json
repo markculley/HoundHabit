@@ -24,11 +24,14 @@
       "Bash(echo \"failed: $\\(make test 2>&1)",
       "Bash(cp /Users/mark/dev/hound_habit/docs/use_cases/training_plans.md /Users/mark/dev/hound_habit_android/docs/use_cases/training_plans.md)",
       "Bash(cp /Users/mark/dev/hound_habit/docs/use_cases/settings.md /Users/mark/dev/hound_habit_android/docs/use_cases/settings.md)",
-      "Bash(chmod +x /Users/mark/dev/hound_habit/ci_scripts/ci_post_clone.sh)"
+      "Bash(chmod +x /Users/mark/dev/hound_habit/ci_scripts/ci_post_clone.sh)",
+      "Bash(cp /Users/mark/dev/hound_habit/docs/use_cases/log_training.md /Users/mark/dev/hound_habit_android/docs/use_cases/log_training.md && diff -q /Users/mark/dev/hound_habit/docs/use_cases/log_training.md /Users/mark/dev/hound_habit_android/docs/use_cases/log_training.md; echo \"mirrored\")"
     ],
     "additionalDirectories": [
       "/tmp",
-      "/Users/mark/dev/hound_habit_android/docs/ios-implementation-notes"
+      "/Users/mark/dev/hound_habit_android/docs/ios-implementation-notes",
+      "/Users/mark/dev/hound_habit_android/docs/use_cases",
+      "/Users/mark/dev/hound_habit_android/docs"
     ]
   }
 }

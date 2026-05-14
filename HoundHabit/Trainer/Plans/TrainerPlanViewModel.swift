@@ -246,6 +246,14 @@ class TrainerPlanViewModel {
 
     // MARK: - Assignments
 
+    /// Bulk-load every assignment for plans this trainer owns, keyed by plan id.
+    /// Used by `TrainerPlanListView` to badge rows with an assignment count
+    /// without one query per plan.
+    func loadAllAssignments() async {
+        let all = (try? await service.fetchAllAssignments()) ?? []
+        assignments = Dictionary(grouping: all, by: { $0.planId })
+    }
+
     func loadAssignments(for planId: UUID) async {
         do {
             let fetched = try await service.fetchAssignments(planId: planId)

@@ -26,8 +26,6 @@ class GuardianPlanViewModel {
 
     private let service = TrainingPlanService()
 
-    var currentUserId: UUID? { supabase.auth.currentUser?.id }
-
     // MARK: - Load
 
     func load() async {
@@ -81,32 +79,7 @@ class GuardianPlanViewModel {
         }
     }
 
-    // MARK: - Own Plan CRUD
-
-    /// Self-assigns a just-created plan so it appears in the guardian's plan list.
-    /// Called after `TrainerPlanFormView` has already persisted the plan to Supabase.
-    func adoptCreatedPlan(_ plan: TrainingPlan, petId: UUID? = nil) async {
-        do {
-            let assignment = try await service.selfAssignPlan(planId: plan.id, petId: petId)
-            let ap = AssignedPlan(assignment: assignment, plan: plan)
-            assignedPlans.insert(ap, at: 0)
-            items[plan.id] = []
-            behaviors[plan.id] = []
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func deleteOwnPlan(_ plan: TrainingPlan) async {
-        do {
-            try await service.deletePlan(id: plan.id)
-            assignedPlans.removeAll { $0.plan.id == plan.id }
-            items.removeValue(forKey: plan.id)
-            behaviors.removeValue(forKey: plan.id)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
+    // MARK: - Sharing
 
     func updateSharing(for assignedPlan: AssignedPlan, isShared: Bool) async {
         do {
@@ -117,11 +90,6 @@ class GuardianPlanViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    func isOwnPlan(_ assignedPlan: AssignedPlan) -> Bool {
-        guard let userId = currentUserId else { return false }
-        return assignedPlan.plan.trainerId == userId
     }
 
     func loadItems(for planId: UUID) async {

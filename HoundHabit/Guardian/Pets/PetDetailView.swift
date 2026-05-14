@@ -5,14 +5,10 @@ struct PetDetailView: View {
     let viewModel: PetViewModel
 
     @State private var showEditSheet = false
-    @State private var showAddPlanSheet = false
-    @State private var showAssignExistingSheet = false
     @State private var showLogSessionSheet = false
     @State private var petPlans: [AssignedPlan] = []
-    @State private var allOwnPlans: [AssignedPlan] = []
     @State private var isLoadingPlans = false
     @State private var selectedAssignedPlan: AssignedPlan? = nil
-    @State private var selectedOwnPlan: TrainingPlan? = nil
     @State private var guardianPlanVM = GuardianPlanViewModel()
     @State private var trainingVM = TrainingRecordViewModel()
     @Environment(\.dismiss) private var dismiss
@@ -21,22 +17,6 @@ struct PetDetailView: View {
 
     private var pet: Pet? {
         viewModel.pets.first { $0.id == petId }
-    }
-
-    private var currentUserId: UUID? {
-        supabase.auth.currentUser?.id
-    }
-
-    private var ownPlans: [AssignedPlan] {
-        petPlans.filter { $0.plan.trainerId == currentUserId }
-    }
-
-    private var trainerPlans: [AssignedPlan] {
-        petPlans.filter { $0.plan.trainerId != currentUserId }
-    }
-
-    private var unlinkedOwnPlans: [AssignedPlan] {
-        allOwnPlans.filter { $0.assignment.petId != petId }
     }
 
     var body: some View {
@@ -70,28 +50,6 @@ struct PetDetailView: View {
                 .sheet(isPresented: $showEditSheet) {
                     PetFormView(mode: .edit(pet), viewModel: viewModel)
                 }
-                .sheet(isPresented: $showAddPlanSheet) {
-                    TrainerPlanFormView(mode: .create) { saved, _ in
-                        Task {
-                            await guardianPlanVM.adoptCreatedPlan(saved, petId: pet.id)
-                            await loadPetPlans()
-                        }
-                    }
-                }
-                .sheet(isPresented: $showAssignExistingSheet) {
-                    AssignExistingPlanSheet(
-                        petName: pet.name,
-                        plans: unlinkedOwnPlans
-                    ) { selected in
-                        Task {
-                            try? await planService.updateAssignmentPet(
-                                assignmentId: selected.assignment.id,
-                                petId: pet.id
-                            )
-                            await loadPetPlans()
-                        }
-                    }
-                }
                 .sheet(isPresented: $showLogSessionSheet) {
                     TrainingRecordFormView(preselectedPetId: pet.id) { newRecord in
                         trainingVM.records.insert(newRecord, at: 0)
@@ -103,11 +61,6 @@ struct PetDetailView: View {
                 .sheet(item: $selectedAssignedPlan) { ap in
                     NavigationStack {
                         GuardianPlanDetailView(assignedPlan: ap, viewModel: guardianPlanVM)
-                    }
-                }
-                .sheet(item: $selectedOwnPlan) { plan in
-                    NavigationStack {
-                        OwnedPlanDetailView(plan: plan)
                     }
                 }
                 .task {
@@ -201,45 +154,19 @@ struct PetDetailView: View {
     private func plansSection(_ pet: Pet) -> some View {
         Section {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Plans")
-                        .font(.title2).bold()
-                    Spacer()
-                    Menu {
-                        Button {
-                            showAddPlanSheet = true
-                        } label: {
-                            Label("New Plan", systemImage: "plus")
-                        }
-                        if !unlinkedOwnPlans.isEmpty {
-                            Button {
-                                showAssignExistingSheet = true
-                            } label: {
-                                Label("Assign Existing Plan", systemImage: "link")
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(Color.accentColor)
-                    }
-                }
+                Text("Plans")
+                    .font(.title2).bold()
 
                 if isLoadingPlans && petPlans.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                 } else if petPlans.isEmpty {
-                    Text("No plans for \(pet.name) yet. Tap + to create one.")
+                    Text("No training plans for \(pet.name) yet. Your trainer can assign one.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .padding(.vertical, 4)
                 } else {
-                    if !ownPlans.isEmpty {
-                        planGroup(title: "My Plans", plans: ownPlans, isOwn: true)
-                    }
-                    if !trainerPlans.isEmpty {
-                        planGroup(title: "From My Trainer", plans: trainerPlans, isOwn: false)
-                    }
+                    planGroup(plans: petPlans)
                 }
             }
             .padding(.horizontal)
@@ -251,53 +178,41 @@ struct PetDetailView: View {
     }
 
     @ViewBuilder
-    private func planGroup(title: String, plans: [AssignedPlan], isOwn: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 6)
-
-            VStack(spacing: 0) {
-                ForEach(plans) { ap in
-                    Button {
-                        if isOwn {
-                            selectedOwnPlan = ap.plan
-                        } else {
-                            selectedAssignedPlan = ap
-                        }
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(ap.plan.title)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                if let desc = ap.plan.description, !desc.isEmpty {
-                                    Text(desc)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                }
+    private func planGroup(plans: [AssignedPlan]) -> some View {
+        VStack(spacing: 0) {
+            ForEach(plans) { ap in
+                Button {
+                    selectedAssignedPlan = ap
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(ap.plan.title)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            if let desc = ap.plan.description, !desc.isEmpty {
+                                Text(desc)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color(.secondarySystemGroupedBackground))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color(.secondarySystemGroupedBackground))
+                }
+                .buttonStyle(.plain)
 
-                    if ap.id != plans.last?.id {
-                        Divider().padding(.leading, 16)
-                    }
+                if ap.id != plans.last?.id {
+                    Divider().padding(.leading, 16)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Training Sessions
@@ -369,56 +284,8 @@ struct PetDetailView: View {
         defer { isLoadingPlans = false }
         let all = (try? await planService.fetchAssignedPlans()) ?? []
         petPlans = all.filter { $0.assignment.petId == petId }
-        allOwnPlans = all.filter { $0.plan.trainerId == currentUserId }
         for ap in petPlans where !guardianPlanVM.assignedPlans.contains(where: { $0.id == ap.id }) {
             guardianPlanVM.assignedPlans.append(ap)
-        }
-    }
-}
-
-// MARK: - AssignExistingPlanSheet
-
-private struct AssignExistingPlanSheet: View {
-    let petName: String
-    let plans: [AssignedPlan]
-    let onAssign: (AssignedPlan) -> Void
-
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    ForEach(plans) { ap in
-                        Button {
-                            onAssign(ap)
-                            dismiss()
-                        } label: {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(ap.plan.title)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                if let desc = ap.plan.description, !desc.isEmpty {
-                                    Text(desc)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                }
-                            }
-                            .padding(.vertical, 2)
-                        }
-                    }
-                } footer: {
-                    Text("These are plans you created that aren't linked to \(petName) yet.")
-                }
-            }
-            .navigationTitle("Assign to \(petName)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
         }
     }
 }

@@ -3,15 +3,6 @@ import SwiftUI
 struct GuardianPlanListView: View {
     @State private var viewModel = GuardianPlanViewModel()
     @State private var petViewModel = PetViewModel()
-    @State private var showCreateSheet = false
-
-    private var ownPlans: [AssignedPlan] {
-        viewModel.assignedPlans.filter { viewModel.isOwnPlan($0) }
-    }
-
-    private var trainerPlans: [AssignedPlan] {
-        viewModel.assignedPlans.filter { !viewModel.isOwnPlan($0) }
-    }
 
     private func pet(for assignedPlan: AssignedPlan) -> Pet? {
         guard let petId = assignedPlan.assignment.petId else { return nil }
@@ -25,38 +16,13 @@ struct GuardianPlanListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    if !ownPlans.isEmpty {
-                        Section("My Plans") {
-                            ForEach(ownPlans) { assignedPlan in
-                                NavigationLink(value: assignedPlan.plan) {
-                                    AssignedPlanRow(
-                                        assignedPlan: assignedPlan,
-                                        progress: viewModel.planProgress(for: assignedPlan),
-                                        pet: pet(for: assignedPlan)
-                                    )
-                                }
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        Task { await viewModel.deleteOwnPlan(assignedPlan.plan) }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if !trainerPlans.isEmpty {
-                        Section("From My Trainer") {
-                            ForEach(trainerPlans) { assignedPlan in
-                                NavigationLink(value: assignedPlan) {
-                                    AssignedPlanRow(
-                                        assignedPlan: assignedPlan,
-                                        progress: viewModel.planProgress(for: assignedPlan),
-                                        pet: pet(for: assignedPlan)
-                                    )
-                                }
-                            }
+                    ForEach(viewModel.assignedPlans) { assignedPlan in
+                        NavigationLink(value: assignedPlan) {
+                            AssignedPlanRow(
+                                assignedPlan: assignedPlan,
+                                progress: viewModel.planProgress(for: assignedPlan),
+                                pet: pet(for: assignedPlan)
+                            )
                         }
                     }
                 }
@@ -65,7 +31,7 @@ struct GuardianPlanListView: View {
                         ContentUnavailableView(
                             "No Plans Yet",
                             systemImage: "list.bullet.clipboard",
-                            description: Text("Tap + to create your own plan, or ask your trainer to assign one.")
+                            description: Text("Ask your trainer to assign a training plan.")
                         )
                     }
                 }
@@ -73,27 +39,12 @@ struct GuardianPlanListView: View {
                 .navigationDestination(for: AssignedPlan.self) { assignedPlan in
                     GuardianPlanDetailView(assignedPlan: assignedPlan, viewModel: viewModel)
                 }
-                .navigationDestination(for: TrainingPlan.self) { plan in
-                    OwnedPlanDetailView(plan: plan)
-                }
             }
         }
         .navigationTitle("Plans")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button { showCreateSheet = true } label: {
-                    Image(systemName: "plus")
-                }
-            }
-        }
         .task {
             await viewModel.load()
             await petViewModel.loadPets()
-        }
-        .sheet(isPresented: $showCreateSheet) {
-            TrainerPlanFormView(mode: .create, pets: petViewModel.pets) { saved, petId in
-                Task { await viewModel.adoptCreatedPlan(saved, petId: petId) }
-            }
         }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
@@ -103,19 +54,6 @@ struct GuardianPlanListView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-    }
-}
-
-// MARK: - OwnedPlanDetailView wrapper
-
-/// Hosts a TrainerPlanDetailView with its own ViewModel so the guardian can
-/// build out a plan they created themselves.
-struct OwnedPlanDetailView: View {
-    let plan: TrainingPlan
-    @State private var trainerVM = TrainerPlanViewModel()
-
-    var body: some View {
-        TrainerPlanDetailView(plan: plan, viewModel: trainerVM, showAssignments: false)
     }
 }
 

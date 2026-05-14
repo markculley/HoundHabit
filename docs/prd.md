@@ -25,7 +25,6 @@ A training tracker that is needed by pet owners to bridge the gap between the la
 - Enables guardians to store video recording or photos of their or a pet
 - Enables guardians to read Trainer-delivered notes
 - Enables Trainers to deliver training plans to guardians
-- Enables Guardians to create and manage their own training plans (no Trainer required)
 
 
 ## build artifacts
@@ -77,12 +76,6 @@ This is a stretch goal. Not part of MVP. It would be nice to support this.
 ### Create a Pet
 
 - Create a *Pet Record*
-
-### Create a Training Plan (self-directed)
-
-- Guardian can create their own Training Plan without a Trainer
-- Full Behavior → Step authoring tools available
-- Guardian is both owner and practitioner of the plan
 
 ### Remind Me
 
@@ -280,3 +273,9 @@ Guardians can currently only receive resources from their trainer. In v2, a guar
 **Suggested approach:** Add `is_shared_with_trainer boolean NOT NULL DEFAULT false` to the `resources` table. Guardians can toggle sharing per resource. The trainer's guardian detail view shows shared resources alongside shared session records.
 
 For text messages, the existing comment thread on a training session already covers the immediate need in v1.
+
+## Guardian-Created Training Plans
+
+An earlier build let a guardian create and manage their own training plans without a trainer ("My Plans"). It was removed (see iOS card IOS-28 / the Android equivalent) — the flow was confusing alongside trainer-assigned plans, and a guardian authoring their own Behavior → Step plans is a meaningfully different product than the trainer-delivered model. Deferred to a future enhancement.
+
+If revisited: a guardian-created plan was just a `training_plans` row with `trainer_id` = the guardian's own user id, plus a self-assignment in `plan_assignments` where `trainer_id == guardian_id`. The enabling RLS policy (`"Guardian self-assigns own plans"` INSERT on `plan_assignments`) was dropped; restoring the feature means re-adding that policy (or equivalent) and the guardian-side authoring UI.

@@ -4,14 +4,12 @@ import Supabase
 struct TrainerPlanDetailView: View {
     let plan: TrainingPlan
     let viewModel: TrainerPlanViewModel
-    var showAssignments: Bool = true
 
     @State private var showEditSheet = false
     @State private var showAddBehaviorSheet = false
     @State private var showAssignSheet = false
     @State private var isCopying = false
     @State private var copyPendingTrainerAssign: TrainingPlan? = nil
-    @State private var copyPendingGuardianPetPick: TrainingPlan? = nil
     @State private var copyDestination: TrainingPlan? = nil
     // Held across sheet dismissal so we can push to the copy after the sheet animates away.
     @State private var pendingCopyPushTarget: TrainingPlan? = nil
@@ -58,38 +56,36 @@ struct TrainerPlanDetailView: View {
                     LabeledContent("Description", value: description)
                 }
 
-                if showAssignments {
-                    if !assignments.isEmpty {
-                        ForEach(assignments) { assignment in
-                            HStack(alignment: .top) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    LabeledContent("Guardian") {
-                                        Text(viewModel.guardianName(for: assignment.guardianId))
-                                    }
-                                    LabeledContent("Pet") {
-                                        Text(viewModel.petName(for: assignment.petId))
-                                    }
+                if !assignments.isEmpty {
+                    ForEach(assignments) { assignment in
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                LabeledContent("Guardian") {
+                                    Text(viewModel.guardianName(for: assignment.guardianId))
                                 }
-                                Spacer()
-                                PlanProgressBadge(progress: viewModel.planProgress(for: assignment))
-                                    .padding(.top, 2)
+                                LabeledContent("Pet") {
+                                    Text(viewModel.petName(for: assignment.petId))
+                                }
                             }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteAssignment(assignment) }
-                                } label: {
-                                    Label("Remove", systemImage: "trash")
-                                }
+                            Spacer()
+                            PlanProgressBadge(progress: viewModel.planProgress(for: assignment))
+                                .padding(.top, 2)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                Task { await viewModel.deleteAssignment(assignment) }
+                            } label: {
+                                Label("Remove", systemImage: "trash")
                             }
                         }
                     }
-                    if let reason = assignBlockReason {
-                        Label(reason, systemImage: "exclamationmark.triangle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Button("Assign to Guardian…") { showAssignSheet = true }
-                    }
+                }
+                if let reason = assignBlockReason {
+                    Label(reason, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Button("Assign to Guardian…") { showAssignSheet = true }
                 }
             }
 
@@ -158,11 +154,7 @@ struct TrainerPlanDetailView: View {
             TrainerBehaviorDetailView(behavior: behavior, viewModel: viewModel)
         }
         .navigationDestination(item: $copyDestination) { copy in
-            TrainerPlanDetailView(
-                plan: copy,
-                viewModel: viewModel,
-                showAssignments: showAssignments
-            )
+            TrainerPlanDetailView(plan: copy, viewModel: viewModel)
         }
         .task {
             async let b = viewModel.loadBehaviors(for: plan.id)
@@ -171,7 +163,7 @@ struct TrainerPlanDetailView: View {
             _ = await (b, a, i)
         }
         .sheet(isPresented: $showEditSheet) {
-            TrainerPlanFormView(mode: .edit(plan)) { updated, _ in
+            TrainerPlanFormView(mode: .edit(plan)) { updated in
                 if let idx = viewModel.plans.firstIndex(where: { $0.id == updated.id }) {
                     viewModel.plans[idx] = updated
                 }
@@ -199,12 +191,6 @@ struct TrainerPlanDetailView: View {
                 onComplete: { copyConfirmed = true }
             )
         }
-        .sheet(item: $copyPendingGuardianPetPick, onDismiss: handleCopySheetDismiss) { copy in
-            CopyPlanPetPickerSheet(
-                plan: copy,
-                onComplete: { copyConfirmed = true }
-            )
-        }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
@@ -223,11 +209,7 @@ struct TrainerPlanDetailView: View {
         guard let copy = await viewModel.copyPlan(plan) else { return }
         pendingCopyPushTarget = copy
         copyConfirmed = false
-        if showAssignments {
-            copyPendingTrainerAssign = copy
-        } else {
-            copyPendingGuardianPetPick = copy
-        }
+        copyPendingTrainerAssign = copy
     }
 
     /// Fires after the copy-related sheet finishes its dismiss animation.
