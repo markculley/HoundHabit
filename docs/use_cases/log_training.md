@@ -2,73 +2,95 @@
 
 ## UC-4.1 Log a Training Session
 
-Guardian taps the **+** button in the **Training Sessions** header on the Pet detail screen, fills in the form, and saves. The record is persisted to Supabase and appears inline in the list immediately. Sessions can also be logged via the Plans flow (see UC-9.6).
-
-There is no standalone Log tab and no standalone sessions list screen. All standalone session logging is initiated from the Pets tab (Pet Detail → Training Sessions section's `+` icon).
+**Every training session is plan-linked (IOS-31).** Guardians can only log a session by practising a step inside an assigned plan — there is **no standalone session logging**. There is no Log tab, no standalone sessions list screen, and no `+` affordance in the Pet detail's Training Sessions section. A session is created from the practice flow in `GuardianPlanDetailView` (see UC-9.6), which always sets `plan_item_id`.
 
 ```mermaid
 sequenceDiagram
     actor G as Guardian
+    participant PD as GuardianPlanDetailView
     participant UI as TrainingRecordFormView
-    participant VM as (inline in form)
     participant SVC as TrainingRecordService
     participant DB as Supabase (training_records)
 
-    G->>UI: Tap + in pet's Training Sessions header
-    UI->>UI: sheet presented (PetDetailView owns the showLogSessionSheet state)
-    UI->>SVC: fetchPets(guardianId) [.task]
-    SVC-->>UI: [Pet] list
-    UI->>G: Show form (pet picker pre-selected, date, score stepper 0-5, 3 D's, notes, share toggle)
+    G->>PD: Tap a reachable step in an assigned plan
+    PD->>UI: present TrainingRecordFormView(planItem:, lockedPetId:, behaviorName:, isSharedDefault:)
+    UI->>G: Show form (pet locked, date, score stepper 0-5, Three D's locked to the step, notes)
     note over UI,G: status is derived from score — no manual picker
 
-    G->>UI: Confirm pet, fill fields, tap "Log"
-    UI->>SVC: createRecord(petId, guardianId, recordedAt, score, distance, distraction, duration, notes, isShared)
+    G->>UI: Fill score + notes, tap "Log"
+    UI->>SVC: createRecord(... plan_item_id = step.id ...)
     note over UI,SVC: service derives status = TrainingStatus.from(score:) internally
     SVC->>DB: INSERT INTO training_records ... RETURNING *
-    DB-->>SVC: TrainingRecord (with id, created_at, updated_at)
+    DB-->>SVC: TrainingRecord (plan_item_id set)
     SVC-->>UI: TrainingRecord
-    UI->>UI: onSave(record) — PetDetailView prepends to trainingVM.records
+    UI->>UI: onSave(record) — advancement logic fires (UC-9.6)
     UI->>UI: dismiss()
 ```
 
+> **Removed — standalone session logging (IOS-31).** An earlier build let guardians
+> log standalone (non-plan) sessions via a `+` button in the Pet detail's Training
+> Sessions header. That was removed: all sessions must be associated with a plan
+> step. The 7 pre-existing standalone `training_records` (test data) were deleted.
+> `training_records.plan_item_id` stays nullable in the DB (its FK is
+> `ON DELETE SET NULL`); enforcement is UI-level. `TrainingRecordFormView` still
+> exists — it's used for plan practice and for editing existing records.
+
 ---
 
-## UC-4.2 View Training Sessions List (IOS-20)
+## UC-4.2 View Training Sessions List (IOS-20, IOS-31)
 
-Sessions are rendered **inline** on `PetDetailView` under the **Training Sessions** section header (matching the Plans header style — left-aligned bold title with a trailing `+` icon). The previous standalone `TrainingRecordListView` has been removed; `PetDetailView` owns its own `TrainingRecordViewModel` instance and pulls records directly.
+Sessions are rendered **inline** on `PetDetailView` under the **Training Sessions** section header. `PetDetailView` owns its own `TrainingRecordViewModel` instance and pulls records directly. The header is a plain bold label — no `+` button (sessions are logged via the practice flow, see UC-4.1).
 
 ```mermaid
 sequenceDiagram
     actor G as Guardian
     participant PD as PetDetailView
     participant RVM as TrainingRecordViewModel
-    participant SVC as TrainingRecordService
+    participant TS as TrainingRecordService
+    participant PS as TrainingPlanService
     participant DB as Supabase
 
     G->>PD: Pets tab → tap a pet
     PD->>RVM: loadRecords(petId:) [.task — alongside loadPetPlans]
-    RVM->>SVC: fetchRecords(petId: petId)
-    SVC->>DB: SELECT * FROM training_records WHERE pet_id = ? ORDER BY recorded_at DESC
+    RVM->>TS: fetchRecords(petId: petId)
+    TS->>DB: SELECT * FROM training_records WHERE pet_id = ? ORDER BY recorded_at DESC
     DB-->>RVM: [TrainingRecord]
-    RVM-->>PD: records list
+    RVM->>PS: fetchItems(ids: planItemIds) — bulk
+    RVM->>PS: fetchBehaviors(ids: behaviorIds) — bulk
+    PS-->>RVM: items + behaviors
+    RVM->>RVM: build stepTitles[planItemId], behaviorNames[planItemId]
+    RVM-->>PD: records + resolved labels
     PD->>G: Training Sessions section rendered inline:
-    PD->>G:  - header row (title + + icon)
+    PD->>G:  - bold "Training Sessions" header (no + button)
     PD->>G:  - ProgressView while loading first time
-    PD->>G:  - "No sessions yet. Tap + to log one." when empty
-    PD->>G:  - rows: status badge · date · Three D's, share badge if isShared
+    PD->>G:  - "No training sessions yet. Practice a plan step to log one." when empty
+    PD->>G:  - PetSessionRow per record
 ```
+
+### PetSessionRow layout (IOS-31)
+
+Each row is a `PetSessionRow` — a PetDetail-only view (the trainer's `GuardianDetailView` keeps its own `TrainingRecordRow`). It shows, in order of importance:
+
+1. **Behavior** — `.headline`
+2. **Step Name** — `.subheadline`, secondary
+3. **DateTime** — `.caption`, tertiary
+4. **Notes** — `.caption`, secondary, `lineLimit(2)`, only when non-empty
+5. **Result** — `score`/5, right-aligned, `.headline.monospacedDigit()`, colored by `TrainingStatus.from(score:).color`
+
+Behavior + Step Name are resolved by `TrainingRecordViewModel` via two bulk queries (`fetchItems(ids:)` then `fetchBehaviors(ids:)`), keyed by `planItemId`. Since every session is plan-linked, every row resolves a Behavior and Step; the `titleLine` fallback chain (`behaviorName ?? stepTitle ?? "Training session"`) only matters defensively.
 
 ### Section behavior
 
 - **Pull-to-refresh** on the Pet detail List reloads both plans (`loadPetPlans`) and sessions (`trainingVM.loadRecords`).
-- **Tap a row** → `NavigationLink(value: record)` pushes `TrainingRecordDetailView` onto the Pet detail's `NavigationStack` (not a sheet). Registered via `.navigationDestination(for: TrainingRecord.self)` on `PetDetailView`.
-- **Swipe-leading**: toggle sharing (`trainingVM.toggleSharing`), label flips between "Share" and "Unshare".
+- **Tap a row** → `NavigationLink(value: record)` pushes `TrainingRecordDetailView` onto the Pet detail's `NavigationStack`. Registered via `.navigationDestination(for: TrainingRecord.self)` on `PetDetailView`.
+- **Returning from a plan sheet** — `PetDetailView` presents `GuardianPlanDetailView` via `.sheet(item:)`; its `onDismiss` reloads `trainingVM.loadRecords` so a session just logged in the practice flow shows up.
+- **Swipe-leading**: toggle sharing (`trainingVM.toggleSharing`).
 - **Swipe-trailing**: destructive Delete (`trainingVM.deleteRecord`).
 - Errors from the training VM surface through `PetDetailView`'s alert binding.
 
 ### Why the body is a `List`
 
-The container changed from `ScrollView { VStack { ... } }` to `List` so the inlined records can use native `.swipeActions` (which only work on List rows). The hero photo and plans section preserve their custom-card appearance via `.listRowInsets(EdgeInsets())` + `.listRowSeparator(.hidden)` + `.listRowBackground(Color.clear)`.
+The container is a `List` so the inlined records can use native `.swipeActions` (which only work on List rows). The hero photo and plans section preserve their custom-card appearance via `.listRowInsets(EdgeInsets())` + `.listRowSeparator(.hidden)` + `.listRowBackground(Color.clear)`.
 
 ---
 
@@ -161,60 +183,51 @@ sequenceDiagram
 
 ## Test Flow
 
-### T-4.1 Log a new session
+### T-4.1 Log a session (via a plan step)
 1. Build and run the app.
-2. Go to **Pets** tab → tap a pet → scroll to the **Training Sessions** section → tap the `+` icon in that section's header.
-3. Confirm the pet is pre-selected in the picker.
-4. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status (coloured circle + label) should update live as you adjust the score.
-5. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
-6. Set distance / distraction / duration.
-7. Scroll down — confirm a **Notes** text field and a **Share with Trainer** toggle are visible at the bottom of the form. (The toggle is hidden for plan-linked sessions — sharing is controlled at the plan level.)
-8. Tap **Log** — sheet should dismiss and the new session should appear immediately at the top of this pet's inline Training Sessions list.
-9. In Supabase → Table Editor → `training_records`: confirm a new row appears with the correct `pet_id`, `guardian_id`, `score`, and `status` (derived) field values. `plan_item_id` should be `null` for a standalone session.
+2. Sign in as a guardian with an assigned plan → **Pets** tab → tap the pet → tap the plan in the Plans section → tap the current (green) step.
+3. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status updates live as you adjust the score.
+4. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
+5. Confirm the Three D's are **locked** to the step's values (plan-linked session).
+6. Enter notes, tap **Log**.
+7. Back out to Pet detail → the new session appears at the top of the Training Sessions list.
+8. In Supabase → `training_records`: the new row has the correct `pet_id`, `guardian_id`, `score`, derived `status`, and a **non-null `plan_item_id`**.
 
-### T-4.2 View sessions — per pet
-1. Go to **Pets** tab → tap a pet.
-2. Scroll to the **Training Sessions** section (below Plans).
-3. Confirm only sessions for that pet are shown (no other pets' sessions visible).
-4. Confirm the row shows: status badge, date/time, distance · distraction · duration, plus a person-2 icon when shared.
+### T-4.2 No standalone logging
+1. **Pets** tab → tap a pet → scroll to the **Training Sessions** section.
+2. Confirm the header is a plain bold "Training Sessions" label with **no `+` button**.
+3. Confirm there is no other entry point anywhere in the app to log a session that isn't tied to a plan step.
 
-### T-4.3b Empty state
-1. Add a second pet with no sessions.
-2. Go to **Pets** → tap that pet.
-3. Confirm the inline copy "No sessions yet. Tap + to log one." appears below the Training Sessions header. (No large empty-state component.)
+### T-4.3 PetSessionRow content (IOS-31)
+1. **Pets** tab → tap a pet with at least one logged session.
+2. Confirm each row shows, top to bottom: **Behavior** (bold), **Step Name** (secondary), **DateTime**, **Notes** (if any) — and the **`N/5` result** on the right, colored by status (red / orange / yellow / green).
+3. Confirm only sessions for that pet are shown.
 
-### T-4.3 View a plan-linked session detail
-1. Complete a plan step (UC-9.6) to create a plan-linked session.
-2. Go to **Pets** tab → tap the pet → tap the session row in the Training Sessions list.
-3. Confirm the detail view **pushes** onto the Pet detail's NavigationStack (back-swipes to Pet detail, not a sheet dismissal).
-4. Confirm the **Three D's** section shows a **Behavior** row at the top (e.g. "Behavior: Leave It") above Distance, Duration, Distraction.
-5. Open a standalone session (no plan context) — confirm no Behavior row is shown.
+### T-4.4 Empty state
+1. Add a second pet, or pick one with no logged sessions.
+2. **Pets** → tap that pet → confirm the inline copy *"No training sessions yet. Practice a plan step to log one."* appears below the Training Sessions header.
 
-### T-4.4 Edit a session
+### T-4.5 View a session detail
+1. **Pets** tab → tap a pet → tap a session row in the Training Sessions list.
+2. Confirm the detail view **pushes** onto the Pet detail's NavigationStack (back-swipes to Pet detail).
+3. Confirm the **Three D's** section shows a **Behavior** row at the top above Distance, Duration, Distraction.
+
+### T-4.6 Edit a session
 1. Tap a session row to push the detail view.
-2. Confirm all fields display correctly.
-3. Tap **Edit** — the Edit Session sheet should appear with all fields pre-populated, including the score stepper.
-4. Change the score (e.g. 5 → 3) and tap **Save** — the derived status should update (Green → Yellow).
-5. Confirm the detail view reflects the updated score and status immediately (no reload required).
-6. Confirm the Supabase row is updated.
+2. Tap **Edit** — the Edit Session sheet appears with all fields pre-populated, including the score stepper.
+3. Change the score (e.g. 5 → 3) and tap **Save** — the derived status updates (Green → Yellow).
+4. Confirm the detail view reflects the updated score and status immediately, and the Supabase row is updated.
 
-### T-4.5 Delete from detail view
-1. Open a session's detail view (from either the Home tab feed or a pet's inline Training Sessions list).
-2. Tap **Delete Session** — confirm a confirmation dialog appears ("Delete this session?").
-3. Tap **Delete** — view should dismiss and the row should be gone from the originating list.
-4. Confirm the Supabase row is deleted.
+### T-4.7 Delete from detail view
+1. Open a session's detail view (from the Home tab feed or a pet's Training Sessions list).
+2. Tap **Delete Session** → confirm a confirmation dialog appears ("Delete this session?").
+3. Tap **Delete** → view dismisses, the row is gone from the originating list, the Supabase row is deleted.
 
-### T-4.6 Swipe actions on the inline list
-Swipe-leading and swipe-trailing actions are available on each row of the Pet detail's inline Training Sessions list. (The **Home** tab feed also supports swipe-to-delete.)
-1. On the inline list, swipe LEFT (trailing) on a row → tap **Delete** → row removed without a confirmation dialog. Supabase row is deleted.
-2. On the inline list, swipe RIGHT (leading) on a row → tap **Share** (or **Unshare** if already shared) → `is_shared` toggles. Row updates with/without the person-2 badge.
+### T-4.8 Swipe actions on the inline list
+1. On the Pet detail's Training Sessions list, swipe LEFT (trailing) on a row → tap **Delete** → row removed without a confirmation dialog; Supabase row deleted.
+2. Swipe RIGHT (leading) on a row → tap **Share** / **Unshare** → `is_shared` toggles.
 
-### T-4.7 Log from Pet Detail (pre-selected pet)
-1. Go to **Pets** → tap a pet → tap the `+` icon in the Training Sessions header.
-2. Confirm the pet picker pre-selects the correct pet.
-3. Log the session and confirm it appears in both this pet's inline list and the **Home** tab feed.
-
-### T-4.8 Pull-to-refresh on Pet detail
-1. Open a pet with both plans and sessions.
-2. Pull down on the Pet detail screen to refresh.
-3. Confirm both the Plans section and the Training Sessions section reload (no error; counts unchanged unless the DB changed).
+### T-4.9 Refresh after logging in the plan sheet
+1. **Pets** tab → tap a pet → open a plan → log a session against a step → close the plan sheet.
+2. Confirm the Training Sessions list on Pet detail reflects the new session (the plan sheet's `onDismiss` reloads records).
+3. Also confirm pull-to-refresh on the Pet detail reloads both Plans and Training Sessions.

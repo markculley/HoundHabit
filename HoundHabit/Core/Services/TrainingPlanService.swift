@@ -62,6 +62,18 @@ struct TrainingPlanService {
             .value
     }
 
+    /// Bulk fetch of behaviors by id — used to resolve behavior names for a list
+    /// of plan-linked training records in one round-trip.
+    func fetchBehaviors(ids: [UUID]) async throws -> [Behavior] {
+        guard !ids.isEmpty else { return [] }
+        return try await supabase
+            .from("behaviors")
+            .select()
+            .in("id", values: ids)
+            .execute()
+            .value
+    }
+
     func createBehavior(planId: UUID, name: String, sortOrder: Int) async throws -> Behavior {
         let insert = BehaviorInsert(planId: planId, name: name, sortOrder: sortOrder)
         return try await supabase
@@ -127,6 +139,18 @@ struct TrainingPlanService {
             .select()
             .eq("behavior_id", value: behaviorId)
             .order("sort_order", ascending: true)
+            .execute()
+            .value
+    }
+
+    /// Bulk fetch of plan items by id — used to resolve step titles for a list
+    /// of plan-linked training records in one round-trip.
+    func fetchItems(ids: [UUID]) async throws -> [TrainingPlanItem] {
+        guard !ids.isEmpty else { return [] }
+        return try await supabase
+            .from("training_plan_items")
+            .select()
+            .in("id", values: ids)
             .execute()
             .value
     }

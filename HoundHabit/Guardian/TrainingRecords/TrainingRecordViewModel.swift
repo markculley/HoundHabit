@@ -5,11 +5,16 @@ import Supabase
 class TrainingRecordViewModel {
     var records: [TrainingRecord] = []
     var petNames: [UUID: String] = [:]
+    /// Step title for a record's `planItemId`. Resolved in `loadRecords`.
+    var stepTitles: [UUID: String] = [:]
+    /// Behavior name for a record's `planItemId`. Resolved in `loadRecords`.
+    var behaviorNames: [UUID: String] = [:]
     var isLoading = false
     var errorMessage: String?
 
     private let service = TrainingRecordService()
     private let petService = PetService()
+    private let planService = TrainingPlanService()
 
     // MARK: - Fetch
 
@@ -24,7 +29,40 @@ class TrainingRecordViewModel {
             let (r, pets) = try await (fetchedRecords, fetchedPets)
             records = r
             petNames = Dictionary(uniqueKeysWithValues: pets.map { ($0.id, $0.name) })
+            await resolvePlanContext(for: r)
         } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Populates `stepTitles` and `behaviorNames` (both keyed by `planItemId`) for
+    /// the plan-linked records in `records`. Two bulk queries: plan items by id,
+    /// then behaviors by id.
+    private func resolvePlanContext(for records: [TrainingRecord]) async {
+        let itemIds = Array(Set(records.compactMap { $0.planItemId }))
+        guard !itemIds.isEmpty else {
+            stepTitles = [:]
+            behaviorNames = [:]
+            return
+        }
+        do {
+            let items = try await planService.fetchItems(ids: itemIds)
+            let behaviorIds = Array(Set(items.compactMap { $0.behaviorId }))
+            let behaviors = try await planService.fetchBehaviors(ids: behaviorIds)
+            let behaviorNameById = Dictionary(uniqueKeysWithValues: behaviors.map { ($0.id, $0.name) })
+
+            var titles: [UUID: String] = [:]
+            var names: [UUID: String] = [:]
+            for item in items {
+                titles[item.id] = item.title
+                if let behaviorId = item.behaviorId {
+                    names[item.id] = behaviorNameById[behaviorId]
+                }
+            }
+            stepTitles = titles
+            behaviorNames = names
+        } catch {
+            // Non-fatal: rows just render without the resolved labels.
             errorMessage = error.localizedDescription
         }
     }

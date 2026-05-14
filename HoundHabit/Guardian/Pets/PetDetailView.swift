@@ -5,7 +5,6 @@ struct PetDetailView: View {
     let viewModel: PetViewModel
 
     @State private var showEditSheet = false
-    @State private var showLogSessionSheet = false
     @State private var petPlans: [AssignedPlan] = []
     @State private var isLoadingPlans = false
     @State private var selectedAssignedPlan: AssignedPlan? = nil
@@ -50,15 +49,10 @@ struct PetDetailView: View {
                 .sheet(isPresented: $showEditSheet) {
                     PetFormView(mode: .edit(pet), viewModel: viewModel)
                 }
-                .sheet(isPresented: $showLogSessionSheet) {
-                    TrainingRecordFormView(preselectedPetId: pet.id) { newRecord in
-                        trainingVM.records.insert(newRecord, at: 0)
-                    }
-                }
-                .onChange(of: showLogSessionSheet) { _, isShowing in
-                    if !isShowing { Task { await trainingVM.loadRecords(petId: pet.id) } }
-                }
-                .sheet(item: $selectedAssignedPlan) { ap in
+                .sheet(item: $selectedAssignedPlan, onDismiss: {
+                    // A practice session may have been logged inside the plan sheet.
+                    Task { await trainingVM.loadRecords(petId: pet.id) }
+                }) { ap in
                     NavigationStack {
                         GuardianPlanDetailView(assignedPlan: ap, viewModel: guardianPlanVM)
                     }
@@ -220,31 +214,22 @@ struct PetDetailView: View {
     @ViewBuilder
     private func trainingSessionsSection(_ pet: Pet) -> some View {
         Section {
-            HStack {
-                Text("Training Sessions")
-                    .font(.title2).bold()
-                Spacer()
-                Button {
-                    showLogSessionSheet = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 24)
-            .padding(.bottom, 8)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            Text("Training Sessions")
+                .font(.title2).bold()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.top, 24)
+                .padding(.bottom, 8)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
 
             if trainingVM.isLoading && trainingVM.records.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .listRowSeparator(.hidden)
             } else if trainingVM.records.isEmpty {
-                Text("No sessions yet. Tap + to log one.")
+                Text("No training sessions yet. Practice a plan step to log one.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
@@ -252,7 +237,11 @@ struct PetDetailView: View {
             } else {
                 ForEach(trainingVM.records) { record in
                     NavigationLink(value: record) {
-                        TrainingRecordRow(record: record)
+                        PetSessionRow(
+                            record: record,
+                            behaviorName: record.planItemId.flatMap { trainingVM.behaviorNames[$0] },
+                            stepTitle: record.planItemId.flatMap { trainingVM.stepTitles[$0] }
+                        )
                     }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
@@ -287,6 +276,49 @@ struct PetDetailView: View {
         for ap in petPlans where !guardianPlanVM.assignedPlans.contains(where: { $0.id == ap.id }) {
             guardianPlanVM.assignedPlans.append(ap)
         }
+    }
+}
+
+// MARK: - PetSessionRow
+
+/// A training session row in the Pet detail screen. Every session is plan-linked,
+/// so it leads with Behavior + Step Name, then the rep result, datetime, and notes.
+private struct PetSessionRow: View {
+    let record: TrainingRecord
+    let behaviorName: String?
+    let stepTitle: String?
+
+    private var titleLine: String {
+        behaviorName ?? stepTitle ?? "Training session"
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(titleLine)
+                    .font(.headline)
+                if behaviorName != nil, let stepTitle {
+                    Text(stepTitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Text(record.recordedAt.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                if let notes = record.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .padding(.top, 1)
+                }
+            }
+            Spacer(minLength: 8)
+            Text("\(record.score)/5")
+                .font(.headline.monospacedDigit())
+                .foregroundStyle(TrainingStatus.from(score: record.score).color)
+        }
+        .padding(.vertical, 2)
     }
 }
 
