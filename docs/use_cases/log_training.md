@@ -2,38 +2,41 @@
 
 ## UC-4.1 Log a Training Session
 
-**Every training session is plan-linked (IOS-31).** Guardians can only log a session by practising a step inside an assigned plan — there is **no standalone session logging**. There is no Log tab, no standalone sessions list screen, and no `+` affordance in the Pet detail's Training Sessions section. A session is created from the practice flow in `GuardianPlanDetailView` (see UC-9.6), which always sets `plan_item_id`.
+**Every training session is plan-linked (IOS-31).** Guardians can only log a session by practising a step inside an assigned plan — there is **no standalone session logging**. Sessions are created in **`TrainingSessionView`** — the one consistent training screen, reachable from a plan's step list and from "Train Again" on the pet detail.
 
 ```mermaid
 sequenceDiagram
     actor G as Guardian
-    participant PD as GuardianPlanDetailView
-    participant UI as TrainingRecordFormView
+    participant TSV as TrainingSessionView
     participant SVC as TrainingRecordService
     participant DB as Supabase (training_records)
 
-    G->>PD: Tap a reachable step in an assigned plan
-    PD->>UI: present TrainingRecordFormView(planItem:, lockedPetId:, behaviorName:, isSharedDefault:)
-    UI->>G: Show form (pet locked, date, score stepper 0-5, Three D's locked to the step, notes)
-    note over UI,G: status is derived from score — no manual picker
-
-    G->>UI: Fill score + notes, tap "Log"
-    UI->>SVC: createRecord(... plan_item_id = step.id ...)
-    note over UI,SVC: service derives status = TrainingStatus.from(score:) internally
+    G->>TSV: Open for an unlocked step (plan / behavior / step, Three D's, timer)
+    G->>TSV: Tap "Train Now" — timer starts, button → "Done"
+    note over G,TSV: Reps 0-5 + Notes stay hidden while the timer runs
+    G->>TSV: Timer expires (or "Done" tapped early) → Reps + Notes appear
+    G->>TSV: Set score, add notes, tap "Done"
+    TSV->>SVC: createRecord(score, plan_item_id, the step's Three D's, notes, is_shared from assignment)
+    note over TSV,SVC: service derives status = TrainingStatus.from(score:) internally
     SVC->>DB: INSERT INTO training_records ... RETURNING *
     DB-->>SVC: TrainingRecord (plan_item_id set)
-    SVC-->>UI: TrainingRecord
-    UI->>UI: onSave(record) — advancement logic fires (UC-9.6)
-    UI->>UI: dismiss()
+    TSV->>TSV: viewModel.loadRecords() — step completion / streak refresh
+    TSV->>TSV: dismiss()
 ```
+
+`TrainingSessionView` is self-contained — it creates the record itself, so it behaves identically from every entry point. See UC-9.6 for the plan-detail step flow and the completion model.
 
 > **Removed — standalone session logging (IOS-31).** An earlier build let guardians
 > log standalone (non-plan) sessions via a `+` button in the Pet detail's Training
 > Sessions header. That was removed: all sessions must be associated with a plan
 > step. The 7 pre-existing standalone `training_records` (test data) were deleted.
 > `training_records.plan_item_id` stays nullable in the DB (its FK is
-> `ON DELETE SET NULL`); enforcement is UI-level. `TrainingRecordFormView` still
-> exists — it's used for plan practice and for editing existing records.
+> `ON DELETE SET NULL`); enforcement is UI-level.
+>
+> **`TrainingRecordFormView`** still exists but is now **edit-only** — it's used
+> from the session detail (UC-4.3b) to edit an existing record. Its create /
+> practice path and the training timer were removed (the timer moved to
+> `TrainingSessionView`).
 
 ---
 
@@ -201,12 +204,12 @@ sequenceDiagram
 
 ### T-4.1 Log a session (via a plan step)
 1. Build and run the app.
-2. Sign in as a guardian with an assigned plan → **Pets** tab → tap the pet → tap the plan in the Plans section → tap the current (green) step.
-3. Confirm the **Reps out of 5** stepper is shown (not a manual status picker) — the derived status updates live as you adjust the score.
-4. Set score to 5 — confirm status shows Green. Set score to 1 — confirm status shows Red.
-5. Confirm the Three D's are **locked** to the step's values (plan-linked session).
-6. Enter notes, tap **Log**.
-7. Back out to Pet detail → the new session appears at the top of the Training Sessions list.
+2. Sign in as a guardian with an assigned plan → **Pets** tab → tap the pet → tap the plan in the Plans section → tap an **unlocked** step → `TrainingSessionView` opens.
+3. Confirm it shows the plan / behavior / step names, the step's read-only Three D's, the training timer, and a **"Train Now"** button at the top.
+4. Tap **Train Now** → the timer starts, the button becomes **"Done"**, and Reps + Notes are **not** shown yet.
+5. Let the timer run out (or tap **"Done"** early) → the **Reps out of 5** stepper + **Notes** appear; the derived status updates live as you adjust the score.
+6. Set score, add notes, tap **Done**.
+7. Back on the plan → the step's streak counter / completion reflects the new session; back on Pet detail → the new session appears in the Training Sessions list.
 8. In Supabase → `training_records`: the new row has the correct `pet_id`, `guardian_id`, `score`, derived `status`, and a **non-null `plan_item_id`**.
 
 ### T-4.2 No standalone logging

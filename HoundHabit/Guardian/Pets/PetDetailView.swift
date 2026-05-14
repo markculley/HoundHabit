@@ -21,6 +21,11 @@ struct PetDetailView: View {
     @State private var guardianPlanVM = GuardianPlanViewModel()
     @State private var trainingVM = TrainingRecordViewModel()
     @State private var sessionSort: SessionSort = .behaviorStepDate
+    // Tapping a session row opens a "View / Train Again" dialog; these drive the
+    // two destinations the dialog can lead to.
+    @State private var sessionActionRecord: TrainingRecord? = nil
+    @State private var recordToView: TrainingRecord? = nil
+    @State private var recordToRepeat: TrainingRecord? = nil
     @Environment(\.dismiss) private var dismiss
 
     private let planService = TrainingPlanService()
@@ -83,13 +88,26 @@ struct PetDetailView: View {
                         Button("Edit") { showEditSheet = true }
                     }
                 }
-                .navigationDestination(for: TrainingRecord.self) { record in
+                .navigationDestination(item: $recordToView) { record in
                     TrainingRecordDetailView(
                         record: record,
                         petName: pet.name,
                         viewModel: trainingVM,
                         selfLoadComments: true
                     )
+                }
+                // Tapping a session row → choose: view the past session, or repeat it.
+                .confirmationDialog(
+                    "Training Session",
+                    isPresented: Binding(
+                        get: { sessionActionRecord != nil },
+                        set: { if !$0 { sessionActionRecord = nil } }
+                    ),
+                    presenting: sessionActionRecord
+                ) { record in
+                    Button("View Session") { recordToView = record }
+                    Button("Train Again") { recordToRepeat = record }
+                    Button("Cancel", role: .cancel) {}
                 }
                 .sheet(isPresented: $showEditSheet) {
                     PetFormView(mode: .edit(pet), viewModel: viewModel)
@@ -100,6 +118,23 @@ struct PetDetailView: View {
                 }) { ap in
                     NavigationStack {
                         GuardianPlanDetailView(assignedPlan: ap, viewModel: guardianPlanVM)
+                    }
+                }
+                // "Train Again" → the consistent training session view for that step.
+                .sheet(item: $recordToRepeat) { record in
+                    if let planItemId = record.planItemId,
+                       let planId = trainingVM.planContext[planItemId]?.planId,
+                       let assignedPlan = petPlans.first(where: { $0.plan.id == planId }) {
+                        TrainingSessionView(
+                            planItemId: planItemId,
+                            assignedPlan: assignedPlan,
+                            isShared: assignedPlan.assignment.isShared,
+                            viewModel: guardianPlanVM,
+                            onLogged: { Task { await trainingVM.loadRecords(petId: pet.id) } }
+                        )
+                    } else {
+                        Text("This session's plan is no longer available.")
+                            .padding()
                     }
                 }
                 .task {
@@ -295,12 +330,15 @@ struct PetDetailView: View {
                     .listRowSeparator(.hidden)
             } else {
                 ForEach(sortedRecords) { record in
-                    NavigationLink(value: record) {
+                    Button {
+                        sessionActionRecord = record
+                    } label: {
                         PetSessionRow(
                             record: record,
                             context: record.planItemId.flatMap { trainingVM.planContext[$0] }
                         )
                     }
+                    .buttonStyle(.plain)
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             Task { await trainingVM.toggleSharing(record) }

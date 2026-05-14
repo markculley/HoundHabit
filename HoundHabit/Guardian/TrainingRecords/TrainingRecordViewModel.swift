@@ -2,8 +2,10 @@ import Foundation
 import Supabase
 
 /// Plan context for a training session — the behavior + step it was logged
-/// against, plus their sort positions (used for sorting the sessions list).
+/// against, plus their sort positions (used for sorting the sessions list) and
+/// the owning plan id (used to resolve the assignment when repeating a session).
 struct SessionPlanContext: Equatable {
+    let planId: UUID
     let behaviorName: String
     let behaviorSortOrder: Int
     let stepTitle: String
@@ -60,6 +62,7 @@ class TrainingRecordViewModel {
             for item in items {
                 let behavior = item.behaviorId.flatMap { behaviorById[$0] }
                 ctx[item.id] = SessionPlanContext(
+                    planId: item.planId,
                     behaviorName: behavior?.type.label ?? "",
                     behaviorSortOrder: behavior?.sortOrder ?? Int.max,
                     stepTitle: item.title,

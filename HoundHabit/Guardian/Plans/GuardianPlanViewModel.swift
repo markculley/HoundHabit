@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 enum PlanProgress {
     case todo
@@ -20,11 +21,14 @@ class GuardianPlanViewModel {
     var assignedPlans: [AssignedPlan] = []
     var items: [UUID: [TrainingPlanItem]] = [:]      // keyed by plan.id
     var behaviors: [UUID: [Behavior]] = [:]           // keyed by plan.id
+    /// All of the guardian's training records — used to compute per-step completion.
+    var records: [TrainingRecord] = []
     var isLoading = false
     var errorMessage: String?
     var lastAdvancementMessage: String?
 
     private let service = TrainingPlanService()
+    private let recordService = TrainingRecordService()
 
     // MARK: - Load
 
@@ -101,6 +105,58 @@ class GuardianPlanViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Loads all of the guardian's training records. Used to compute per-step
+    /// completion in the plan detail view.
+    func loadRecords() async {
+        guard let userId = supabase.auth.currentUser?.id else { return }
+        records = (try? await recordService.fetchRecords(guardianId: userId)) ?? []
+    }
+
+    // MARK: - Step Completion
+
+    /// A step is **complete** once the guardian has logged a score of 5 on it on
+    /// 3 consecutive calendar days. Completion is sticky — any historical 3-day
+    /// run counts, and once earned it stays earned.
+    ///
+    /// Returns whether the step is complete and the longest historical run of
+    /// consecutive calendar days that each had a score-5 session (the streak the
+    /// step list shows as "N / 3 days" while incomplete).
+    func stepCompletion(planItemId: UUID) -> (isComplete: Bool, bestStreak: Int) {
+        let calendar = Calendar.current
+        let perfectDays = Set(
+            records
+                .filter { $0.planItemId == planItemId && $0.score == 5 }
+                .map { calendar.startOfDay(for: $0.recordedAt) }
+        ).sorted()
+        guard !perfectDays.isEmpty else { return (false, 0) }
+
+        var best = 1
+        var run = 1
+        for i in 1..<perfectDays.count {
+            if calendar.date(byAdding: .day, value: 1, to: perfectDays[i - 1]) == perfectDays[i] {
+                run += 1
+            } else {
+                run = 1
+            }
+            best = max(best, run)
+        }
+        return (best >= 3, best)
+    }
+
+    /// Steps are gated sequentially **within a behavior**: a step is locked
+    /// until the previous step in the same behavior is complete. The first step
+    /// of a behavior is never locked, and behaviors are independent of one
+    /// another. Steps with no behavior (legacy data) are sequenced among themselves.
+    func isStepLocked(_ item: TrainingPlanItem) -> Bool {
+        let siblings = (items[item.planId] ?? [])
+            .filter { $0.behaviorId == item.behaviorId }
+            .sorted { $0.sortOrder < $1.sortOrder }
+        guard let index = siblings.firstIndex(where: { $0.id == item.id }), index > 0 else {
+            return false   // first step in the behavior — always unlocked
+        }
+        return !stepCompletion(planItemId: siblings[index - 1].id).isComplete
     }
 
     // MARK: - Plan Progress

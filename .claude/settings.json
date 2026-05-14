@@ -27,7 +27,8 @@
       "Bash(chmod +x /Users/mark/dev/hound_habit/ci_scripts/ci_post_clone.sh)",
       "Bash(cp /Users/mark/dev/hound_habit/docs/use_cases/log_training.md /Users/mark/dev/hound_habit_android/docs/use_cases/log_training.md && diff -q /Users/mark/dev/hound_habit/docs/use_cases/log_training.md /Users/mark/dev/hound_habit_android/docs/use_cases/log_training.md; echo \"mirrored\")",
       "Bash(sed -n '/struct BehaviorInsert/,/^}/p; /struct BehaviorUpdate/,/^}/p; /struct BehaviorReorderUpdate/,/^}/p' /Users/mark/dev/hound_habit/HoundHabit/Core/Services/TrainingPlanService.swift)",
-      "Bash(sed -n '93,125p' /Users/mark/dev/hound_habit/HoundHabit/Trainer/Plans/TrainerPlanViewModel.swift)"
+      "Bash(sed -n '93,125p' /Users/mark/dev/hound_habit/HoundHabit/Trainer/Plans/TrainerPlanViewModel.swift)",
+      "Bash(grep -E \"error:|warning:|Build Succeeded|Build Failed|Linking HoundHabit$\")"
     ],
     "additionalDirectories": [
       "/tmp",

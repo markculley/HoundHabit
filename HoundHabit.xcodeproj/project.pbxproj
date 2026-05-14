@@ -72,6 +72,7 @@
 		AA000000000000000000006E /* TrainingRecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006D /* TrainingRecordFormView.swift */; };
 		AA0000000000000000000070 /* TrainingRecordRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000006F /* TrainingRecordRow.swift */; };
 		AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000071 /* TrainingRecordDetailView.swift */; };
+		AA000000000000000000008C /* TrainingSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000008B /* TrainingSessionView.swift */; };
 		AA0000000000000000000074 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000073 /* DashboardViewModel.swift */; };
 		AA0000000000000000000076 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000075 /* SettingsView.swift */; };
 		AA0000000000000000000078 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000077 /* AccountView.swift */; };
@@ -166,6 +167,7 @@
 		AA000000000000000000006D /* TrainingRecordFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordFormView.swift; sourceTree = "<group>"; };
 		AA000000000000000000006F /* TrainingRecordRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordRow.swift; sourceTree = "<group>"; };
 		AA0000000000000000000071 /* TrainingRecordDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingRecordDetailView.swift; sourceTree = "<group>"; };
+		AA000000000000000000008B /* TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000073 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		AA0000000000000000000075 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000077 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 				AA000000000000000000006D /* TrainingRecordFormView.swift */,
 				AA000000000000000000006F /* TrainingRecordRow.swift */,
 				AA0000000000000000000071 /* TrainingRecordDetailView.swift */,
+				AA000000000000000000008B /* TrainingSessionView.swift */,
 			);
 			path = TrainingRecords;
 			sourceTree = "<group>";
@@ -666,6 +669,7 @@
 				4D2171232F800002000CD4D8 /* CommentService.swift in Sources */,
 				4D2171252F800003000CD4D8 /* GuardianDetailView.swift in Sources */,
 				AA0000000000000000000072 /* TrainingRecordDetailView.swift in Sources */,
+				AA000000000000000000008C /* TrainingSessionView.swift in Sources */,
 				AA0000000000000000000074 /* DashboardViewModel.swift in Sources */,
 				AA0000000000000000000076 /* SettingsView.swift in Sources */,
 				4D2171042F6E0654000CD4D8 /* Resource.swift in Sources */,

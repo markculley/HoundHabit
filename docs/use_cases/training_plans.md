@@ -2,7 +2,7 @@
 
 ## Overview
 
-Training plans are created by **Trainers**, who assign them to linked guardians. (Guardians cannot author their own plans — see the removed-UC note above UC-9.2.) Plans are composed of **Behaviors**, where each Behavior contains an ordered list of **Steps**. Each step defines specific values for the Three D's (Distance, Duration, Distraction) — with optional free-text custom values for each D. Guardians practice steps, enter a 0–5 rep score, and the app automatically advances, holds, or drops back their position based on the Traffic Light system. The guardian's position is persisted so they always resume exactly where they left off.
+Training plans are created by **Trainers**, who assign them to linked guardians. (Guardians cannot author their own plans — see the removed-UC note above UC-9.2.) Plans are composed of **Behaviors**, where each Behavior contains an ordered list of **Steps**. Each step defines specific values for the Three D's (Distance, Duration, Distraction) — with optional free-text custom values for each D. Guardians practice a step, run a timer, and log a 0–5 rep score. A step is **complete** once the guardian has logged a score of 5 on it on 3 consecutive calendar days; steps are gated sequentially within a behavior (a step unlocks when the previous one in its behavior is complete).
 
 ### Object Hierarchy
 
@@ -524,7 +524,7 @@ The pet avatar makes it obvious-at-a-glance which pet a plan is for in household
 - **Default: on** — all sessions logged under the plan are shared with the trainer.
 - Toggling calls `GuardianPlanViewModel.updateSharing(for:isShared:)` → `TrainingPlanService.updateAssignmentSharing(assignmentId:isShared:)` → `UPDATE plan_assignments SET is_shared = ?`.
 - The updated value is written to `assignedPlans[idx].assignment.isShared` in-memory immediately.
-- When the guardian opens a step's practice form, `isSharedDefault: isSharedWithTrainer` is passed into `TrainingRecordFormView`. The record is created with that `isShared` value — no per-session toggle is shown for plan-linked sessions.
+- When the guardian opens a step to practise, the live `isSharedWithTrainer` value is passed into `TrainingSessionView`. The record is created with that `isShared` value — no per-session toggle is shown for plan-linked sessions.
 
 ### Plan Header (Guardian view)
 
@@ -537,61 +537,52 @@ The header section of `GuardianPlanDetailView` shows:
 
 ### Behavior-Grouped Layout
 
-`GuardianPlanDetailView` renders steps inside a single `Section("Behaviors")`. Inside the section, each behavior is shown as a bold subheader row above its steps, with steps in their `sortOrder` sequence. The current step (green dot + green play icon) may appear under any behavior.
+`GuardianPlanDetailView` renders steps inside a single `Section("Behaviors")`. Inside the section, each behavior is shown as a bold subheader row above its steps, with steps in their `sortOrder` sequence.
 
 ```
 BEHAVIORS
 ┌─────────────────────────────────────────────────┐
-│ Leave It                                        │  ← bold subheader
-│ ○  1. Step 1   Arm's length · Instant · None   ▶│  ← completed, replayable
-│ ○  2. Step 2   Arm's length · Instant · None   ▶│  ← completed, replayable
-│                                                 │
 │ Touch                                           │  ← bold subheader
-│ ●  1. Touch Step 1  Arm's length · Instant · None ▶│  ← current (green)
-│                                                 │
-│ Back                                            │  ← bold subheader
-│ ○  1. Back Step 1   Arm's length · 5 sec · None  ℹ│  ← locked (future)
+│ ✓  Touch 1   Arm's length · Instant · None     ▶│  ← complete (green badge + checkmark)
+│ 2  Touch 2   6 ft · Instant · None             ▶│  ← in progress, unlocked
+│       1 / 3 days                                │     (streak counter, orange)
+│ 3  Touch 3   12 ft · Instant · None            🔒│  ← locked (previous step not complete)
+│       Complete the previous step first          │
 └─────────────────────────────────────────────────┘
 ```
 
-**Legacy / unbound items** (steps with no `behavior_id`) appear after all behaviors with an "Other Steps" subheader, as a backward-compatibility fallback.
+**Legacy / unbound items** (steps with no `behavior_id`) appear after all behaviors with an "Other Steps" subheader, as a backward-compatibility fallback; they're sequenced among themselves.
 
-### Current Step Resolution
+### Step Completion (3-day streak)
 
-`GuardianPlanViewModel.currentItem(for:in:)` resolves across the full flat `items` list regardless of behavior grouping:
-- If `currentItemId` is set → show that step as current
-- If `currentItemId` is `nil` (first visit) → default to the first step by `sort_order` across all behaviors
+A step is **complete** once the guardian has logged a **score of 5 on it on 3 consecutive calendar days** (by `training_records.recorded_at`, in `Calendar.current`). Completion is **sticky** — *any* historical run of 3 consecutive perfect days counts, and once earned it stays earned. Computed client-side by `GuardianPlanViewModel.stepCompletion(planItemId:)`, which also returns the longest historical consecutive-day run for the "N / 3 days" progress counter.
 
-### Step Accessibility (Replayability)
+`GuardianPlanViewModel.records` (all the guardian's `training_records`) is loaded on the plan detail's `.task` and refreshed by `TrainingSessionView` after each logged session.
 
-Steps are divided into three accessibility states based on global plan order:
+### Step Accessibility (sequential gating)
+
+Steps are gated **sequentially within a behavior**: a step is **locked** until the previous step in the *same* behavior is complete. The first step of each behavior is always unlocked, and behaviors are independent — a guardian can work "Touch" and "Down" in parallel.
 
 | State | Visual | Tap action |
 |-------|--------|-----------|
-| **Current** | Green circle, green play icon, bold title | Opens practice form → advancement logic fires on save |
-| **Completed** (before current in plan order) | Grey circle, grey play icon, normal title | Opens practice form → record logged, position unchanged |
-| **Locked** (after current in plan order) | Grey circle, info icon, dimmed title | Opens read-only info sheet |
-
-Guardians can **replay any previously completed step** in any order — the app doesn't care which completed steps are repeated or in what sequence. Advancement only happens when the **current** step is practiced.
-
-**Global ordering** is computed in `GuardianPlanDetailView.orderedItems` — behaviors sorted by `behavior.sortOrder`, then items within each behavior sorted by `item.sortOrder`. This correctly handles the fact that `item.sortOrder` is scoped per-behavior (each behavior's steps start at 0), so a raw `item.sortOrder` comparison across behaviors would give wrong results.
+| **Complete** | Green circle + white checkmark, green ▶ | Opens `TrainingSessionView` — still trainable (logs another record; completion stays) |
+| **In progress** (unlocked, not complete) | Grey circle + step number, grey ▶, "N / 3 days" counter when N > 0 | Opens `TrainingSessionView` |
+| **Locked** (previous step in behavior not complete) | Dimmed row, 🔒 icon, "Complete the previous step first" caption | Not tappable |
 
 ```swift
-private var orderedItems: [TrainingPlanItem] {
-    var result: [TrainingPlanItem] = []
-    for behavior in behaviors {
-        result.append(contentsOf: items(for: behavior))
+// GuardianPlanViewModel
+func isStepLocked(_ item: TrainingPlanItem) -> Bool {
+    let siblings = (items[item.planId] ?? [])
+        .filter { $0.behaviorId == item.behaviorId }
+        .sorted { $0.sortOrder < $1.sortOrder }
+    guard let index = siblings.firstIndex(where: { $0.id == item.id }), index > 0 else {
+        return false   // first step in the behavior — always unlocked
     }
-    result.append(contentsOf: unboundItems)
-    return result
-}
-
-private func isLocked(_ item: TrainingPlanItem) -> Bool {
-    let currentIdx = orderedItems.firstIndex(where: { $0.id == currentItem?.id }) ?? 0
-    let itemIdx    = orderedItems.firstIndex(where: { $0.id == item.id }) ?? 0
-    return itemIdx > currentIdx
+    return !stepCompletion(planItemId: siblings[index - 1].id).isComplete
 }
 ```
+
+There is no longer a single "current step" pointer or locked-step info sheet — the old advancement model was removed (see UC-9.6).
 
 ### Dashboard Integration
 
@@ -601,79 +592,65 @@ private func isLocked(_ item: TrainingPlanItem) -> Bool {
 
 ---
 
-## UC-9.6: Guardian Practises a Step (Traffic Light Flow)
+## UC-9.6: Guardian Practises a Step
 
-**Actor:** Guardian  
-**Precondition:** Guardian is viewing a plan detail. Any step at or before the current step can be practiced.
+**Actor:** Guardian
+**Precondition:** Guardian is viewing a plan detail. The step is unlocked (it's the first step of its behavior, or the previous step in its behavior is complete).
 
-This is the core loop described in the Training Prototype. The guardian performs 5 repetitions, enters how many succeeded (0–5), and the app computes the Traffic Light status. Advancement only applies when the **current** step is practiced; replaying a completed step just logs the record.
+The guardian taps an unlocked step, runs a timer while training, then logs how many of 5 reps succeeded. There is **no advancement pointer and no advancement message** — progress is per-step completion (the 3-day streak, see UC-9.5).
 
 ### Flow
 
 ```
 Guardian                  App                        Supabase
   │                         │                            │
-  │  Tap a reachable step   │                            │
-  │  (▶ button — current    │                            │
-  │  or any completed step) │                            │
+  │  Tap an unlocked step   │                            │
   │────────────────────────▶│                            │
-  │  TrainingRecordFormView  │                            │
-  │  (sheet, plan context)  │                            │
-  │  Three D's pre-filled   │                            │
-  │  and locked from step   │                            │
-  │  (custom values shown   │                            │
-  │  as free text if set)   │                            │
+  │  TrainingSessionView    │                            │
+  │  (sheet) — plan /       │                            │
+  │  behavior / step names, │                            │
+  │  the step's Three D's,  │                            │
+  │  the training timer,    │                            │
+  │  a "Train Now" button   │                            │
   │◀────────────────────────│                            │
   │                         │                            │
-  │  Adjust score 0–5       │                            │
-  │  (status shown live)    │                            │
-  │  Add optional notes     │                            │
-  │  Tap "Log"              │                            │
+  │  Tap "Train Now"        │                            │
+  │  → timer starts;        │                            │
+  │  button → "Done"        │                            │
+  │                         │                            │
+  │  Reps 0–5 + Notes       │                            │
+  │  appear when the timer  │                            │
+  │  expires OR when "Done" │                            │
+  │  is tapped early        │                            │
+  │                         │                            │
+  │  Set score, add notes,  │                            │
+  │  tap "Done"             │                            │
   │────────────────────────▶│                            │
   │                         │  createRecord(             │
   │                         │    score, plan_item_id,    │
-  │                         │    distance, duration,     │
-  │                         │    distraction,            │
-  │                         │    distanceCustomValue?,   │
-  │                         │    durationCustomValue?,   │
-  │                         │    distractionCustomValue?,│
-  │                         │    ...)                    │
+  │                         │    distance/duration/      │
+  │                         │    distraction (+ custom)  │
+  │                         │    from the step, notes,   │
+  │                         │    is_shared from the      │
+  │                         │    assignment)             │
   │                         │  status = from(score:)     │
   │                         │───────────────────────────▶│
   │                         │  INSERT training_records   │
   │                         │◀───────────────────────────│
-  │                         │                            │
-  │  [if practiced item     │                            │
-  │   IS the current step]  │                            │
-  │                         │  advanceCurrentStep(       │
-  │                         │    assignment, score,      │
-  │                         │    items)                  │
-  │                         │  ── compute new step       │
-  │                         │  updateCurrentItem(        │
-  │                         │    assignmentId, itemId)   │
-  │                         │───────────────────────────▶│
-  │                         │  UPDATE plan_assignments   │
-  │                         │  SET current_item_id=?     │
-  │                         │◀───────────────────────────│
-  │  Advancement alert      │                            │
-  │  shown with message     │                            │
-  │◀────────────────────────│                            │
-  │                         │                            │
-  │  [if practiced item is  │                            │
-  │   a COMPLETED step]     │                            │
-  │  Record logged,         │                            │
-  │  no position change     │                            │
+  │  loadRecords() refreshes│                            │
+  │  → step completion + the│                            │
+  │  "N / 3 days" counter   │                            │
+  │  update; the next step  │                            │
+  │  may unlock. Sheet      │                            │
+  │  dismisses.             │                            │
   │◀────────────────────────│                            │
 ```
 
-### Traffic Light — Score to Status Mapping
+`TrainingSessionView` is the one consistent screen for doing a session — it's also reachable from the pet detail's Training Sessions list ("Train Again"). See `log_training.md` UC-4.1 for the full screen behaviour.
 
-| Score | Status | Action |
-|-------|--------|--------|
-| 5 / 5 | Green  | Advance to next step |
-| 3–4 / 5 | Yellow | Stay on current step |
-| 2 / 5 | Orange | Stay on current step |
-| 0–1 / 5 | Red  | Drop back to previous step |
+### Score → status
+
+The 0–5 rep score still derives a `TrainingStatus` colour, stored on the record and shown in the reps stepper and the session detail:
 
 ```swift
 static func from(score: Int) -> TrainingStatus {
@@ -686,44 +663,11 @@ static func from(score: Int) -> TrainingStatus {
 }
 ```
 
-### Advancement Logic
+The status is a per-session readout only — it no longer advances or drops a pointer. What matters for plan progress is whether the step has hit its 3-consecutive-day streak of **score 5** (`green`).
 
-Step advancement is global across all behaviors — `items` is a flat sorted list. A guardian progresses from the last step of Behavior A into the first step of Behavior B.
+### Vestigial advancement pointer
 
-```swift
-// In GuardianPlanViewModel.advanceCurrentStep(assignedPlan:score:planItems:)
-if score == 5 {
-    newIdx = min(currentIdx + 1, sorted.count - 1)  // advance; clamp at last step
-} else if score <= 1 {
-    newIdx = max(currentIdx - 1, 0)                  // drop back; clamp at first step
-} else {
-    newIdx = currentIdx                              // stay
-}
-```
-
-`current_item_id` on `plan_assignments` is always written after a plan-linked session — even on "stay" — so that a first-session guardian (where `currentItemId` was `nil`) gets pinned to step 1 immediately.
-
-### Score UX in TrainingRecordFormView
-
-For plan-linked sessions (`planItem` is provided):
-- The Three D's section is **read-only** (values locked from the step; custom values shown as their free-text strings)
-- The "Reps out of 5" `Stepper` replaces the old manual status picker
-- The derived status (coloured circle + label) updates live as the score changes
-- A footer line explains what will happen: *"Green — ready to advance to the next step."*
-
-For standalone sessions (`planItem` is nil):
-- The Three D's section is **editable** (all pickers including `.custom`)
-- The same score stepper is shown (status derived the same way)
-
-### Advancement Feedback Messages
-
-| Situation | Message |
-|-----------|---------|
-| Score 5, not at last step | *"Great work! Moving to step N: [title]."* |
-| Score 5, already at last step | *"Amazing — you've mastered all the steps in this plan!"* |
-| Score 2–4 | *"Good progress! Keep practicing step N: [title]."* |
-| Score 0–1, not at first step | *"Let's build some confidence on step N: [title]."* |
-| Score 0–1, already at first step | *"Keep working on step N. You've got this!"* |
+`GuardianPlanViewModel.advanceCurrentStep` and `plan_assignments.current_item_id` still exist and are still written after a plan-linked session — **only** so the plan-progress badge (To Do / In Progress / Done) keeps working in the interim. They are no longer the progress model and are slated for removal in the "Rework plan progress badge" card. There is no advancement *message* — the alert was removed.
 
 ---
 
@@ -806,7 +750,7 @@ struct PlanAssignment: Codable, Identifiable, Hashable {
     let guardianId: UUID     // "guardian_id"
     let petId: UUID?         // "pet_id" — nullable
     let assignedAt: Date     // "assigned_at"
-    var currentItemId: UUID? // "current_item_id" — the Memory Bank pointer; nil = not yet started
+    var currentItemId: UUID? // "current_item_id" — vestigial advancement pointer; still written but no longer the progress model (slated for removal)
 }
 ```
 
@@ -815,7 +759,7 @@ struct PlanAssignment: Codable, Identifiable, Hashable {
 ```swift
 struct AssignedPlan: Identifiable, Hashable {
     var id: UUID { assignment.id }
-    var assignment: PlanAssignment   // var — updated in-memory after step advancement
+    var assignment: PlanAssignment   // var — mutated in-memory (e.g. sharing toggle)
     let plan: TrainingPlan
 }
 ```
@@ -855,13 +799,14 @@ enum Distance: String, Codable, CaseIterable {
 |---------|----------|
 | Trainer vs Guardian ViewModels | Separate — `TrainerPlanViewModel` and `GuardianPlanViewModel`. Different mutation surface, different fetch logic. |
 | Guardian plan detail routing | `GuardianPlanListView` is a flat list — every row is a trainer-assigned plan and navigates to `GuardianPlanDetailView` via a single `navigationDestination(for: AssignedPlan.self)`. Guardians cannot create or own plans (IOS-28). |
-| `is_shared` on `plan_assignments` | Controls whether sessions logged under a plan are visible to the trainer. `assignPlan` sets `isShared: true` by default. Guardian can toggle per-plan in `GuardianPlanDetailView`. The value is passed as `isSharedDefault` into `TrainingRecordFormView`; no per-session toggle is shown for plan-linked sessions. |
+| `is_shared` on `plan_assignments` | Controls whether sessions logged under a plan are visible to the trainer. `assignPlan` sets `isShared: true` by default. Guardian can toggle per-plan in `GuardianPlanDetailView`. The live value is passed into `TrainingSessionView`; no per-session toggle is shown for plan-linked sessions. |
 | `TrainerPlanFormView` | `onSave: (TrainingPlan) -> Void`. Create/edit only — there is no pet picker (guardians can't create plans, so the form is trainer-only). |
 | Behavior as intermediate layer | `Behavior` lives in `Core/Models/Behavior.swift`. Items carry a nullable `behaviorId` so old data without behaviors still works. |
 | Behavior type | `Behavior.type` is a fixed `BehaviorType` enum (12 standard behaviors), not free text. Picked at creation in `TrainerBehaviorFormView`; not editable afterward (no inline rename — change = delete + re-add). Enforced by a DB `CHECK` constraint on `behaviors.name`. |
 | `AssignedPlan` placement | Lives in `TrainingPlanService.swift`, not `Core/Models/` — it's a join result, not a direct DB row. Follows `LinkedGuardian` pattern in `InviteService.swift`. |
 | Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior. Guardian detail computes global order via `orderedItems` (behaviors by behavior sortOrder, then items by item sortOrder within each behavior). A raw cross-behavior `sortOrder` comparison would be wrong because each behavior resets at 0. |
-| Step replayability | Guardians can replay any completed step (at or before current in global order). Advancement only fires when practicing the **current** step. `isLocked(_:)` uses global index comparison via `orderedItems`. |
+| Step gating | Steps are gated sequentially within a behavior — `GuardianPlanViewModel.isStepLocked(_:)` returns true when the previous step in the same behavior isn't complete. Behaviors are independent; the first step of each is always unlocked. Completed steps stay trainable. |
+| Step completion | `GuardianPlanViewModel.stepCompletion(planItemId:)` computes, from the guardian's `training_records`, the longest run of consecutive calendar days with a score-5 session. `>= 3` → complete (sticky). Pure logic, unit-tested. |
 | Trainer assignment progress | `TrainerPlanViewModel.planProgress(for: PlanAssignment)` computes `.todo / .inProgress / .done` and is displayed as a `PlanProgressBadge` per assignment row in `TrainerPlanDetailView`. |
 | Behavior name in session detail | `TrainingRecordDetailView` self-loads the behavior name via `TrainingPlanService.fetchBehaviorName(for: planItemId)` when `planItemId` is non-nil. Two fetches: item → behaviorId → behavior name. Shown in the Three D's section alongside Distance, Duration, Distraction. |
 | Custom Three D values | Stored as dedicated nullable columns; the enum column stores `"custom"` as the raw value. Display resolves at read time via `displayLabel(customValue:)`. Never stored on non-custom rows. |
@@ -869,9 +814,8 @@ enum Distance: String, Codable, CaseIterable {
 | Assign sheet navigation | Presented as `.sheet` with own `NavigationStack` — avoids mixing `navigationDestination` styles in the trainer's nav stack. |
 | Reorder atomicity | Delete + re-insert is not transactional. On failure the app reloads from Supabase to recover consistent state. Acceptable for MVP. |
 | `trainer_id` on `plan_assignments` | Added to avoid infinite RLS recursion: `training_plans` policy checked `plan_assignments`, which checked back to `training_plans`. |
-| Status derivation | `TrainingStatus.from(score:)` is the single source of truth — called by both `TrainingRecordService` (on write) and `TrainingRecordFormView` (for live preview). Manual status selection has been removed entirely. |
-| In-memory advancement | After `updateCurrentItem` succeeds, `GuardianPlanViewModel` mutates `assignedPlans[idx].assignment.currentItemId` directly so `GuardianPlanDetailView` re-renders without a full reload. |
-| `currentItemId` always written | Even a "stay" outcome after the first session sets `currentItemId` (from nil → step 0), ensuring the Memory Bank is initialised on the very first practice. |
+| Status derivation | `TrainingStatus.from(score:)` is the single source of truth — called by `TrainingRecordService` (on write) and `TrainingSessionView` (for the live reps preview). Manual status selection has been removed entirely. |
+| Vestigial advancement pointer | `advanceCurrentStep` / `current_item_id` are still written after a plan-linked session, but only to keep the plan-progress badge alive in the interim — they're no longer the progress model. Removal is tracked in the "Rework plan progress badge" card. |
 
 ---
 
@@ -902,16 +846,16 @@ enum Distance: String, Codable, CaseIterable {
 | Assign attempted with behaviorless step | `assignBlockReason` names the offending behavior(s); button stays blocked |
 | Guardian unlinked after assignment | Plan remains visible (assignment row persists); trainer can delete assignment manually |
 | Plan deleted by trainer | `ON DELETE CASCADE` removes all behaviors, items, and assignments |
-| Behavior deleted by trainer | `ON DELETE CASCADE` removes all steps in that behavior; guardian's `currentItemId` may be orphaned → `ON DELETE SET NULL` on `plan_assignments.current_item_id` resets to nil, falling back to first step |
+| Behavior deleted by trainer | `ON DELETE CASCADE` removes all steps in that behavior and their `training_records` references go `ON DELETE SET NULL` on `plan_item_id` |
 | Guardian has no plans | "Ask your trainer to assign a training plan." in Plans tab |
-| Guardian replays a completed step | Record is logged with `plan_item_id` set; `advanceCurrentStep` is NOT called; guardian's position (`currentItemId`) is unchanged. |
-| Locked step tapped | Opens read-only `StepInfoSheet` — shows Three D's and a note that the step is not yet reachable. |
+| Guardian trains a completed step again | Completed steps stay tappable — a new record is logged. Completion is sticky, so it stays complete. |
+| Locked step tapped | Nothing happens — the row is `.disabled` (dimmed, 🔒 icon, "Complete the previous step first" caption). It's locked until the previous step in its behavior is complete. |
 | `.sheet(item:)` for step sheets | Both practice and info sheets use `.sheet(item:)` to avoid the SwiftUI timing race where content can be nil if `isPresented` fires before the item binding updates. |
 | Reorder network failure | In-memory state reverted by reloading items from Supabase |
 | Guardian at last step scores green | `min(currentIdx + 1, sorted.count - 1)` clamps — stays at last step, shows "mastered all steps" message |
 | Guardian at first step scores red | `max(currentIdx - 1, 0)` clamps — stays at first step, shows encouragement message |
-| `currentItemId` references a deleted item | `ON DELETE SET NULL` resets pointer to nil; `currentItem(for:in:)` falls back to the first step |
-| Standalone session (no plan context) | `planItemId` is nil, Three D's are editable including `.custom`, no advancement logic runs |
+| `currentItemId` references a deleted item | `ON DELETE SET NULL` resets the (vestigial) pointer to nil — harmless; it no longer drives the UI |
+| Step with old records but a now-incomplete predecessor | A step can be locked yet still carry historical records (e.g. trained before the gating rule, or before its predecessor regressed). The lock is based purely on the *previous* step's completion; the locked step's own streak just isn't shown while locked. |
 | Plan-linked session sharing | `isShared` on the record is set from `assignment.isShared` at creation time — no per-session override. Toggling the plan-level sharing toggle forward only affects new sessions. |
 | Guardian toggles sharing off mid-plan | Existing session records retain their original `is_shared` value — only future sessions pick up the new setting. |
 | Step with `.custom` distance but empty string in DB | `displayLabel(customValue:)` falls back to `"Custom"` — shown to guardian but never occurs when form validation is respected |
@@ -938,18 +882,16 @@ enum Distance: String, Codable, CaseIterable {
 14. **Assign plan**: All behaviors have steps → tap "Assign to Guardian…" → select guardian → optionally select pet → Assign → assignment row shows guardian name + "To Do" badge.
 15. **Trainer sees progress**: Guardian practices a step → trainer opens same plan detail → assignment row shows "In Progress" badge.
 16. **Duplicate assignment**: Assign same plan to same guardian again → "already assigned" error shown.
-17. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap a plan → steps shown grouped by behavior; first step highlighted green (current); completed steps show grey play icon; future steps show info icon.
-18. **Replay completed step**: Tap a grey-play step (completed) → practice form opens with Three D's locked → log score → no advancement alert → current step unchanged.
-19. **Locked step tapped**: Tap an info-icon step (future) → read-only info sheet shown; no practice form.
-20. **Practice step — green**: Tap current step → score 5/5 → footer reads "Green — ready to advance" → Log → alert: "Moving to step 2" → next step highlighted.
-21. **Practice step — stay**: Score 3/5 → "Yellow — keep practicing" → same step still current.
-22. **Practice step — red**: Score 1/5 → "Red — we'll drop back" → previous step becomes current.
-23. **Cross-behavior advancement**: Advance to last step of first behavior → score 5 → moves into first step of second behavior.
-24. **Clamp at last step**: Score 5 on final step → "Amazing — you've mastered all the steps!" → step unchanged.
-25. **Memory bank**: Log a session, close the app, reopen → same step still highlighted.
-26. **Behavior name in record detail**: After a plan-linked session → open the record in the pet's Training Sessions list → the detail's Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
-27. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
-28. **Pet Detail plans section**: Trainer assigns a plan to a guardian's pet → guardian opens that Pet Detail → the plan appears in the Plans section (read-only — no "+" / create / assign affordance).
-29. **Trainer sharing default on**: Guardian linked to a trainer → trainer assigns a plan → Guardian views plan detail → "Share sessions with trainer" toggle is ON.
-30. **Toggle sharing off**: Guardian opens an assigned plan detail → toggles "Share sessions with trainer" off → logs a session → in Supabase `training_records` the new row has `is_shared = false`; trainer's guardian detail no longer shows new sessions for this plan.
-31. **No per-session toggle for plan sessions**: Guardian logs a step from a plan → `TrainingRecordFormView` does not show "Share with Trainer" toggle.
+17. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap a plan → steps shown grouped by behavior; the first step of each behavior is unlocked; later steps are locked (dimmed, 🔒) until the previous step in the behavior is complete.
+18. **Practise a step**: Tap an unlocked step → `TrainingSessionView` → "Train Now" (timer starts) → let the timer expire (or tap "Done" early) → Reps + Notes appear → set score, tap "Done" → session logged, sheet dismisses. No advancement message.
+19. **Locked step is not tappable**: Tap a locked step → nothing happens; the row shows 🔒 + "Complete the previous step first".
+20. **Step completion unlocks the next**: Log a score-5 session on the first step of a behavior on 3 consecutive calendar days → the step shows the green checkmark badge and the next step in that behavior unlocks.
+21. **Streak counter**: Log a score-5 on a step on 1–2 consecutive days → the step shows "1 / 3 days" / "2 / 3 days" in orange; a non-5 day or a gap resets it.
+22. **Behaviors are independent**: Completing the last step needed in behavior A does not lock or unlock anything in behavior B; behavior B's first step is always reachable.
+23. **Train Again from Pet detail**: Pet detail → Training Sessions → tap a session → "Train Again" → `TrainingSessionView` opens for that step.
+24. **Behavior name in record detail**: After a plan-linked session → open the record in the pet's Training Sessions list → the detail's Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
+25. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
+26. **Pet Detail plans section**: Trainer assigns a plan to a guardian's pet → guardian opens that Pet Detail → the plan appears in the Plans section (read-only — no "+" / create / assign affordance).
+27. **Trainer sharing default on**: Guardian linked to a trainer → trainer assigns a plan → Guardian views plan detail → "Share sessions with trainer" toggle is ON.
+28. **Toggle sharing off**: Guardian opens an assigned plan detail → toggles "Share sessions with trainer" off → logs a session → in Supabase `training_records` the new row has `is_shared = false`; trainer's guardian detail no longer shows new sessions for this plan.
+29. **No per-session toggle for plan sessions**: Guardian practises a step → `TrainingSessionView` shows no "Share with Trainer" toggle (sharing is plan-level).

@@ -5,8 +5,6 @@ struct GuardianPlanDetailView: View {
     let viewModel: GuardianPlanViewModel
 
     @State private var selectedPracticeItem: TrainingPlanItem? = nil
-    @State private var selectedInfoItem: TrainingPlanItem? = nil
-    @State private var showAdvancementAlert = false
     @State private var isSharedWithTrainer: Bool
 
     init(assignedPlan: AssignedPlan, viewModel: GuardianPlanViewModel) {
@@ -30,10 +28,6 @@ struct GuardianPlanDetailView: View {
         (viewModel.behaviors[planId] ?? []).sorted { $0.sortOrder < $1.sortOrder }
     }
 
-    private var currentItem: TrainingPlanItem? {
-        viewModel.currentItem(for: assignedPlan, in: allItems)
-    }
-
     /// Items belonging to a specific behavior, in order.
     private func items(for behavior: Behavior) -> [TrainingPlanItem] {
         allItems.filter { $0.behaviorId == behavior.id }
@@ -42,24 +36,6 @@ struct GuardianPlanDetailView: View {
     /// Items with no behavior assignment (legacy data).
     private var unboundItems: [TrainingPlanItem] {
         allItems.filter { $0.behaviorId == nil }
-    }
-
-    /// Items in true plan order: behaviors by their sortOrder, then items within
-    /// each behavior by their sortOrder. This is the sequence the guardian progresses through.
-    private var orderedItems: [TrainingPlanItem] {
-        var result: [TrainingPlanItem] = []
-        for behavior in behaviors {
-            result.append(contentsOf: items(for: behavior))
-        }
-        result.append(contentsOf: unboundItems)
-        return result
-    }
-
-    /// Whether a step is ahead of the guardian's current position (not yet reachable).
-    private func isLocked(_ item: TrainingPlanItem) -> Bool {
-        let currentIdx = orderedItems.firstIndex(where: { $0.id == currentItem?.id }) ?? 0
-        let itemIdx    = orderedItems.firstIndex(where: { $0.id == item.id }) ?? 0
-        return itemIdx > currentIdx
     }
 
     var body: some View {
@@ -121,39 +97,20 @@ struct GuardianPlanDetailView: View {
         }
         .navigationTitle(assignedPlan.plan.title)
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.loadItems(for: planId) }
-        // Practice sheet — any reachable step
+        .task {
+            await viewModel.loadItems(for: planId)
+            await viewModel.loadRecords()
+        }
+        // Every step is reachable — tapping one opens the consistent training
+        // session view. TrainingSessionView is self-contained: it logs the
+        // record and refreshes completion on its own.
         .sheet(item: $selectedPracticeItem) { item in
-            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.type.label
-            let isCurrentStep = item.id == currentItem?.id
-            TrainingRecordFormView(
-                lockedPetId: assignedPlan.assignment.petId,
-                planItem: item,
-                behaviorName: behaviorName,
-                isSharedDefault: isSharedWithTrainer
-            ) { savedRecord in
-                // Only advance/regress position when practicing the current step
-                if isCurrentStep {
-                    Task {
-                        await viewModel.advanceCurrentStep(
-                            assignedPlan: assignedPlan,
-                            score: savedRecord.score,
-                            planItems: allItems
-                        )
-                        showAdvancementAlert = true
-                    }
-                }
-            }
-        }
-        // Info sheet — non-current steps
-        .sheet(item: $selectedInfoItem) { item in
-            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.type.label
-            StepInfoSheet(item: item, behaviorName: behaviorName)
-        }
-        .alert("Session Logged", isPresented: $showAdvancementAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(viewModel.lastAdvancementMessage ?? "")
+            TrainingSessionView(
+                planItemId: item.id,
+                assignedPlan: assignedPlan,
+                isShared: isSharedWithTrainer,
+                viewModel: viewModel
+            )
         }
     }
 
@@ -162,18 +119,20 @@ struct GuardianPlanDetailView: View {
     @ViewBuilder
     private func stepRows(for stepItems: [TrainingPlanItem]) -> some View {
         ForEach(stepItems) { item in
-            let isCurrent = item.id == currentItem?.id
-            let locked = isLocked(item)
+            let completion = viewModel.stepCompletion(planItemId: item.id)
+            let locked = viewModel.isStepLocked(item)
             Button {
-                if locked {
-                    selectedInfoItem = item
-                } else {
-                    selectedPracticeItem = item
-                }
+                if !locked { selectedPracticeItem = item }
             } label: {
-                StepRow(item: item, isCurrent: isCurrent, isLocked: locked)
+                StepRow(
+                    item: item,
+                    isComplete: completion.isComplete,
+                    bestStreak: completion.bestStreak,
+                    isLocked: locked
+                )
             }
             .buttonStyle(.plain)
+            .disabled(locked)
         }
     }
 }
@@ -182,80 +141,59 @@ struct GuardianPlanDetailView: View {
 
 private struct StepRow: View {
     let item: TrainingPlanItem
-    let isCurrent: Bool
+    let isComplete: Bool
+    /// Longest historical run of consecutive calendar days with a score-5
+    /// session — 0...2 while incomplete (3+ means complete).
+    let bestStreak: Int
+    /// Locked until the previous step in the same behavior is complete.
     let isLocked: Bool
 
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
                 Circle()
-                    .fill(isCurrent ? Color.green : Color.secondary.opacity(0.15))
+                    .fill(isComplete ? Color.green : Color.secondary.opacity(0.15))
                     .frame(width: 28, height: 28)
-                Text("\(item.sortOrder + 1)")
-                    .font(.caption.bold())
-                    .foregroundStyle(isCurrent ? .white : .secondary)
+                if isComplete {
+                    Image(systemName: "checkmark")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                } else {
+                    Text("\(item.sortOrder + 1)")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                }
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .font(.body)
-                    .foregroundStyle(isLocked ? .secondary : .primary)
                 HStack(spacing: 6) {
                     StepTag(item.distanceLabel)
                     StepTag(item.durationLabel)
                     StepTag(item.distractionLabel)
                 }
+                if isLocked {
+                    Text("Complete the previous step first")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else if !isComplete && bestStreak > 0 {
+                    Text("\(bestStreak) / 3 days")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
             }
             Spacer()
             if isLocked {
-                Image(systemName: "info.circle")
-                    .foregroundStyle(.secondary.opacity(0.5))
+                Image(systemName: "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else {
                 Image(systemName: "play.circle.fill")
-                    .foregroundStyle(isCurrent ? .green : .secondary)
+                    .foregroundStyle(isComplete ? .green : .secondary)
             }
         }
         .padding(.vertical, 2)
-    }
-}
-
-// MARK: - StepInfoSheet
-
-private struct StepInfoSheet: View {
-    let item: TrainingPlanItem
-    let behaviorName: String?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                if let behaviorName {
-                    Section {
-                        LabeledContent("Behavior", value: behaviorName)
-                    }
-                }
-
-                Section {
-                    LabeledContent("Distance",    value: item.distanceLabel)
-                    LabeledContent("Duration",    value: item.durationLabel)
-                    LabeledContent("Distraction", value: item.distractionLabel)
-                } header: {
-                    Text("Three D's")
-                }
-
-                Section {
-                    Text("This isn't your current step yet. Complete your current step to progress here.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .navigationTitle("Step \(item.sortOrder + 1): \(item.title)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
+        .opacity(isLocked ? 0.55 : 1)
     }
 }
 
