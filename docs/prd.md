@@ -18,7 +18,6 @@ A training tracker that is needed by pet owners to bridge the gap between the la
 
 ## What it Does Do
 
-- Gives Guardians rewards for making progress
 - Enables guardians to track Training Sessions
 - Enables guardians to track more than one pet
 - Enables guardians to share training results

@@ -4,102 +4,57 @@ struct DashboardView: View {
     var viewModel: DashboardViewModel
     var switchToPlansTab: (() -> Void)? = nil
 
-    @State private var showAchievements = false
-
     var body: some View {
         NavigationStack {
-            List {
-                if viewModel.isLoading && viewModel.badges.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .listRowSeparator(.hidden)
-                }
+            VStack(spacing: 0) {
+                AppBrandingHeader()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
 
-                // MARK: Streak
-                Section {
-                    HStack(spacing: 14) {
-                        Image(systemName: "flame.fill")
-                            .font(.title)
-                            .foregroundStyle(viewModel.currentStreak > 0 ? .orange : Color(.tertiaryLabel))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(viewModel.currentStreak == 1
-                                 ? "1-day streak"
-                                 : "\(viewModel.currentStreak)-day streak")
-                                .font(.headline)
-                            Text(viewModel.currentStreak == 0
-                                 ? "Log a session to start your streak!"
-                                 : "Keep it up!")
+                List {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .listRowSeparator(.hidden)
+                    }
+
+                    // MARK: Training Plans
+                    Section("Training Plans") {
+                        if viewModel.planCount == 0 {
+                            Text("No plans assigned yet.")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                        } else {
+                            Button {
+                                switchToPlansTab?()
+                            } label: {
+                                Label(
+                                    "\(viewModel.planCount) plan\(viewModel.planCount == 1 ? "" : "s") assigned",
+                                    systemImage: "list.bullet.clipboard"
+                                )
+                            }
+                        }
+                    }
+
+                    // MARK: Your Trainer
+                    Section("Your Trainer") {
+                        if let trainer = viewModel.linkedTrainer {
+                            LabeledContent("Name", value: trainer.profile.fullName ?? "Trainer")
+                            Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                // MARK: Achievements
-                Section {
-                    if viewModel.badges.isEmpty {
-                        Text("Log your first session to earn a badge!")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    } else {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(viewModel.recentBadges) { badge in
-                                    BadgeChipView(badge: badge)
-                                }
-                            }
-                            .padding(.vertical, 6)
-                        }
-                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-                    }
-                } header: {
-                    HStack {
-                        Text("Achievements")
-                        Spacer()
-                        Button("See All") { showAchievements = true }
-                            .font(.caption)
-                    }
-                }
-
-                // MARK: Training Plans
-                Section("Training Plans") {
-                    if viewModel.planCount == 0 {
-                        Text("No plans assigned yet.")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    } else {
-                        Button {
-                            switchToPlansTab?()
-                        } label: {
-                            Label(
-                                "\(viewModel.planCount) plan\(viewModel.planCount == 1 ? "" : "s") assigned",
-                                systemImage: "list.bullet.clipboard"
-                            )
+                        } else {
+                            Text("No trainer linked yet.")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
                         }
                     }
                 }
-
-                // MARK: Your Trainer
-                Section("Your Trainer") {
-                    if let trainer = viewModel.linkedTrainer {
-                        LabeledContent("Name", value: trainer.profile.fullName ?? "Trainer")
-                        Text("Linked \(trainer.linkedAt.formatted(date: .abbreviated, time: .omitted))")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("No trainer linked yet.")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    }
-                }
+                .refreshable { await viewModel.load() }
             }
-            .navigationTitle("Home")
+            .toolbar(.hidden, for: .navigationBar)
             .task { await viewModel.load() }
-            .refreshable { await viewModel.load() }
-            .sheet(isPresented: $showAchievements) {
-                AchievementsView(earnedBadges: viewModel.badges)
-            }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
@@ -115,26 +70,3 @@ struct DashboardView: View {
 #Preview {
     DashboardView(viewModel: DashboardViewModel())
 }
-
-// MARK: - Badge chip (horizontal scroll)
-
-private struct BadgeChipView: View {
-    let badge: Badge
-
-    var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(badge.badgeType.color.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                Image(systemName: badge.badgeType.systemImage)
-                    .foregroundStyle(badge.badgeType.color)
-            }
-            Text(badge.badgeType.title)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .frame(width: 60)
-    }
-}
-

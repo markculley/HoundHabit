@@ -27,30 +27,37 @@ struct GuardianListView: View {
     @State private var viewModel = GuardianListViewModel()
 
     var body: some View {
-        Group {
-            if viewModel.isLoading && viewModel.guardians.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.guardians.isEmpty {
-                ContentUnavailableView(
-                    "No Guardians Yet",
-                    systemImage: "person.2",
-                    description: Text("Send an invite from the Invite tab to link a guardian.")
-                )
-            } else {
-                List {
-                    ForEach(viewModel.guardians) { guardian in
-                        NavigationLink(value: guardian) {
-                            GuardianRow(guardian: guardian)
+        VStack(spacing: 0) {
+            AppBrandingHeader(subtitle: "Guardians")
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+            Group {
+                if viewModel.isLoading && viewModel.guardians.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if viewModel.guardians.isEmpty {
+                    ContentUnavailableView(
+                        "No Guardians Yet",
+                        systemImage: "person.2",
+                        description: Text("Send an invite from the Invite tab to link a guardian.")
+                    )
+                } else {
+                    List {
+                        ForEach(viewModel.guardians) { guardian in
+                            NavigationLink(value: guardian) {
+                                GuardianRow(guardian: guardian)
+                            }
                         }
                     }
                 }
-                .navigationDestination(for: LinkedGuardian.self) { guardian in
-                    GuardianDetailView(guardian: guardian)
-                }
             }
         }
-        .navigationTitle("Guardians")
+        .navigationDestination(for: LinkedGuardian.self) { guardian in
+            GuardianDetailView(guardian: guardian)
+        }
+        .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .alert("Error", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
