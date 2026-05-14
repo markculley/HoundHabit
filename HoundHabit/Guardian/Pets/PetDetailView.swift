@@ -1,5 +1,15 @@
 import SwiftUI
 
+/// Sort options for the Training Sessions list on the Pet detail screen.
+/// Each mode adds another sort key; the unspecified tail falls back to
+/// most-recent-first.
+enum SessionSort: String, CaseIterable, Identifiable {
+    case behavior          = "Behavior"
+    case behaviorStep      = "Behavior → Step"
+    case behaviorStepDate  = "Behavior → Step → DateTime"
+    var id: String { rawValue }
+}
+
 struct PetDetailView: View {
     let petId: UUID
     let viewModel: PetViewModel
@@ -10,12 +20,47 @@ struct PetDetailView: View {
     @State private var selectedAssignedPlan: AssignedPlan? = nil
     @State private var guardianPlanVM = GuardianPlanViewModel()
     @State private var trainingVM = TrainingRecordViewModel()
+    @State private var sessionSort: SessionSort = .behaviorStepDate
     @Environment(\.dismiss) private var dismiss
 
     private let planService = TrainingPlanService()
 
     private var pet: Pet? {
         viewModel.pets.first { $0.id == petId }
+    }
+
+    /// Records sorted per `sessionSort`. Behavior is ordered by its position in
+    /// the plan (`behaviorSortOrder`), with behavior name as a deterministic
+    /// tiebreaker for the rare cross-plan collision. Step is ordered by its
+    /// position within the behavior. DateTime is newest-first. Modes that stop
+    /// short of DateTime still use newest-first as the implicit final tiebreaker.
+    private var sortedRecords: [TrainingRecord] {
+        func ctx(_ r: TrainingRecord) -> SessionPlanContext? {
+            r.planItemId.flatMap { trainingVM.planContext[$0] }
+        }
+        return trainingVM.records.sorted { a, b in
+            let ca = ctx(a), cb = ctx(b)
+
+            let aBehaviorOrder = ca?.behaviorSortOrder ?? Int.max
+            let bBehaviorOrder = cb?.behaviorSortOrder ?? Int.max
+            if aBehaviorOrder != bBehaviorOrder { return aBehaviorOrder < bBehaviorOrder }
+
+            let aBehaviorName = ca?.behaviorName ?? ""
+            let bBehaviorName = cb?.behaviorName ?? ""
+            if aBehaviorName != bBehaviorName {
+                return aBehaviorName.localizedCaseInsensitiveCompare(bBehaviorName) == .orderedAscending
+            }
+
+            if sessionSort != .behavior {
+                let aStepOrder = ca?.stepSortOrder ?? Int.max
+                let bStepOrder = cb?.stepSortOrder ?? Int.max
+                if aStepOrder != bStepOrder { return aStepOrder < bStepOrder }
+            }
+
+            // DateTime newest-first — explicit in .behaviorStepDate, implicit
+            // tiebreaker in the shallower modes.
+            return a.recordedAt > b.recordedAt
+        }
     }
 
     var body: some View {
@@ -214,15 +259,29 @@ struct PetDetailView: View {
     @ViewBuilder
     private func trainingSessionsSection(_ pet: Pet) -> some View {
         Section {
-            Text("Training Sessions")
-                .font(.title2).bold()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.top, 24)
-                .padding(.bottom, 8)
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+            HStack {
+                Text("Training Sessions")
+                    .font(.title2).bold()
+                Spacer()
+                if !trainingVM.records.isEmpty {
+                    Menu {
+                        Picker("Sort", selection: $sessionSort) {
+                            ForEach(SessionSort.allCases) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                    } label: {
+                        Label("Sort", systemImage: "arrow.up.arrow.down")
+                            .font(.subheadline)
+                    }
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
 
             if trainingVM.isLoading && trainingVM.records.isEmpty {
                 ProgressView()
@@ -235,12 +294,11 @@ struct PetDetailView: View {
                     .padding(.horizontal)
                     .listRowSeparator(.hidden)
             } else {
-                ForEach(trainingVM.records) { record in
+                ForEach(sortedRecords) { record in
                     NavigationLink(value: record) {
                         PetSessionRow(
                             record: record,
-                            behaviorName: record.planItemId.flatMap { trainingVM.behaviorNames[$0] },
-                            stepTitle: record.planItemId.flatMap { trainingVM.stepTitles[$0] }
+                            context: record.planItemId.flatMap { trainingVM.planContext[$0] }
                         )
                     }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -285,11 +343,10 @@ struct PetDetailView: View {
 /// so it leads with Behavior + Step Name, then the rep result, datetime, and notes.
 private struct PetSessionRow: View {
     let record: TrainingRecord
-    let behaviorName: String?
-    let stepTitle: String?
+    let context: SessionPlanContext?
 
     private var titleLine: String {
-        behaviorName ?? stepTitle ?? "Training session"
+        context?.behaviorName ?? context?.stepTitle ?? "Training session"
     }
 
     var body: some View {
@@ -297,8 +354,8 @@ private struct PetSessionRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(titleLine)
                     .font(.headline)
-                if behaviorName != nil, let stepTitle {
-                    Text(stepTitle)
+                if let context, !context.behaviorName.isEmpty {
+                    Text(context.stepTitle)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

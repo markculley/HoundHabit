@@ -58,7 +58,7 @@ sequenceDiagram
     RVM->>PS: fetchItems(ids: planItemIds) — bulk
     RVM->>PS: fetchBehaviors(ids: behaviorIds) — bulk
     PS-->>RVM: items + behaviors
-    RVM->>RVM: build stepTitles[planItemId], behaviorNames[planItemId]
+    RVM->>RVM: build planContext[planItemId] (behavior + step name + sort orders)
     RVM-->>PD: records + resolved labels
     PD->>G: Training Sessions section rendered inline:
     PD->>G:  - bold "Training Sessions" header (no + button)
@@ -77,7 +77,7 @@ Each row is a `PetSessionRow` — a PetDetail-only view (the trainer's `Guardian
 4. **Notes** — `.caption`, secondary, `lineLimit(2)`, only when non-empty
 5. **Result** — `score`/5, right-aligned, `.headline.monospacedDigit()`, colored by `TrainingStatus.from(score:).color`
 
-Behavior + Step Name are resolved by `TrainingRecordViewModel` via two bulk queries (`fetchItems(ids:)` then `fetchBehaviors(ids:)`), keyed by `planItemId`. Since every session is plan-linked, every row resolves a Behavior and Step; the `titleLine` fallback chain (`behaviorName ?? stepTitle ?? "Training session"`) only matters defensively.
+`PetSessionRow` takes the record plus a `SessionPlanContext?` (resolved by `TrainingRecordViewModel.planContext`, keyed by `planItemId` — see UC-4.2's sequence diagram and the Sort section). Since every session is plan-linked, every row resolves a Behavior and Step; the `titleLine` fallback chain (`context?.behaviorName ?? context?.stepTitle ?? "Training session"`) only matters defensively.
 
 ### Section behavior
 
@@ -87,6 +87,22 @@ Behavior + Step Name are resolved by `TrainingRecordViewModel` via two bulk quer
 - **Swipe-leading**: toggle sharing (`trainingVM.toggleSharing`).
 - **Swipe-trailing**: destructive Delete (`trainingVM.deleteRecord`).
 - Errors from the training VM surface through `PetDetailView`'s alert binding.
+
+### Sort (IOS-32)
+
+The Training Sessions header carries a **Sort** menu (`arrow.up.arrow.down` icon, shown only when there's at least one session). It's a `Menu` wrapping a `Picker` bound to `PetDetailView.sessionSort: SessionSort`, so the active option gets an automatic checkmark.
+
+`SessionSort` has three modes — each adds another sort key, with the unspecified tail falling back to newest-first:
+
+| Mode | Sort keys |
+|---|---|
+| **Behavior** | behavior, then (implicit) recordedAt desc |
+| **Behavior → Step** | behavior, step, then (implicit) recordedAt desc |
+| **Behavior → Step → DateTime** (default) | behavior, step, recordedAt desc |
+
+`PetDetailView.sortedRecords` is the comparator. **Behavior** is ordered by `behaviorSortOrder` (the behavior's position in its plan), with `behaviorName` as a deterministic tiebreaker for the rare cross-plan collision (a pet assigned multiple plans can have behaviors that share a sort position). **Step** is ordered by `stepSortOrder` (position within the behavior). **DateTime** is newest-first.
+
+The sort keys come from `TrainingRecordViewModel.planContext: [UUID: SessionPlanContext]` — keyed by `planItemId`, carrying `behaviorName`, `behaviorSortOrder`, `stepTitle`, `stepSortOrder`. This replaced the separate `stepTitles` / `behaviorNames` maps from IOS-31; it's still resolved by the same two bulk queries (`fetchItems(ids:)` → `fetchBehaviors(ids:)`).
 
 ### Why the body is a `List`
 

@@ -1,14 +1,21 @@
 import Foundation
 import Supabase
 
+/// Plan context for a training session — the behavior + step it was logged
+/// against, plus their sort positions (used for sorting the sessions list).
+struct SessionPlanContext: Equatable {
+    let behaviorName: String
+    let behaviorSortOrder: Int
+    let stepTitle: String
+    let stepSortOrder: Int
+}
+
 @Observable
 class TrainingRecordViewModel {
     var records: [TrainingRecord] = []
     var petNames: [UUID: String] = [:]
-    /// Step title for a record's `planItemId`. Resolved in `loadRecords`.
-    var stepTitles: [UUID: String] = [:]
-    /// Behavior name for a record's `planItemId`. Resolved in `loadRecords`.
-    var behaviorNames: [UUID: String] = [:]
+    /// Behavior + step context for a record's `planItemId`. Resolved in `loadRecords`.
+    var planContext: [UUID: SessionPlanContext] = [:]
     var isLoading = false
     var errorMessage: String?
 
@@ -35,32 +42,31 @@ class TrainingRecordViewModel {
         }
     }
 
-    /// Populates `stepTitles` and `behaviorNames` (both keyed by `planItemId`) for
-    /// the plan-linked records in `records`. Two bulk queries: plan items by id,
-    /// then behaviors by id.
+    /// Populates `planContext` (keyed by `planItemId`) for the plan-linked records
+    /// in `records`. Two bulk queries: plan items by id, then behaviors by id.
     private func resolvePlanContext(for records: [TrainingRecord]) async {
         let itemIds = Array(Set(records.compactMap { $0.planItemId }))
         guard !itemIds.isEmpty else {
-            stepTitles = [:]
-            behaviorNames = [:]
+            planContext = [:]
             return
         }
         do {
             let items = try await planService.fetchItems(ids: itemIds)
             let behaviorIds = Array(Set(items.compactMap { $0.behaviorId }))
             let behaviors = try await planService.fetchBehaviors(ids: behaviorIds)
-            let behaviorNameById = Dictionary(uniqueKeysWithValues: behaviors.map { ($0.id, $0.name) })
+            let behaviorById = Dictionary(uniqueKeysWithValues: behaviors.map { ($0.id, $0) })
 
-            var titles: [UUID: String] = [:]
-            var names: [UUID: String] = [:]
+            var ctx: [UUID: SessionPlanContext] = [:]
             for item in items {
-                titles[item.id] = item.title
-                if let behaviorId = item.behaviorId {
-                    names[item.id] = behaviorNameById[behaviorId]
-                }
+                let behavior = item.behaviorId.flatMap { behaviorById[$0] }
+                ctx[item.id] = SessionPlanContext(
+                    behaviorName: behavior?.name ?? "",
+                    behaviorSortOrder: behavior?.sortOrder ?? Int.max,
+                    stepTitle: item.title,
+                    stepSortOrder: item.sortOrder
+                )
             }
-            stepTitles = titles
-            behaviorNames = names
+            planContext = ctx
         } catch {
             // Non-fatal: rows just render without the resolved labels.
             errorMessage = error.localizedDescription
