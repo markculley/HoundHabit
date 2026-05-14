@@ -37,7 +37,7 @@ struct TrainerPlanDetailView: View {
         let allItems = viewModel.items[plan.id] ?? []
         let emptyBehaviors = behaviors.filter { b in !allItems.contains { $0.behaviorId == b.id } }
         if emptyBehaviors.count == 1 {
-            return "\"\(emptyBehaviors[0].name)\" has no steps. Each behavior needs at least one step."
+            return "\"\(emptyBehaviors[0].type.label)\" has no steps. Each behavior needs at least one step."
         } else if emptyBehaviors.count > 1 {
             return "\(emptyBehaviors.count) behaviors have no steps. Each behavior needs at least one step."
         }
@@ -170,8 +170,8 @@ struct TrainerPlanDetailView: View {
             }
         }
         .sheet(isPresented: $showAddBehaviorSheet) {
-            TrainerBehaviorFormView(mode: .add) { name in
-                Task { await viewModel.addBehavior(to: plan.id, name: name) }
+            TrainerBehaviorFormView { type in
+                Task { await viewModel.addBehavior(to: plan.id, type: type) }
             }
         }
         .sheet(isPresented: $showAssignSheet) {
@@ -237,7 +237,7 @@ private struct BehaviorRow: View {
 
     var body: some View {
         HStack {
-            Text(behavior.name)
+            Text(behavior.type.label)
                 .font(.body)
             Spacer()
             Text(stepCount == 1 ? "1 step" : "\(stepCount) steps")

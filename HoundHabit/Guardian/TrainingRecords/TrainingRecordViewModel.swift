@@ -60,7 +60,7 @@ class TrainingRecordViewModel {
             for item in items {
                 let behavior = item.behaviorId.flatMap { behaviorById[$0] }
                 ctx[item.id] = SessionPlanContext(
-                    behaviorName: behavior?.name ?? "",
+                    behaviorName: behavior?.type.label ?? "",
                     behaviorSortOrder: behavior?.sortOrder ?? Int.max,
                     stepTitle: item.title,
                     stepSortOrder: item.sortOrder

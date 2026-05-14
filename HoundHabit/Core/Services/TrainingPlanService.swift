@@ -74,23 +74,11 @@ struct TrainingPlanService {
             .value
     }
 
-    func createBehavior(planId: UUID, name: String, sortOrder: Int) async throws -> Behavior {
-        let insert = BehaviorInsert(planId: planId, name: name, sortOrder: sortOrder)
+    func createBehavior(planId: UUID, type: BehaviorType, sortOrder: Int) async throws -> Behavior {
+        let insert = BehaviorInsert(planId: planId, type: type, sortOrder: sortOrder)
         return try await supabase
             .from("behaviors")
             .insert(insert)
-            .select()
-            .single()
-            .execute()
-            .value
-    }
-
-    func updateBehavior(_ behavior: Behavior) async throws -> Behavior {
-        let update = BehaviorUpdate(name: behavior.name, sortOrder: behavior.sortOrder)
-        return try await supabase
-            .from("behaviors")
-            .update(update)
-            .eq("id", value: behavior.id)
             .select()
             .single()
             .execute()
@@ -112,10 +100,10 @@ struct TrainingPlanService {
             BehaviorReorderUpdate(id: b.id, sortOrder: idx)
         }
         for u in updates {
-            guard let name = behaviors.first(where: { $0.id == u.id })?.name else { continue }
+            guard let type = behaviors.first(where: { $0.id == u.id })?.type else { continue }
             try await supabase
                 .from("behaviors")
-                .update(BehaviorUpdate(name: name, sortOrder: u.sortOrder))
+                .update(BehaviorUpdate(type: type, sortOrder: u.sortOrder))
                 .eq("id", value: u.id)
                 .execute()
         }
@@ -336,7 +324,7 @@ struct TrainingPlanService {
             .single()
             .execute()
             .value
-        return behavior.name
+        return behavior.type.label
     }
 
     func fetchAssignedPlanItems(planId: UUID) async throws -> [TrainingPlanItem] {
@@ -443,22 +431,22 @@ private struct PlanUpdate: Encodable {
 
 private struct BehaviorInsert: Encodable {
     let planId: UUID
-    let name: String
+    let type: BehaviorType
     let sortOrder: Int
 
     enum CodingKeys: String, CodingKey {
         case planId    = "plan_id"
-        case name
+        case type      = "name"
         case sortOrder = "sort_order"
     }
 }
 
 private struct BehaviorUpdate: Encodable {
-    let name: String
+    let type: BehaviorType
     let sortOrder: Int
 
     enum CodingKeys: String, CodingKey {
-        case name
+        case type      = "name"
         case sortOrder = "sort_order"
     }
 }

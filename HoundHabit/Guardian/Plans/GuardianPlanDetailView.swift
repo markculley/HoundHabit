@@ -104,7 +104,7 @@ struct GuardianPlanDetailView: View {
                     ForEach(behaviors) { behavior in
                         let behaviorItems = items(for: behavior)
                         if !behaviorItems.isEmpty {
-                            Text(behavior.name)
+                            Text(behavior.type.label)
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.secondary)
                             stepRows(for: behaviorItems)
@@ -124,7 +124,7 @@ struct GuardianPlanDetailView: View {
         .task { await viewModel.loadItems(for: planId) }
         // Practice sheet — any reachable step
         .sheet(item: $selectedPracticeItem) { item in
-            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
+            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.type.label
             let isCurrentStep = item.id == currentItem?.id
             TrainingRecordFormView(
                 lockedPetId: assignedPlan.assignment.petId,
@@ -147,7 +147,7 @@ struct GuardianPlanDetailView: View {
         }
         // Info sheet — non-current steps
         .sheet(item: $selectedInfoItem) { item in
-            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.name
+            let behaviorName = behaviors.first { $0.id == item.behaviorId }?.type.label
             StepInfoSheet(item: item, behaviorName: behaviorName)
         }
         .alert("Session Logged", isPresented: $showAdvancementAlert) {

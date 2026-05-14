@@ -57,12 +57,12 @@ Trainer                   App                        Supabase
 
 ---
 
-## UC-9.2: Trainer Adds and Edits Behaviors
+## UC-9.2: Trainer Adds Behaviors
 
 **Actor:** Trainer
 **Precondition:** Trainer is viewing a plan in `TrainerPlanDetailView`.
 
-Behaviors are the top-level groupings within a plan — one per skill the guardian will train (e.g. "Sit", "Down", "Recall"). Each Behavior acts as its own progression sequence with its own ordered steps.
+Behaviors are the top-level groupings within a plan — one per skill the guardian will train (e.g. "Sit", "Down", "Recall"). Each Behavior acts as its own progression sequence with its own ordered steps. A behavior's *type* is one of 12 fixed `BehaviorType`s (see below); it's chosen once at creation and not edited afterward.
 
 ### Flow — Add a Behavior
 
@@ -76,16 +76,15 @@ Trainer                   App                        Supabase
   │  toolbar button)        │                            │
   │────────────────────────▶│                            │
   │  TrainerBehaviorFormView│                            │
-  │  (sheet)                │                            │
-  │  Name field + 12        │                            │
-  │  suggested names shown  │                            │
+  │  (sheet) — list of the  │                            │
+  │  12 standard behaviors  │                            │
   │◀────────────────────────│                            │
   │                         │                            │
-  │  Type name or tap a     │                            │
-  │  suggestion, tap Add    │                            │
+  │  Tap a behavior type,   │                            │
+  │  tap Add                │                            │
   │────────────────────────▶│                            │
   │                         │  createBehavior(planId,    │
-  │                         │    name, sortOrder)        │
+  │                         │    type, sortOrder)        │
   │                         │───────────────────────────▶│
   │                         │  INSERT behaviors          │
   │                         │◀───────────────────────────│
@@ -95,66 +94,27 @@ Trainer                   App                        Supabase
   │◀────────────────────────│                            │
 ```
 
-### Flow — Edit a Behavior Name (inline, auto-save)
+### Behavior type is a fixed picklist
 
-```
-Trainer                   App                        Supabase
-  │                         │                            │
-  │  Tap a behavior row     │                            │
-  │  (push)                 │                            │
-  │────────────────────────▶│                            │
-  │  TrainerBehaviorDetail  │                            │
-  │  shows Name section     │                            │
-  │  as editable TextField  │                            │
-  │  pre-filled with current│                            │
-  │  name (no Rename modal) │                            │
-  │◀────────────────────────│                            │
-  │                         │                            │
-  │  Type into Name field   │                            │
-  │────────────────────────▶│                            │
-  │                         │  scheduleNameCommit():     │
-  │                         │  cancel prior Task,        │
-  │                         │  start 500ms debounce      │
-  │                         │  ...                       │
-  │                         │  commitName() →            │
-  │                         │  updateBehavior(name:)     │
-  │                         │───────────────────────────▶│
-  │                         │  UPDATE behaviors SET name │
-  │                         │◀───────────────────────────│
-  │                         │                            │
-  │  Swipe back / tap       │                            │
-  │  another field          │                            │
-  │────────────────────────▶│                            │
-  │                         │  .onDisappear flushes      │
-  │                         │  pending debounced commit  │
-  │                         │  (covers fast back-swipe)  │
-```
+A behavior is one of **12 standard `BehaviorType`s** — picked from a fixed list, never free-typed:
 
-### Inline +Add row (IOS-21)
-
-The "Add Behavior" affordance lives as a row at the **bottom of the Behaviors section**, not in the toolbar. Style: `Label("Add Behavior", systemImage: "plus.circle")` with `.foregroundStyle(.tint)`. Empty-state copy nudges toward it: *"No behaviors yet. Tap + Add Behavior below to begin."*
-
-### Inline name edit (IOS-21)
-
-`TrainerBehaviorDetailView` shows a `Section("Name")` at the top with a TextField. Local state (`editingName`) mirrors the persisted name. Commit semantics:
-
-- **Debounce:** `.onChange(of: editingName)` schedules a 500ms `Task.sleep`; the next keystroke cancels and reschedules.
-- **Submit:** `.onSubmit` flushes immediately.
-- **Disappear:** `.onDisappear` flushes any pending commit so a swipe-back doesn't drop the latest edit.
-- **Validation:** an empty trimmed name surfaces an inline red caption ("Name can't be empty") and skips the commit. Once non-empty again, the next change triggers a commit.
-- **Redundant-commit guard:** `lastCommittedName` prevents network calls when the value hasn't changed across debounce ticks.
-
-### Behavior Name Suggestions
-
-`TrainerBehaviorFormView` surfaces 12 common dog training behaviors. Tapping one fills the field; the trainer can also type a custom name.
-
-| Suggestion | | | |
+| | | | |
 |---|---|---|---|
 | Sit | Down | Leave It | Drop It |
 | Stand | Wait/Stay | Walk | Touch |
 | Go to Mat | Recall | Off | Attention |
 
-Selecting a suggestion highlights it with a checkmark. The "Add" button stays disabled until the field is non-empty.
+`BehaviorType` is a `String`-backed `Codable` enum whose raw values **are** the display labels (e.g. `case waitStay = "Wait/Stay"`) — unlike the snake_case Three D's enums — so the shared `behaviors.name` column stays human-readable for both clients. A DB `CHECK` constraint (`behaviors_name_valid_type`) enforces the 12 valid values. `Behavior.type: BehaviorType` maps to the `name` column via `CodingKeys`.
+
+`TrainerBehaviorFormView` is a single `Section("Behavior")` list of the 12 types with a checkmark on the selection; "Add" enables once one is picked. There is no free-text field and no separate Suggestions section. Duplicates are allowed — a plan may hold the same behavior type twice.
+
+### Inline +Add row
+
+The "Add Behavior" affordance lives as a row at the **bottom of the Behaviors section**, not in the toolbar. Style: `Label("Add Behavior", systemImage: "plus.circle")` with `.foregroundStyle(.tint)`. Empty-state copy nudges toward it: *"No behaviors yet. Tap + Add Behavior below to begin."*
+
+### Behavior detail has no editable name
+
+`TrainerBehaviorDetailView` shows the behavior as the large navigation title, then the "Steps" header and the steps list — **no "Name" section**. The behavior type is set once at creation in `TrainerBehaviorFormView` and is not editable from the detail view; to change it, delete and re-add the behavior. (An earlier build, IOS-21, had a debounced inline-rename `Section("Name")` here — removed once behavior became a fixed type.)
 
 ### Reorder / Delete
 
@@ -811,9 +771,18 @@ struct TrainingPlan: Codable, Identifiable, Hashable {
 struct Behavior: Codable, Identifiable, Hashable {
     let id: UUID
     let planId: UUID         // "plan_id" — FK → training_plans ON DELETE CASCADE
-    var name: String
+    var type: BehaviorType   // "name" column — one of the 12 fixed BehaviorTypes
     var sortOrder: Int       // "sort_order" — scoped within the plan
     let createdAt: Date      // "created_at"
+}
+
+// BehaviorType raw values ARE the display labels (not snake_case) so the shared
+// `behaviors.name` column stays human-readable; a DB CHECK constraint enforces the set.
+enum BehaviorType: String, Codable, CaseIterable, Hashable {
+    case sit = "Sit", down = "Down", leaveIt = "Leave It", dropIt = "Drop It",
+         stand = "Stand", waitStay = "Wait/Stay", walk = "Walk", touch = "Touch",
+         goToMat = "Go to Mat", recall = "Recall", off = "Off", attention = "Attention"
+    var label: String { rawValue }
 }
 
 struct TrainingPlanItem: Codable, Identifiable, Hashable {
@@ -889,6 +858,7 @@ enum Distance: String, Codable, CaseIterable {
 | `is_shared` on `plan_assignments` | Controls whether sessions logged under a plan are visible to the trainer. `assignPlan` sets `isShared: true` by default. Guardian can toggle per-plan in `GuardianPlanDetailView`. The value is passed as `isSharedDefault` into `TrainingRecordFormView`; no per-session toggle is shown for plan-linked sessions. |
 | `TrainerPlanFormView` | `onSave: (TrainingPlan) -> Void`. Create/edit only — there is no pet picker (guardians can't create plans, so the form is trainer-only). |
 | Behavior as intermediate layer | `Behavior` lives in `Core/Models/Behavior.swift`. Items carry a nullable `behaviorId` so old data without behaviors still works. |
+| Behavior type | `Behavior.type` is a fixed `BehaviorType` enum (12 standard behaviors), not free text. Picked at creation in `TrainerBehaviorFormView`; not editable afterward (no inline rename — change = delete + re-add). Enforced by a DB `CHECK` constraint on `behaviors.name`. |
 | `AssignedPlan` placement | Lives in `TrainingPlanService.swift`, not `Core/Models/` — it's a join result, not a direct DB row. Follows `LinkedGuardian` pattern in `InviteService.swift`. |
 | Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior. Guardian detail computes global order via `orderedItems` (behaviors by behavior sortOrder, then items by item sortOrder within each behavior). A raw cross-behavior `sortOrder` comparison would be wrong because each behavior resets at 0. |
 | Step replayability | Guardians can replay any completed step (at or before current in global order). Advancement only fires when practicing the **current** step. `isLocked(_:)` uses global index comparison via `orderedItems`. |
@@ -955,29 +925,29 @@ enum Distance: String, Codable, CaseIterable {
 1. **Create plan (trainer)**: Sign in as trainer → Plans → "+" → enter title and description → Create → plan appears in list.
 2. **Guardian cannot create plans**: Sign in as guardian → Plans tab → there is no "+" button; the empty state reads *"Ask your trainer to assign a training plan."*
 3. **Guardian plan list — no delete**: Sign in as guardian → Plans tab → swipe left on any plan row → no delete action available (guardians don't own plans).
-4. **Add behavior (trainer)**: Tap plan → "Add Behavior" → tap "Recall" from suggestions → Add → "Recall" appears with "0 steps".
-5. **Add behavior — custom name**: "Add Behavior" → type "Spin" → Add → appears in list.
-6. **Reorder behaviors**: Long-press `≡` handle → drag to new position → navigate away and back → order persists.
-7. **Add steps to a behavior**: Tap "Recall" → "Add Step" → enter "Sit at arm's length" → Distance: Arm's length, Duration: Instant, Distraction: None → Add → step appears with capsule tags.
-8. **Add step with custom D**: "Add Step" → Distance: pick "Custom" → text field appears → type "20 feet in hallway" → Add → capsule shows "20 feet in hallway".
-9. **Edit step**: Swipe left on a step → Edit → change Duration to Custom → type "hold for 3 seconds" → Save → capsule updates.
-10. **Reorder steps**: Long-press handle in behavior detail → drag to new position → persists in Supabase.
-11. **Assignment block — no behaviors**: Plan with no behaviors → "Assign to Guardian…" is absent; warning label shown instead.
-12. **Assignment block — empty behavior**: Plan with "Recall" (0 steps) → warning shows `"Recall" has no steps…`.
-13. **Assign plan**: All behaviors have steps → tap "Assign to Guardian…" → select guardian → optionally select pet → Assign → assignment row shows guardian name + "To Do" badge.
-14. **Trainer sees progress**: Guardian practices a step → trainer opens same plan detail → assignment row shows "In Progress" badge.
-15. **Duplicate assignment**: Assign same plan to same guardian again → "already assigned" error shown.
-16. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap a plan → steps shown grouped by behavior; first step highlighted green (current); completed steps show grey play icon; future steps show info icon.
-17. **Replay completed step**: Tap a grey-play step (completed) → practice form opens with Three D's locked → log score → no advancement alert → current step unchanged.
-18. **Locked step tapped**: Tap an info-icon step (future) → read-only info sheet shown; no practice form.
-19. **Practice step — green**: Tap current step → score 5/5 → footer reads "Green — ready to advance" → Log → alert: "Moving to step 2" → next step highlighted.
-20. **Practice step — stay**: Score 3/5 → "Yellow — keep practicing" → same step still current.
-21. **Practice step — red**: Score 1/5 → "Red — we'll drop back" → previous step becomes current.
-22. **Cross-behavior advancement**: Advance to last step of first behavior → score 5 → moves into first step of second behavior.
-23. **Clamp at last step**: Score 5 on final step → "Amazing — you've mastered all the steps!" → step unchanged.
-24. **Memory bank**: Log a session, close the app, reopen → same step still highlighted.
-25. **Behavior name in record detail**: After a plan-linked session → open the record in Training Sessions list → Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
-26. **Standalone session**: Pets tab → tap a pet → Training Sessions → "+" → Three D's editable (all pickers including `.custom`) → `plan_item_id` is null in Supabase; no Behavior row in detail.
+4. **Add behavior (trainer)**: Tap plan → "Add Behavior" → the form is a list of the 12 standard behaviors → tap "Recall" → Add → "Recall" appears with "0 steps". No free-text entry anywhere.
+5. **Add duplicate behavior**: "Add Behavior" → pick a type already in the plan → Add → it's added again (duplicates are allowed).
+6. **Behavior detail has no Name section**: Tap a behavior → the view is just the behavior name (nav title) + "Steps" header + steps; there is no editable Name field.
+7. **Reorder behaviors**: Long-press `≡` handle → drag to new position → navigate away and back → order persists.
+8. **Add steps to a behavior**: Tap "Recall" → "Add Step" → enter "Sit at arm's length" → Distance: Arm's length, Duration: Instant, Distraction: None → Add → step appears with capsule tags.
+9. **Add step with custom D**: "Add Step" → Distance: pick "Custom" → text field appears → type "20 feet in hallway" → Add → capsule shows "20 feet in hallway".
+10. **Edit step**: Swipe left on a step → Edit → change Duration to Custom → type "hold for 3 seconds" → Save → capsule updates.
+11. **Reorder steps**: Long-press handle in behavior detail → drag to new position → persists in Supabase.
+12. **Assignment block — no behaviors**: Plan with no behaviors → "Assign to Guardian…" is absent; warning label shown instead.
+13. **Assignment block — empty behavior**: Plan with "Recall" (0 steps) → warning shows `"Recall" has no steps…`.
+14. **Assign plan**: All behaviors have steps → tap "Assign to Guardian…" → select guardian → optionally select pet → Assign → assignment row shows guardian name + "To Do" badge.
+15. **Trainer sees progress**: Guardian practices a step → trainer opens same plan detail → assignment row shows "In Progress" badge.
+16. **Duplicate assignment**: Assign same plan to same guardian again → "already assigned" error shown.
+17. **Guardian views plan (behaviors)**: Sign in as guardian → Plans tab → tap a plan → steps shown grouped by behavior; first step highlighted green (current); completed steps show grey play icon; future steps show info icon.
+18. **Replay completed step**: Tap a grey-play step (completed) → practice form opens with Three D's locked → log score → no advancement alert → current step unchanged.
+19. **Locked step tapped**: Tap an info-icon step (future) → read-only info sheet shown; no practice form.
+20. **Practice step — green**: Tap current step → score 5/5 → footer reads "Green — ready to advance" → Log → alert: "Moving to step 2" → next step highlighted.
+21. **Practice step — stay**: Score 3/5 → "Yellow — keep practicing" → same step still current.
+22. **Practice step — red**: Score 1/5 → "Red — we'll drop back" → previous step becomes current.
+23. **Cross-behavior advancement**: Advance to last step of first behavior → score 5 → moves into first step of second behavior.
+24. **Clamp at last step**: Score 5 on final step → "Amazing — you've mastered all the steps!" → step unchanged.
+25. **Memory bank**: Log a session, close the app, reopen → same step still highlighted.
+26. **Behavior name in record detail**: After a plan-linked session → open the record in the pet's Training Sessions list → the detail's Three D's section shows "Behavior: [name]" above Distance/Duration/Distraction.
 27. **Dashboard count**: Guardian home → "Training Plans" shows "1 plan assigned" → tap → switches to Plans tab.
 28. **Pet Detail plans section**: Trainer assigns a plan to a guardian's pet → guardian opens that Pet Detail → the plan appears in the Plans section (read-only — no "+" / create / assign affordance).
 29. **Trainer sharing default on**: Guardian linked to a trainer → trainer assigns a plan → Guardian views plan detail → "Share sessions with trainer" toggle is ON.

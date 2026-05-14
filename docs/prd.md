@@ -150,10 +150,10 @@ This is a stretch goal. Not part of MVP. It would be nice to support this.
 - Body lists Behavior names with an "Add Behavior" button
 
 ### Behavior
-- Properties: Name, ordered list of Steps
-- When entering a Behavior name, the app suggests these defaults:
+- Properties: Type, ordered list of Steps
+- A Behavior's type is picked from a **fixed list** of the 12 standard behaviors — not free text:
   - Sit, Down, Leave It, Drop It, Stand, Wait/Stay, Walk, Touch, Go to Mat, Recall, Off, Attention
-- Tapping a Behavior in the plan detail opens the Behavior detail view showing its name and Steps
+- Tapping a Behavior in the plan detail opens the Behavior detail view, which shows the behavior as the title and lists its Steps (the type is set at creation and is not editable from the detail view — to change it, delete and re-add the behavior)
 
 ### Step (Training Plan Item)
 - Properties: Title, Three D's (Distance, Duration, Distraction)
@@ -214,7 +214,7 @@ A Behavior is a child of a Training Plan and a parent of Steps.
 **Table Properties**
 
 - `plan_id` — FK to Training Plan
-- `name` — free text (trainer-entered; app suggests defaults)
+- `name` — the behavior type, one of the 12 standard behaviors (a DB `CHECK` constraint enforces the valid set). Stored as the human-readable label (e.g. `"Sit"`, `"Wait/Stay"`). Not free text.
 - `sort_order` — display order within the plan
 
 ## Pet Record

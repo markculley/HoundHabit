@@ -7,11 +7,6 @@ struct TrainerBehaviorDetailView: View {
     @State private var showAddItemSheet = false
     @State private var itemToEdit: TrainingPlanItem? = nil
 
-    @State private var editingName: String = ""
-    @State private var lastCommittedName: String = ""
-    @State private var nameError: String? = nil
-    @State private var nameCommitTask: Task<Void, Never>? = nil
-
     private var items: [TrainingPlanItem] {
         (viewModel.items[behavior.planId] ?? [])
             .filter { $0.behaviorId == behavior.id }
@@ -20,18 +15,6 @@ struct TrainerBehaviorDetailView: View {
 
     var body: some View {
         List {
-            Section("Name") {
-                TextField("Behavior name", text: $editingName)
-                    .autocorrectionDisabled()
-                    .onSubmit { commitName(immediate: true) }
-                    .onChange(of: editingName) { _, _ in scheduleNameCommit() }
-                if let nameError {
-                    Text(nameError)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-            }
-
             Section {
                 if !items.isEmpty {
                     ForEach(items) { item in
@@ -70,18 +53,10 @@ struct TrainerBehaviorDetailView: View {
                 }
             }
         }
-        .navigationTitle(editingName.isEmpty ? behavior.name : editingName)
+        .navigationTitle(behavior.type.label)
         .navigationBarTitleDisplayMode(.large)
         .task {
-            if editingName.isEmpty {
-                editingName = behavior.name
-                lastCommittedName = behavior.name
-            }
             await viewModel.loadItems(for: behavior)
-        }
-        .onDisappear {
-            // Flush any pending debounced commit so a quick swipe-back doesn't lose the latest edit.
-            commitName(immediate: true)
         }
         .sheet(isPresented: $showAddItemSheet) {
             TrainerPlanItemFormView(
@@ -127,30 +102,6 @@ struct TrainerBehaviorDetailView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-    }
-
-    private func scheduleNameCommit() {
-        nameCommitTask?.cancel()
-        nameCommitTask = Task {
-            try? await Task.sleep(for: .milliseconds(500))
-            guard !Task.isCancelled else { return }
-            commitName()
-        }
-    }
-
-    private func commitName(immediate: Bool = false) {
-        if immediate { nameCommitTask?.cancel() }
-        let trimmed = editingName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            nameError = "Name can't be empty"
-            return
-        }
-        nameError = nil
-        guard trimmed != lastCommittedName else { return }
-        lastCommittedName = trimmed
-        var updated = behavior
-        updated.name = trimmed
-        Task { await viewModel.updateBehavior(updated) }
     }
 }
 
@@ -202,7 +153,7 @@ private struct ThreeDTag: View {
         TrainerBehaviorDetailView(
             behavior: Behavior(
                 id: UUID(), planId: UUID(),
-                name: "Sit", sortOrder: 0, createdAt: Date()
+                type: .sit, sortOrder: 0, createdAt: Date()
             ),
             viewModel: TrainerPlanViewModel()
         )

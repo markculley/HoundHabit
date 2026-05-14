@@ -92,26 +92,15 @@ class TrainerPlanViewModel {
         }
     }
 
-    func addBehavior(to planId: UUID, name: String) async {
+    func addBehavior(to planId: UUID, type: BehaviorType) async {
         let nextOrder = behaviors[planId, default: []].count
         do {
             let behavior = try await service.createBehavior(
                 planId: planId,
-                name: name,
+                type: type,
                 sortOrder: nextOrder
             )
             behaviors[planId, default: []].append(behavior)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func updateBehavior(_ behavior: Behavior) async {
-        do {
-            let updated = try await service.updateBehavior(behavior)
-            if let idx = behaviors[behavior.planId]?.firstIndex(where: { $0.id == behavior.id }) {
-                behaviors[behavior.planId]![idx] = updated
-            }
         } catch {
             errorMessage = error.localizedDescription
         }
