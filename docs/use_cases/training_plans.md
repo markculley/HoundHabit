@@ -104,9 +104,9 @@ A behavior is one of **12 standard `BehaviorType`s** — picked from a fixed lis
 | Stand | Wait/Stay | Walk | Touch |
 | Go to Mat | Recall | Off | Attention |
 
-`BehaviorType` is a `String`-backed `Codable` enum whose raw values **are** the display labels (e.g. `case waitStay = "Wait/Stay"`) — unlike the snake_case Three D's enums — so the shared `behaviors.name` column stays human-readable for both clients. A DB `CHECK` constraint (`behaviors_name_valid_type`) enforces the 12 valid values. `Behavior.type: BehaviorType` maps to the `name` column via `CodingKeys`.
+`BehaviorType` is a `Codable` discriminated union — `.standard(StandardBehavior)` or `.custom(String)` — that encodes to/from a **single string** (`init(from:)`/`encode(to:)` use a `singleValueContainer`), so `Behavior.type: BehaviorType` still maps to the `name` column via `CodingKeys` as a plain string. `StandardBehavior` is the `String`-backed enum of the 12 presets whose raw values **are** the display labels (e.g. `case waitStay = "Wait/Stay"`) — unlike the snake_case Three D's enums — so the shared `behaviors.name` column stays human-readable for both clients. `BehaviorType(rawValue:)` maps a known label to `.standard` and anything else to `.custom` (a custom name matching a standard label collapses to `.standard`, keeping the taxonomy deterministic). A DB `CHECK` constraint (`behaviors_name_nonempty`) only enforces a non-empty, length-capped value.
 
-`TrainerBehaviorFormView` is a single `Section("Behavior")` list of the 12 types with a checkmark on the selection; "Add" enables once one is picked. There is no free-text field and no separate Suggestions section. Duplicates are allowed — a plan may hold the same behavior type twice.
+`TrainerBehaviorFormView` has a `Section("Behavior")` list of the 12 standard presets (checkmark on selection) **plus** a `Section("Custom")` text field for a trainer-typed name. The two are mutually exclusive — picking a preset clears the custom field and vice versa — and "Add" enables once either is set (`resolvedType != nil`). Mirrors the Three D's preset + custom idiom. Duplicates are allowed — a plan may hold the same behavior twice.
 
 ### Inline +Add row
 
@@ -802,7 +802,7 @@ enum Distance: String, Codable, CaseIterable {
 | `is_shared` on `plan_assignments` | Controls whether sessions logged under a plan are visible to the trainer. `assignPlan` sets `isShared: true` by default. Guardian can toggle per-plan in `GuardianPlanDetailView`. The live value is passed into `TrainingSessionView`; no per-session toggle is shown for plan-linked sessions. |
 | `TrainerPlanFormView` | `onSave: (TrainingPlan) -> Void`. Create/edit only — there is no pet picker (guardians can't create plans, so the form is trainer-only). |
 | Behavior as intermediate layer | `Behavior` lives in `Core/Models/Behavior.swift`. Items carry a nullable `behaviorId` so old data without behaviors still works. |
-| Behavior type | `Behavior.type` is a fixed `BehaviorType` enum (12 standard behaviors), not free text. Picked at creation in `TrainerBehaviorFormView`; not editable afterward (no inline rename — change = delete + re-add). Enforced by a DB `CHECK` constraint on `behaviors.name`. |
+| Behavior type | `Behavior.type` is a `BehaviorType` discriminated union — `.standard` (one of 12 presets) or `.custom` (trainer-typed free text). Picked at creation in `TrainerBehaviorFormView`; not editable afterward (no inline rename — change = delete + re-add). Persists as a bare string in `behaviors.name`; a DB `CHECK` (`behaviors_name_nonempty`) only bounds length, not the value set. |
 | `AssignedPlan` placement | Lives in `TrainingPlanService.swift`, not `Core/Models/` — it's a join result, not a direct DB row. Follows `LinkedGuardian` pattern in `InviteService.swift`. |
 | Step `sortOrder` scope | Scoped **per behavior**, not per plan. `TrainerBehaviorDetailView` shows steps 0…N within that behavior. Guardian detail computes global order via `orderedItems` (behaviors by behavior sortOrder, then items by item sortOrder within each behavior). A raw cross-behavior `sortOrder` comparison would be wrong because each behavior resets at 0. |
 | Step gating | Steps are gated sequentially within a behavior — `GuardianPlanViewModel.isStepLocked(_:)` returns true when the previous step in the same behavior isn't complete. Behaviors are independent; the first step of each is always unlocked. Completed steps stay trainable. |
@@ -869,7 +869,8 @@ enum Distance: String, Codable, CaseIterable {
 1. **Create plan (trainer)**: Sign in as trainer → Plans → "+" → enter title and description → Create → plan appears in list.
 2. **Guardian cannot create plans**: Sign in as guardian → Plans tab → there is no "+" button; the empty state reads *"Ask your trainer to assign a training plan."*
 3. **Guardian plan list — no delete**: Sign in as guardian → Plans tab → swipe left on any plan row → no delete action available (guardians don't own plans).
-4. **Add behavior (trainer)**: Tap plan → "Add Behavior" → the form is a list of the 12 standard behaviors → tap "Recall" → Add → "Recall" appears with "0 steps". No free-text entry anywhere.
+4. **Add standard behavior (trainer)**: Tap plan → "Add Behavior" → list of the 12 standard presets → tap "Recall" → Add → "Recall" appears with "0 steps".
+4b. **Add custom behavior (trainer)**: "Add Behavior" → leave presets unselected → type "Heel" in the Custom field → Add → "Heel" appears with "0 steps". (Typing in Custom clears any preset checkmark and vice versa.)
 5. **Add duplicate behavior**: "Add Behavior" → pick a type already in the plan → Add → it's added again (duplicates are allowed).
 6. **Behavior detail has no Name section**: Tap a behavior → the view is just the behavior name (nav title) + "Steps" header + steps; there is no editable Name field.
 7. **Reorder behaviors**: Long-press `≡` handle → drag to new position → navigate away and back → order persists.

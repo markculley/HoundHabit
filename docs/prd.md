@@ -150,8 +150,9 @@ This is a stretch goal. Not part of MVP. It would be nice to support this.
 
 ### Behavior
 - Properties: Type, ordered list of Steps
-- A Behavior's type is picked from a **fixed list** of the 12 standard behaviors — not free text:
-  - Sit, Down, Leave It, Drop It, Stand, Wait/Stay, Walk, Touch, Go to Mat, Recall, Off, Attention
+- A Behavior's type is either one of the 12 standard behaviors **or** a custom, trainer-typed name:
+  - Standard presets: Sit, Down, Leave It, Drop It, Stand, Wait/Stay, Walk, Touch, Go to Mat, Recall, Off, Attention
+  - Custom: any free-text name the trainer enters (a custom name matching a standard label is treated as that standard). Mirrors the Three D's preset + custom pattern below.
 - Tapping a Behavior in the plan detail opens the Behavior detail view, which shows the behavior as the title and lists its Steps (the type is set at creation and is not editable from the detail view — to change it, delete and re-add the behavior)
 
 ### Step (Training Plan Item)
@@ -213,7 +214,7 @@ A Behavior is a child of a Training Plan and a parent of Steps.
 **Table Properties**
 
 - `plan_id` — FK to Training Plan
-- `name` — the behavior type, one of the 12 standard behaviors (a DB `CHECK` constraint enforces the valid set). Stored as the human-readable label (e.g. `"Sit"`, `"Wait/Stay"`). Not free text.
+- `name` — the behavior type: one of the 12 standard behaviors **or** a custom trainer-typed name. Stored as the human-readable label (e.g. `"Sit"`, `"Wait/Stay"`, `"Heel"`). A DB `CHECK` constraint (`behaviors_name_nonempty`) only enforces a non-empty, length-capped value — not a closed list.
 - `sort_order` — display order within the plan
 
 ## Pet Record

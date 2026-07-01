@@ -27,7 +27,7 @@ struct BehaviorTests {
 
         #expect(behavior.id == UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
         #expect(behavior.planId == UUID(uuidString: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"))
-        #expect(behavior.type == .sit)
+        #expect(behavior.type == .standard(.sit))
         #expect(behavior.sortOrder == 2)
     }
 
@@ -46,18 +46,21 @@ struct BehaviorTests {
         let behavior = try decoder.decode(Behavior.self, from: json)
 
         #expect(behavior.sortOrder == 0)
-        #expect(behavior.type == .recall)
+        #expect(behavior.type == .standard(.recall))
     }
 }
 
 @Suite("BehaviorType enum")
 struct BehaviorTypeTests {
 
-    /// Every raw string the `behaviors.name` column can hold (the DB CHECK
-    /// constraint) must decode to the matching `BehaviorType` case.
-    @Test("Each stored raw value maps to the correct case")
-    func rawValuesMapToCases() {
-        let expected: [String: BehaviorType] = [
+    private let decoder = JSONDecoder()
+    private let encoder = JSONEncoder()
+
+    /// Every standard label maps to the matching `.standard` case and labels
+    /// round-trip.
+    @Test("Each standard raw value maps to the correct case")
+    func standardValuesMapToCases() {
+        let expected: [String: StandardBehavior] = [
             "Sit": .sit,
             "Down": .down,
             "Leave It": .leaveIt,
@@ -71,20 +74,39 @@ struct BehaviorTypeTests {
             "Off": .off,
             "Attention": .attention,
         ]
-        for (raw, type) in expected {
-            #expect(BehaviorType(rawValue: raw) == type)
-            #expect(type.label == raw)
+        for (raw, standard) in expected {
+            #expect(BehaviorType(rawValue: raw) == .standard(standard))
+            #expect(BehaviorType(rawValue: raw).label == raw)
         }
     }
 
-    @Test("allCases covers exactly the 12 standard behaviors")
-    func allCasesCount() {
-        #expect(BehaviorType.allCases.count == 12)
+    @Test("StandardBehavior covers exactly the 12 presets")
+    func standardCount() {
+        #expect(StandardBehavior.allCases.count == 12)
     }
 
-    @Test("An unknown raw value does not decode")
-    func unknownRawValueFails() {
-        #expect(BehaviorType(rawValue: "Spin") == nil)
-        #expect(BehaviorType(rawValue: "Walk 1") == nil)
+    @Test("An unknown raw value becomes a custom behavior")
+    func unknownRawValueIsCustom() {
+        #expect(BehaviorType(rawValue: "Spin") == .custom("Spin"))
+        #expect(BehaviorType(rawValue: "Heel").isCustom)
+        #expect(BehaviorType(rawValue: "Heel").label == "Heel")
+    }
+
+    @Test("A custom value matching a standard label collapses to standard")
+    func customMatchingStandardCollapses() {
+        #expect(BehaviorType(rawValue: "Sit") == .standard(.sit))
+        #expect(BehaviorType(rawValue: "Sit").isCustom == false)
+    }
+
+    @Test("BehaviorType decodes from a bare JSON string")
+    func decodesFromBareString() throws {
+        #expect(try decoder.decode(BehaviorType.self, from: Data("\"Sit\"".utf8)) == .standard(.sit))
+        #expect(try decoder.decode(BehaviorType.self, from: Data("\"Heel\"".utf8)) == .custom("Heel"))
+    }
+
+    @Test("A custom behavior encodes back to its bare name string")
+    func customEncodesToBareString() throws {
+        let json = String(data: try encoder.encode(BehaviorType.custom("Heel")), encoding: .utf8)
+        #expect(json == "\"Heel\"")
     }
 }

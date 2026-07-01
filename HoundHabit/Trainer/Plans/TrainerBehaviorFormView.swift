@@ -1,26 +1,40 @@
 import SwiftUI
 
-/// Adds a behavior to a plan. A behavior is one of the 12 standard
-/// `BehaviorType`s — picked from a fixed list, not free-typed.
+/// Adds a behavior to a plan. A behavior is either one of the 12 standard
+/// presets or a custom name the trainer types. The two inputs are mutually
+/// exclusive — picking a preset clears the custom field, and vice versa.
 struct TrainerBehaviorFormView: View {
     let onSave: (BehaviorType) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedType: BehaviorType? = nil
+    @State private var selectedStandard: StandardBehavior? = nil
+    @State private var customName: String = ""
+
+    /// The behavior to save: a non-empty custom name wins, otherwise the picked
+    /// preset. `BehaviorType.init(rawValue:)` collapses a custom value that
+    /// matches a standard label back to `.standard`.
+    private var resolvedType: BehaviorType? {
+        let trimmed = customName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            return BehaviorType(rawValue: trimmed)
+        }
+        return selectedStandard.map(BehaviorType.standard)
+    }
 
     var body: some View {
         NavigationStack {
             List {
                 Section("Behavior") {
-                    ForEach(BehaviorType.allCases, id: \.self) { type in
+                    ForEach(StandardBehavior.allCases, id: \.self) { type in
                         Button {
-                            selectedType = type
+                            selectedStandard = type
+                            customName = ""
                         } label: {
                             HStack {
                                 Text(type.label)
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                if selectedType == type {
+                                if selectedStandard == type {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.accentColor)
                                         .font(.caption.bold())
@@ -28,6 +42,17 @@ struct TrainerBehaviorFormView: View {
                             }
                         }
                     }
+                }
+
+                Section {
+                    TextField("e.g. Heel", text: $customName)
+                        .onChange(of: customName) { _, newValue in
+                            if !newValue.isEmpty { selectedStandard = nil }
+                        }
+                } header: {
+                    Text("Custom")
+                } footer: {
+                    Text("Type your own behavior name if it isn't in the list above.")
                 }
             }
             .navigationTitle("Add Behavior")
@@ -38,12 +63,12 @@ struct TrainerBehaviorFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
-                        if let selectedType {
-                            onSave(selectedType)
+                        if let resolvedType {
+                            onSave(resolvedType)
                         }
                         dismiss()
                     }
-                    .disabled(selectedType == nil)
+                    .disabled(resolvedType == nil)
                 }
             }
         }

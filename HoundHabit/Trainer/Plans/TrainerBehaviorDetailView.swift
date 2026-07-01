@@ -153,7 +153,7 @@ private struct ThreeDTag: View {
         TrainerBehaviorDetailView(
             behavior: Behavior(
                 id: UUID(), planId: UUID(),
-                type: .sit, sortOrder: 0, createdAt: Date()
+                type: .standard(.sit), sortOrder: 0, createdAt: Date()
             ),
             viewModel: TrainerPlanViewModel()
         )
