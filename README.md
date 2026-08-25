@@ -1,5 +1,10 @@
 # Hound Habit
 
+![Status](https://img.shields.io/badge/status-pre--release-orange)
+![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-lightgrey)
+
+> **Pre-release.** Hound Habit has not shipped to the App Store. Version `1.0` is unreleased and distributed through TestFlight only — the database schema and APIs may still change without notice.
+
 A pet training tracker that bridges the gap between trainer visits. Guardians log sessions and track progress; Trainers deliver plans, review records, and leave feedback.
 
 ## Roles
