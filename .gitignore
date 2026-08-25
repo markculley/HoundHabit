@@ -67,3 +67,25 @@ fastlane/test_output
 # Secrets — never commit
 Secrets.xcconfig
 .db_url
+
+# Local test credentials — never commit
+test/testdata.md
+
+# Signing keys & certificates
+*.p8
+*.p12
+*.pem
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+
+# Environment / local config
+.env
+.env.*
+**/.claude/settings.local.json
+
+# Xcode local build state
+DerivedData/
+*.xcuserstate
+buildServer.json
